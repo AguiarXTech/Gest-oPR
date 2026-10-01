@@ -1,0 +1,155 @@
+'use client';
+
+// Foto de comprovante (S2-3): tira a foto, comprime no celular (≤ 1600 px, ~300 KB)
+// e envia na hora para o bucket privado. O formulário guarda só o caminho; se o
+// salvamento do registro falhar depois, a foto já está no servidor.
+import { Camera, LoaderCircle, RefreshCw } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { BUCKET_COMPROVANTES, caminhoComprovante, dimensionar, TAMANHO_ALVO_BYTES } from '@/lib/domain/comprovante';
+import { createClient } from '@/lib/supabase/client';
+import { cn } from '@/lib/utils';
+
+type Props = {
+  funcionarioId: string;
+  /** Caminho já enviado (ex.: vindo do rascunho), ou null. */
+  caminho: string | null;
+  onChange: (caminho: string | null) => void;
+  rotulo?: string;
+};
+
+type Estado = 'vazio' | 'processando' | 'pronta' | 'erro';
+
+/** crypto.randomUUID só existe em https; no http da rede local usa getRandomValues. */
+function gerarUuid(): string {
+  if (typeof crypto.randomUUID === 'function') return crypto.randomUUID();
+  const b = crypto.getRandomValues(new Uint8Array(16));
+  b[6] = (b[6] & 0x0f) | 0x40;
+  b[8] = (b[8] & 0x3f) | 0x80;
+  const h = [...b].map((x) => x.toString(16).padStart(2, '0')).join('');
+  return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`;
+}
+
+/** Redimensiona e reduz a qualidade até ficar perto de 300 KB. */
+async function comprimir(arquivo: File): Promise<Blob> {
+  const url = URL.createObjectURL(arquivo);
+  try {
+    const imagem = new Image();
+    imagem.src = url; // o navegador já aplica a rotação EXIF ao desenhar
+    await imagem.decode();
+
+    let { largura, altura } = dimensionar(imagem.naturalWidth, imagem.naturalHeight);
+    for (let tentativa = 0; tentativa < 6; tentativa++) {
+      const canvas = document.createElement('canvas');
+      canvas.width = largura;
+      canvas.height = altura;
+      canvas.getContext('2d')!.drawImage(imagem, 0, 0, largura, altura);
+      const qualidade = [0.7, 0.6, 0.5][Math.min(tentativa, 2)];
+      const blob = await new Promise<Blob>((ok, falha) =>
+        canvas.toBlob((b) => (b ? ok(b) : falha(new Error('toBlob'))), 'image/jpeg', qualidade),
+      );
+      if (blob.size <= TAMANHO_ALVO_BYTES || tentativa === 5) return blob;
+      if (tentativa >= 2) ({ largura, altura } = { largura: Math.round(largura * 0.8), altura: Math.round(altura * 0.8) });
+    }
+    throw new Error('inalcançável');
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
+export function FotoComprovante({ funcionarioId, caminho, onChange, rotulo = 'Foto do cupom' }: Props) {
+  const [supabase] = useState(createClient);
+  const [estado, setEstado] = useState<Estado>(caminho ? 'pronta' : 'vazio');
+  const [previa, setPrevia] = useState<string | null>(null);
+  const [pendente, setPendente] = useState<Blob | null>(null);
+
+  // Foto que veio do rascunho: mostra pela URL assinada.
+  useEffect(() => {
+    if (!caminho || previa) return;
+    let ativo = true;
+    supabase.storage
+      .from(BUCKET_COMPROVANTES)
+      .createSignedUrl(caminho, 600)
+      .then(({ data }) => ativo && data && setPrevia(data.signedUrl));
+    return () => {
+      ativo = false;
+    };
+  }, [caminho, previa, supabase]);
+
+  async function enviar(blob: Blob) {
+    setEstado('processando');
+    const destino = caminhoComprovante(funcionarioId, new Date(), gerarUuid());
+    const { error } = await supabase.storage
+      .from(BUCKET_COMPROVANTES)
+      .upload(destino, blob, { contentType: 'image/jpeg', upsert: false });
+    if (error) {
+      setPendente(blob);
+      setEstado('erro');
+      return;
+    }
+    setPendente(null);
+    setEstado('pronta');
+    onChange(destino);
+  }
+
+  async function aoEscolher(arquivo: File | undefined) {
+    if (!arquivo) return;
+    setEstado('processando');
+    try {
+      const blob = await comprimir(arquivo);
+      setPrevia(URL.createObjectURL(blob));
+      onChange(null);
+      await enviar(blob);
+    } catch {
+      setEstado('erro');
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-2">
+      <span className="text-base font-medium">{rotulo}</span>
+      {previa && (
+        // eslint-disable-next-line @next/next/no-img-element -- prévia local (blob:) ou URL assinada temporária
+        <img src={previa} alt="Prévia da foto do comprovante" className="max-h-64 w-full rounded-xl border bg-muted object-contain" />
+      )}
+
+      {estado === 'processando' && (
+        <p className="flex items-center gap-2 text-muted-foreground" aria-live="polite">
+          <LoaderCircle className="size-5 animate-spin" aria-hidden /> Enviando foto…
+        </p>
+      )}
+      {estado === 'pronta' && <p className="font-medium text-sucesso">✓ Foto enviada</p>}
+      {estado === 'erro' && (
+        <div className="flex flex-col gap-2" aria-live="polite">
+          <p className="font-medium text-destructive">A foto não foi enviada. Verifique a internet.</p>
+          {pendente && (
+            <Button type="button" variant="outline" size="lg" onClick={() => void enviar(pendente)}>
+              <RefreshCw aria-hidden /> Tentar enviar de novo
+            </Button>
+          )}
+        </div>
+      )}
+
+      <label
+        className={cn(
+          'inline-flex h-14 cursor-pointer items-center justify-center gap-2 rounded-lg border text-lg font-semibold',
+          estado === 'vazio' ? 'border-primary bg-primary text-primary-foreground' : 'bg-card hover:bg-muted',
+          estado === 'processando' && 'pointer-events-none opacity-50',
+        )}
+      >
+        <Camera className="size-6" aria-hidden />
+        {estado === 'vazio' ? 'Tirar foto' : 'Tirar outra foto'}
+        <input
+          type="file"
+          accept="image/*"
+          capture="environment"
+          className="sr-only"
+          onChange={(e) => {
+            void aoEscolher(e.target.files?.[0]);
+            e.target.value = '';
+          }}
+        />
+      </label>
+    </div>
+  );
+}
