@@ -7,11 +7,21 @@ import { Button } from '@/components/ui/button';
 import { createClient } from '@/lib/supabase/client';
 import { traduzirErroBanco } from '@/lib/supabase/erros';
 
+type Props = {
+  tabela: 'caminhoes' | 'clientes' | 'fornecedores';
+  id: string;
+  ativo: boolean;
+  /** Ex.: "caminhão", "cliente". */
+  nome: string;
+  /** Explicação mostrada acima do botão, conforme o estado atual. */
+  explicacao: { ativo: string; inativo: string };
+};
+
 /**
- * Caminhão não é excluído (tem viagens e abastecimentos ligados); é desativado
- * e some das escolhas do motorista, mas o histórico continua.
+ * Cadastros com histórico não são excluídos: são desativados e somem das
+ * escolhas, mas os registros antigos continuam ligados a eles.
  */
-export function AlternarAtivoCaminhao({ id, ativo }: { id: string; ativo: boolean }) {
+export function AlternarAtivo({ tabela, id, ativo, nome, explicacao }: Props) {
   const router = useRouter();
   const [supabase] = useState(createClient);
   // Confirmação na própria tela (window.confirm pode ser bloqueado pelo navegador).
@@ -19,7 +29,7 @@ export function AlternarAtivoCaminhao({ id, ativo }: { id: string; ativo: boolea
 
   const alternar = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.from('caminhoes').update({ ativo: !ativo }).eq('id', id).select('id').single();
+      const { error } = await supabase.from(tabela).update({ ativo: !ativo }).eq('id', id).select('id').single();
       if (error) throw error;
     },
     onSuccess: () => {
@@ -30,11 +40,7 @@ export function AlternarAtivoCaminhao({ id, ativo }: { id: string; ativo: boolea
 
   return (
     <div className="flex flex-col gap-3">
-      <p className="text-muted-foreground">
-        {ativo
-          ? 'O caminhão deixa de aparecer para os motoristas, mas o histórico continua.'
-          : 'Caminhão desativado: não aparece para os motoristas.'}
-      </p>
+      <p className="text-muted-foreground">{ativo ? explicacao.ativo : explicacao.inativo}</p>
       {alternar.isError && (
         <p aria-live="polite" className="text-sm font-medium text-destructive">
           {traduzirErroBanco(alternar.error)}
@@ -66,7 +72,7 @@ export function AlternarAtivoCaminhao({ id, ativo }: { id: string; ativo: boolea
           onClick={() => setConfirmando(true)}
           className="h-11 self-start text-base"
         >
-          {ativo ? 'Desativar caminhão' : 'Reativar caminhão'}
+          {ativo ? `Desativar ${nome}` : `Reativar ${nome}`}
         </Button>
       )}
     </div>

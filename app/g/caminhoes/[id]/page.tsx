@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { AlternarAtivoCaminhao } from '@/components/gestao/AlternarAtivoCaminhao';
+import { AlternarAtivo } from '@/components/gestao/AlternarAtivo';
 import { FormCaminhao } from '@/components/gestao/FormCaminhao';
 import { formatarPlaca } from '@/lib/domain/placa';
 import { createClient } from '@/lib/supabase/server';
@@ -28,7 +28,16 @@ export default async function EditarCaminhao({ params }: PageProps<'/g/caminhoes
 
       <section className="flex flex-col gap-3 border-t pt-6">
         <h2 className="font-medium">{caminhao.ativo ? 'Desativar' : 'Reativar'}</h2>
-        <AlternarAtivoCaminhao id={caminhao.id} ativo={caminhao.ativo} />
+        <AlternarAtivo
+          tabela="caminhoes"
+          id={caminhao.id}
+          ativo={caminhao.ativo}
+          nome="caminhão"
+          explicacao={{
+            ativo: 'O caminhão deixa de aparecer para os motoristas, mas o histórico continua.',
+            inativo: 'Caminhão desativado: não aparece para os motoristas.',
+          }}
+        />
       </section>
     </div>
   );

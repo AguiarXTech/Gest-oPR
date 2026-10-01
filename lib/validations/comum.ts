@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { normalizarCnpj, validarCnpj } from '@/lib/domain/cnpj';
 import { reaisParaCentavos } from '@/lib/domain/dinheiro';
 import { lerInteiro } from '@/lib/domain/numeros';
 
@@ -45,3 +46,10 @@ export const dataOpcional = z
   .trim()
   .refine((v) => v === '' || /^\d{4}-\d{2}-\d{2}$/.test(v), 'Data inválida.')
   .transform((v) => v || null);
+
+/** CNPJ numérico ou alfanumérico, com DV conferido; vazio vira null. */
+export const cnpjOpcional = z
+  .string()
+  .trim()
+  .refine((v) => v === '' || validarCnpj(v), 'CNPJ inválido. Confira os caracteres.')
+  .transform((v) => (v ? normalizarCnpj(v) : null));

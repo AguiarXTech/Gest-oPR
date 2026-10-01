@@ -34,7 +34,7 @@ erDiagram
 | `profiles` | Liga o usuário do Auth ao papel e ao funcionário | O papel **não** fica em `user_metadata` (o usuário pode editar). Escrita só via service role |
 | `funcionarios` | Pessoa (motorista ou não) | Separada de `profiles`: existe funcionário sem login e login sem funcionário (dono/admin) |
 | `caminhoes` | Frota | `capacidade_tanque_l` alimenta a anomalia de litros; `km_atual` é mantido por trigger |
-| `clientes`, `fornecedores` | Cadastros | Fornecedor com `tipo` cobre postos, oficinas e recapadoras (reuso na fase 2) |
+| `clientes`, `fornecedores` | Cadastros | Fornecedor com `tipo` cobre postos, oficinas e recapadoras (reuso na fase 2). `cnpj` aceita o formato numérico e o **alfanumérico** da Receita (a partir de 07/2026): 12 caracteres `[0-9A-Z]` + 2 DV numéricos; DV conferido em `lib/domain/cnpj.ts` |
 | `viagens` | Um trecho (ver Q3) | Índice único parcial: 1 viagem `em_andamento` por motorista e por caminhão. `valor_frete_centavos` nulo = não informado |
 | `abastecimentos` | Diesel | `nfce_chave` única (antifraude); `tanque_cheio` define a medição de consumo; `forma_pagamento` define se entra no acerto |
 | `despesas_viagem` | Pedágio, alimentação etc. | `reembolsavel` define se entra no acerto |
