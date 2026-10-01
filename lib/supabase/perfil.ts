@@ -12,6 +12,6 @@ export const obterPerfilAtual = cache(async () => {
   } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const { data } = await supabase.from('profiles').select('nome, papel').eq('id', user.id).single();
+  const { data } = await supabase.from('profiles').select('nome, papel, funcionario_id').eq('id', user.id).single();
   return data;
 });

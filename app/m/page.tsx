@@ -46,9 +46,9 @@ export default async function HomeMotorista() {
       <div className="grid grid-cols-2 gap-3">
         <BotaoGrande href="/m/abastecer" rotulo="Abastecer" icone={Fuel} pronto={false} destaque largo />
         {viagem ? (
-          <BotaoGrande href={`/m/viagem/${viagem.id}`} rotulo="Finalizar viagem" icone={Flag} pronto={false} largo />
+          <BotaoGrande href={`/m/viagem/${viagem.id}`} rotulo="Finalizar viagem" icone={Flag} pronto largo />
         ) : (
-          <BotaoGrande href="/m/viagem/nova" rotulo="Iniciar viagem" icone={Truck} pronto={false} largo />
+          <BotaoGrande href="/m/viagem/nova" rotulo="Iniciar viagem" icone={Truck} pronto largo />
         )}
         <BotaoGrande href="/m/despesa" rotulo="Despesa" icone={Receipt} pronto={false} />
         <BotaoGrande href="/m/extrato" rotulo="Meu extrato" icone={Wallet} pronto={false} />

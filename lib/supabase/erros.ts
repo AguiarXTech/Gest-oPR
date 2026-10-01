@@ -1,8 +1,6 @@
 /** Traduz erros do Postgres/Supabase para mensagens que o usuário entende. */
-export function traduzirErroBanco(
-  erro: { code?: string; message?: string } | null | undefined,
-  mensagens: Partial<Record<string, string>> = {},
-): string {
+export function traduzirErroBanco(erroDesconhecido: unknown, mensagens: Partial<Record<string, string>> = {}): string {
+  const erro = erroDesconhecido as { code?: string; message?: string } | null | undefined;
   const codigo = erro?.code ?? '';
   if (mensagens[codigo]) return mensagens[codigo];
 
@@ -22,3 +20,18 @@ export function traduzirErroBanco(
       return 'Não foi possível salvar. Verifique a internet e tente de novo.';
   }
 }
+
+/**
+ * Falha de rede (sinal fraco na estrada): o supabase-js devolve erro sem código do Postgres.
+ * Erros com código (constraint, RLS, trigger) não adiantam repetir.
+ */
+export function ehErroDeRede(erro: unknown): boolean {
+  const e = erro as { code?: string; message?: string } | null;
+  return !e?.code && /fetch|network|rede|timeout|load failed/i.test(e?.message ?? '');
+}
+
+/** Opções do TanStack Query para salvar com até 2 novas tentativas só em falha de rede. */
+export const repetirSeFalharRede = {
+  retry: (tentativas: number, erro: unknown) => tentativas < 2 && ehErroDeRede(erro),
+  retryDelay: (tentativa: number) => 1500 * (tentativa + 1),
+} as const;

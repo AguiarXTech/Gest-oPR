@@ -1,0 +1,32 @@
+import { z } from 'zod';
+import { lerInteiro } from '@/lib/domain/numeros';
+
+const kmObrigatorio = (mensagem: string) =>
+  z
+    .string()
+    .trim()
+    .min(1, mensagem)
+    .transform((v, ctx) => {
+      const n = lerInteiro(v);
+      if (n === null || n <= 0 || n > 9_999_999) {
+        ctx.addIssue({ code: 'custom', message: 'Km inválido. Use só números, como está no painel.' });
+        return z.NEVER;
+      }
+      return n;
+    });
+
+export const iniciarViagemSchema = z.object({
+  caminhao_id: z.guid('Escolha o caminhão.'),
+  origem: z.string().trim().min(2, 'Digite a origem.'),
+  destino: z.string().trim().min(2, 'Digite o destino.'),
+  km_saida: kmObrigatorio('Digite o km do painel na saída.'),
+});
+
+export const finalizarViagemSchema = z.object({
+  km_chegada: kmObrigatorio('Digite o km do painel na chegada.'),
+});
+
+export type IniciarViagemForm = z.input<typeof iniciarViagemSchema>;
+export type IniciarViagemDados = z.output<typeof iniciarViagemSchema>;
+export type FinalizarViagemForm = z.input<typeof finalizarViagemSchema>;
+export type FinalizarViagemDados = z.output<typeof finalizarViagemSchema>;

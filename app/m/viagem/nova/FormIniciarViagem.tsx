@@ -1,0 +1,176 @@
+'use client';
+
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useMutation } from '@tanstack/react-query';
+import { Check, ChevronDown } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { useForm, useWatch } from 'react-hook-form';
+import { ariaCampo, Campo } from '@/components/gestao/Campo';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { formatarPlaca } from '@/lib/domain/placa';
+import { createClient } from '@/lib/supabase/client';
+import { repetirSeFalharRede, traduzirErroBanco } from '@/lib/supabase/erros';
+import { cn } from '@/lib/utils';
+import { iniciarViagemSchema, type IniciarViagemDados, type IniciarViagemForm } from '@/lib/validations/viagem';
+
+type Caminhao = { id: string; placa: string; apelido: string | null; km_atual: number };
+
+type Props = {
+  funcionarioId: string;
+  caminhoes: Caminhao[];
+  caminhaoSugerido: string | null;
+  rotaPadrao: { origem: string; destino: string };
+};
+
+const km = new Intl.NumberFormat('pt-BR');
+
+function traduzir(erro: unknown) {
+  const e = erro as { code?: string; message?: string };
+  if (e?.code === '23505' && e.message?.includes('por_caminhao')) return 'Este caminhão já está em viagem com outro motorista.';
+  if (e?.code === '23505' && e.message?.includes('por_motorista')) return 'Você já tem uma viagem em andamento.';
+  return traduzirErroBanco(e);
+}
+
+export function FormIniciarViagem({ funcionarioId, caminhoes, caminhaoSugerido, rotaPadrao }: Props) {
+  const router = useRouter();
+  const [supabase] = useState(createClient);
+  const [mudarRota, setMudarRota] = useState(false);
+  // km abaixo do último registrado: avisa e pede um segundo toque para confirmar.
+  const [avisoKm, setAvisoKm] = useState(false);
+
+  const sugerido = caminhoes.some((c) => c.id === caminhaoSugerido) ? caminhaoSugerido : caminhoes.length === 1 ? caminhoes[0].id : '';
+
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors },
+  } = useForm<IniciarViagemForm, unknown, IniciarViagemDados>({
+    resolver: zodResolver(iniciarViagemSchema),
+    defaultValues: { caminhao_id: sugerido ?? '', origem: rotaPadrao.origem, destino: rotaPadrao.destino, km_saida: '' },
+  });
+
+  const [caminhaoId, kmDigitado, origem, destino] = useWatch({
+    control,
+    name: ['caminhao_id', 'km_saida', 'origem', 'destino'],
+  });
+  const caminhao = caminhoes.find((c) => c.id === caminhaoId);
+
+  const iniciar = useMutation({
+    ...repetirSeFalharRede,
+    mutationFn: async (dados: IniciarViagemDados) => {
+      // motorista_id é forçado pelo trigger para o funcionário logado
+      const { data, error } = await supabase
+        .from('viagens')
+        .insert({ ...dados, motorista_id: funcionarioId })
+        .select('id')
+        .single();
+      if (error) throw error;
+      return data.id;
+    },
+    onSuccess: () => {
+      router.replace('/m');
+      router.refresh();
+    },
+  });
+
+  function enviar(dados: IniciarViagemDados) {
+    if (caminhao && dados.km_saida < caminhao.km_atual && !avisoKm) {
+      setAvisoKm(true); // mostra o aviso; o próximo toque confirma
+      return;
+    }
+    iniciar.mutate(dados);
+  }
+
+
+  if (caminhoes.length === 0) {
+    return <p className="rounded-2xl border bg-card p-5 shadow-xs">Nenhum caminhão ativo cadastrado. Fale com o escritório.</p>;
+  }
+
+  return (
+    <form onSubmit={handleSubmit(enviar)} noValidate className="flex flex-col gap-6">
+      <fieldset className="flex flex-col gap-2">
+        <legend className="mb-2 text-lg font-semibold">Qual caminhão?</legend>
+        {caminhoes.map((c) => (
+          <label
+            key={c.id}
+            className={cn(
+              'flex min-h-16 cursor-pointer items-center gap-3 rounded-2xl border bg-card p-4 shadow-xs',
+              caminhaoId === c.id && 'border-primary ring-2 ring-primary',
+            )}
+          >
+            <input type="radio" value={c.id} {...register('caminhao_id', { onChange: () => setAvisoKm(false) })} className="sr-only" />
+            <span className="flex flex-1 flex-col">
+              <span className="font-mono text-xl font-bold">{formatarPlaca(c.placa)}</span>
+              <span className="text-muted-foreground">
+                {c.apelido ? `${c.apelido} · ` : ''}
+                <span className="tabular-nums">{km.format(c.km_atual)} km</span>
+              </span>
+            </span>
+            {caminhaoId === c.id && <Check className="size-7 text-primary" aria-hidden />}
+          </label>
+        ))}
+        {errors.caminhao_id && <p className="font-medium text-destructive">{errors.caminhao_id.message}</p>}
+      </fieldset>
+
+      <Campo
+        id="km_saida"
+        rotulo="Km do painel agora"
+        erro={errors.km_saida?.message}
+        ajuda={caminhao ? `Último km registrado: ${km.format(caminhao.km_atual)}` : undefined}
+      >
+        <Input
+          {...register('km_saida', { onChange: () => setAvisoKm(false) })}
+          {...ariaCampo('km_saida', errors.km_saida?.message, caminhao ? 'ajuda' : undefined)}
+          inputMode="numeric"
+          autoComplete="off"
+          className="h-14 text-2xl tabular-nums"
+        />
+      </Campo>
+
+      {avisoKm && caminhao && (
+        <p role="alert" className="rounded-xl border border-alerta bg-alerta/10 p-4 font-medium">
+          O km digitado ({kmDigitado}) é menor que o último registrado para este caminhão (
+          {km.format(caminhao.km_atual)}). Confira o painel. Se estiver certo, toque em Iniciar de novo.
+        </p>
+      )}
+
+      <div className="rounded-2xl border bg-card p-4 shadow-xs">
+        <button
+          type="button"
+          onClick={() => setMudarRota((v) => !v)}
+          aria-expanded={mudarRota}
+          className="flex min-h-11 w-full items-center justify-between gap-2 text-left"
+        >
+          <span>
+            <span className="block text-sm text-muted-foreground">Rota</span>
+            <span className="font-semibold">
+              {origem} → {destino} → volta
+            </span>
+          </span>
+          <ChevronDown className={cn('size-5 shrink-0 transition-transform', mudarRota && 'rotate-180')} aria-hidden />
+        </button>
+        <div className={cn('mt-4 flex-col gap-4', mudarRota ? 'flex' : 'hidden')}>
+          <Campo id="origem" rotulo="Saída" erro={errors.origem?.message}>
+            <Input {...register('origem')} {...ariaCampo('origem', errors.origem?.message)} />
+          </Campo>
+          <Campo id="destino" rotulo="Destino (onde vira para voltar)" erro={errors.destino?.message}>
+            <Input {...register('destino')} {...ariaCampo('destino', errors.destino?.message)} />
+          </Campo>
+        </div>
+      </div>
+
+      {iniciar.isError && (
+        <p role="alert" className="font-medium text-destructive">
+          {traduzir(iniciar.error)}
+        </p>
+      )}
+
+      <Button type="submit" size="xl" disabled={iniciar.isPending || iniciar.isSuccess} className="w-full">
+        {iniciar.isPending ? 'Iniciando…' : avisoKm ? 'Confirmar e iniciar' : 'Iniciar viagem'}
+      </Button>
+    </form>
+  );
+}
