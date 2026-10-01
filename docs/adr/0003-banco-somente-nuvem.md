@@ -12,7 +12,7 @@ O fluxo original previa Postgres local via `supabase start`, que exige Docker De
   - **`gestao-frota-dev`** (plano Free): desenvolvimento, seed fictício, pgTAP e usuários de teste.
   - **produção** (plano Pro): só recebe migrations via `db push`. Nunca seed nem `db reset`.
 - Os scripts `db:*` usam `--linked`. `db:reset`, `db:test` e `dev:users` passam por `scripts/garantir-projeto-dev.ts`, que recusa rodar se o projeto vinculado não for o `SUPABASE_DEV_PROJECT_REF`.
-- `supabase test db` exige Docker mesmo com `--linked` (roda `pg_prove` num container). Por isso `db:test` usa `scripts/testar-db.ts`, que executa cada arquivo de `supabase/tests` via `supabase db query --linked` (Management API) e lê o resumo do pgTAP antes do `rollback`. Limitação: na falha, informa quantos testes falharam, não quais.
+- `supabase test db` exige Docker mesmo com `--linked` (roda `pg_prove` num container). Por isso `db:test` usa `scripts/testar-db.ts`, que executa cada arquivo de `supabase/tests` via `supabase db query --linked` (Management API) e lê o resumo do pgTAP antes do `rollback`. Cada asserção grava sua saída TAP numa tabela temporária, então a falha mostra o teste e o "esperado × obtido".
 - As configurações padrão (`configuracoes`) saíram do seed e foram para uma migration, para chegarem à produção pelo `db push`.
 - O CI continua rodando pgTAP com `supabase start` no runner do GitHub (banco descartável, fora da máquina do dev).
 

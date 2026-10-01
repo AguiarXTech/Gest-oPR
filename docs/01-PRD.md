@@ -38,9 +38,9 @@ A operação hoje depende de papel, WhatsApp e memória. Isso gera cinco problem
 | RF-02 | Cadastro de caminhões (placa, modelo, eixos, capacidade do tanque, km atual) | gestor |
 | RF-03 | Cadastro de funcionários (dados pessoais, CNH, chave PIX, salário-base) e vínculo com usuário | gestor |
 | RF-04 | Cadastro de clientes e fornecedores (postos, oficinas, recapadoras) | gestor |
-| RF-05 | Motorista inicia viagem: caminhão, origem/destino (padrões da rota pré-preenchidos) e km de saída | motorista |
-| RF-06 | Motorista finaliza viagem: km de chegada (validado ≥ km de saída) | motorista |
-| RF-07 | Gestor completa a viagem: cliente, valor do frete, chaves de CT-e/MDF-e, peso | gestor |
+| RF-05 | Motorista inicia a viagem (ciclo ida + volta) ao sair: caminhão, origem/destino (padrões da rota pré-preenchidos) e km de saída | motorista |
+| RF-06 | Motorista finaliza a viagem na volta, depois de descarregar: km de chegada (validado ≥ km de saída) | motorista |
+| RF-07 | Gestor lança os fretes da viagem: o da volta (sempre) e o da ida (quando houver carga), cada um com cliente, valor, chaves de CT-e/MDF-e e peso | gestor |
 | RF-08 | Motorista registra abastecimento: foto do cupom, leitura do QR da NFC-e, km, litros, valor total, tanque cheio (sim/não), forma de pagamento | motorista |
 | RF-09 | O sistema extrai a chave de 44 dígitos do QR, valida o DV e impede chave duplicada | sistema |
 | RF-10 | O sistema calcula km/L (método tanque cheio) e marca anomalias (ver regras) | sistema |
@@ -123,10 +123,10 @@ Não implemente regra definitiva para os itens abaixo antes da resposta. Use con
 |---|---|---|---|
 | Q1 | ~~Qual é exatamente a regra de comissão? Há salário-base além da comissão?~~ **Respondida em 2026-10-01:** comissão é um **valor fixo em R$ por viagem**, e uma viagem = **ida e volta** (não por trecho). Cada motorista tem o próprio valor de comissão e o próprio salário-base. | RF-14/15 | Tipo `valor_por_viagem`, um valor por motorista |
 | Q2 | O acerto é por viagem, semanal ou mensal? | RF-15 | Mensal, com período livre |
-| Q3 | ~~A volta (BH → SJE) é carregada (tem frete) ou vazia?~~ **Respondida em 2026-10-01:** a volta (BH → SJE) é **sempre carregada**; a ida (SJE → BH) vai **vazia na maioria das vezes**, mas às vezes leva carga. Cada trecho carregado tem o seu frete (≈ 3 a 6 fretes por semana). A duração varia com a liberação da carga (ex.: sai sábado e só descarrega segunda). O motorista dá **início** ao sair e **fim** na volta, depois de descarregar. | Receita, RF-05/06/07 | Ver proposta de modelo "viagem = ciclo com 2 fretes" (pendente de aprovação) |
+| Q3 | ~~A volta (BH → SJE) é carregada (tem frete) ou vazia?~~ **Respondida em 2026-10-01:** a volta (BH → SJE) é **sempre carregada**; a ida (SJE → BH) vai **vazia na maioria das vezes**, mas às vezes leva carga. Cada trecho carregado tem o seu frete (≈ 3 a 6 fretes por semana). A duração varia com a liberação da carga (ex.: sai sábado e só descarrega segunda). O motorista dá **início** ao sair e **fim** na volta, depois de descarregar. | Receita, RF-05/06/07 | Implementado: viagem = ciclo; tabela `fretes` com 0 a 2 fretes por viagem (migration `20261001000002`) |
 | Q4 | Quem registra o valor do frete: o gestor ou vem do CT-e? | RF-07 | Gestor digita |
 | Q5 | Existe diária/ajuda de custo fixa além do reembolso de despesas? | RF-15 | Não; só reembolso |
-| Q6 | O motorista pode ver o valor do frete das próprias viagens? | RF-17 | Sim (transparência da comissão) |
+| Q6 | O motorista pode ver o valor do frete das próprias viagens? | RF-17 | **Não, por enquanto** (revisto em 2026-10-01): com a comissão fixa por viagem, o frete não é necessário para o motorista conferir o que recebe. Confirmar com o dono |
 | Q7 | Cada motorista tem caminhão fixo? | UX RF-05 | Não; escolhe na saída, sugerindo o último usado |
 | Q8 | Os motoristas têm e-mail? | RF-01 | Se não tiverem, usar e-mail interno `cpf@frota.local` gerado pelo gestor (ver ADR 0001) |
 | Q9 | Configuração de eixos de cada caminhão (toco, truck, carreta)? | Fase 2 pneus e pedágio | Cadastrar por caminhão |

@@ -23,13 +23,14 @@ Os limiares ficam na tabela `configuracoes` (chave → JSON). Os valores abaixo 
 
 ## 2. Viagem
 
-- Cada **trecho** é uma viagem (SJE→BH é uma, BH→SJE é outra). Isso depende da pergunta Q3 do PRD.
+- A viagem é o **ciclo completo** (Q3, respondida em 2026-10-01): o motorista **inicia** ao sair de São João Evangelista e **finaliza** na volta, depois de descarregar. A duração varia com a liberação da carga (ex.: sai sábado e só descarrega segunda).
+- Os dados comerciais ficam em **`fretes`**, lançados pelo gestor: no máximo **um frete de ida e um de volta** por viagem. A volta (BH → SJE) é sempre carregada; a ida vai vazia na maioria das vezes. Receita da viagem = Σ fretes.
 - Status: `em_andamento` → `concluida` (ou `cancelada`). O status `planejada` fica reservado para uso futuro.
 - Um motorista tem **no máximo 1 viagem `em_andamento`** (garantido por índice único parcial).
 - `km_chegada ≥ km_saida` (check no banco).
 - `km_rodado = km_chegada − km_saida`.
 - Ao concluir, atualiza `caminhoes.km_atual = max(km_atual, km_chegada)`.
-- **Alerta** (não bloqueia): se `km_rodado` estiver fora de ±25% da distância padrão da rota (config `rota_padrao_km`, padrão 290), mostrar "confira o km".
+- **Alerta** (não bloqueia): se `km_rodado` estiver fora de ±25% da distância esperada do ciclo = **2 × `rota_padrao_km`** (config por trecho, padrão 290 → ciclo de 580 km), mostrar "confira o km".
 
 ---
 
@@ -138,7 +139,7 @@ Um item com severidade alta **não conferido** gera aviso ao fechar o acerto. O 
 
 ## 6. Comissão (`comissao.ts`)
 
-> ⚠️ **A regra real depende da pergunta Q1 do PRD.** Implemente os quatro tipos abaixo como configuração.
+> **Q1 respondida em 2026-10-01:** a regra em uso é **`valor_por_viagem`**: um valor fixo em R$ por viagem (ciclo ida + volta), diferente para cada motorista. Os outros três tipos continuam implementados como configuração, caso a regra mude.
 
 **Regra vigente.** É o registro de `regras_comissao` do motorista cujo período `vigencia_inicio ≤ data_saida da viagem ≤ coalesce(vigencia_fim, ∞)`. Períodos de vigência do mesmo motorista **não podem se sobrepor** (constraint de exclusão no banco).
 
@@ -146,16 +147,19 @@ A comissão é calculada **por viagem concluída** e arredondada por viagem (ver
 
 | Tipo | Fórmula por viagem |
 |---|---|
+| `valor_por_viagem` (**em uso**) | `valor` (se `apenas_com_frete` e frete = 0 → 0) |
 | `pct_frete_bruto` | `aplicarPercentual(frete, pct)` |
 | `pct_frete_liquido` | `base = frete − (pedágios da viagem, se deduz_pedagio) − (diesel rateado da viagem, se deduz_combustivel)`; `base = max(base, 0)`; `aplicarPercentual(base, pct)` |
-| `valor_por_viagem` | `valor` (se `apenas_com_frete` e frete = 0 → 0) |
 | `valor_por_km` | `km_rodado × valor` |
 
 "Diesel rateado" segue a definição da seção 8.2.
 
-Se uma viagem não tem frete informado (`valor_frete_centavos` nulo), ela **impede o fechamento do acerto** com a mensagem "Viagem X sem valor de frete". Frete zero é diferente de nulo e é permitido.
+Nas fórmulas, **frete = Σ `fretes.valor_frete_centavos` da viagem** (ida + volta).
+
+Uma viagem concluída **sem nenhum frete lançado** **impede o fechamento do acerto** com a mensagem "Viagem X sem frete lançado". Frete com valor zero é diferente de "sem frete" e é permitido.
 
 **Exemplos:**
+- `valor_por_viagem` R$ 150,00: viagem com 1 frete (volta) ou com 2 (ida + volta) → R$ 150,00 nos dois casos.
 - `pct_frete_bruto` 12%, frete R$ 4.500,00 → R$ 540,00.
 - `pct_frete_liquido` 15%, deduz pedágio, frete R$ 4.500,00, pedágios R$ 97,20 → base 440.280 → R$ 660,42.
 - `valor_por_km` R$ 0,35/km, 580 km → R$ 203,00.
@@ -179,6 +183,7 @@ Se uma viagem não tem frete informado (`valor_frete_centavos` nulo), ela **impe
 
 | Componente | Cálculo |
 |---|---|
+| `total_frete` | Σ fretes das viagens (informativo; guardado em `total_frete_centavos`) |
 | `total_comissao` | Σ comissão por viagem |
 | `total_reembolsos` | Σ despesas com `reembolsavel = true` + Σ abastecimentos com `forma_pagamento = 'motorista'` |
 | `total_adiantamentos` | Σ adiantamentos |
@@ -196,7 +201,7 @@ Se uma viagem não tem frete informado (`valor_frete_centavos` nulo), ela **impe
 | Reabrir | **somente dono** | status volta a `rascunho`; registrado na auditoria |
 | Excluir | gestor, só em `rascunho` | desvincula os itens |
 
-**Exemplo completo (teste de integração do domínio):** regra 12% sobre frete bruto; 4 viagens com frete de R$ 4.500 cada → comissão R$ 2.160,00. Despesas reembolsáveis R$ 185,40; 1 abastecimento pago pelo motorista R$ 300,00; adiantamentos R$ 1.000,00. Saldo = 216000 + 18540 + 30000 − 100000 = **R$ 1.645,40**.
+**Exemplo completo (teste de integração do domínio):** regra `valor_por_viagem` R$ 150,00; 4 viagens (3 só com frete de volta, 1 com ida + volta) → comissão 4 × 15000 = R$ 600,00. Despesas reembolsáveis R$ 185,40; 1 abastecimento pago pelo motorista R$ 300,00; adiantamentos R$ 1.000,00. Saldo = 60000 + 18540 + 30000 − 100000 = **R$ 85,40**.
 
 ---
 
@@ -205,7 +210,7 @@ Se uma viagem não tem frete informado (`valor_frete_centavos` nulo), ela **impe
 ### 8.1 Por caminhão/mês (exato)
 
 ```
-receita  = Σ frete das viagens concluídas no mês
+receita  = Σ fretes (ida + volta) das viagens concluídas no mês
 diesel   = Σ valor dos abastecimentos do caminhão no mês
 pedagio  = Σ despesas tipo pedagio das viagens do caminhão no mês
 despesas = Σ outras despesas das viagens do caminhão no mês
@@ -222,7 +227,7 @@ Um tanque cobre mais de uma viagem, então o diesel é **rateado por km**:
 
 ```
 diesel_viagem = diesel_do_caminhao_no_mes × (km_viagem / km_total_do_caminhao_no_mes)
-resultado_viagem = frete − diesel_viagem − pedagios_viagem − despesas_viagem − comissao_viagem
+resultado_viagem = Σ fretes da viagem − diesel_viagem − pedagios_viagem − despesas_viagem − comissao_viagem
 ```
 
 Enquanto o mês não fecha, o rateio é provisório. A UI deve indicar "valores estimados até o fechamento do mês".

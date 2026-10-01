@@ -42,7 +42,7 @@ Sprints de ~1 semana, com dedicação parcial. Cada tarefa tem ID (`S{sprint}-{n
 | S2-1 | `lib/domain/nfce.ts`: `extrairChave`, `validarChave` (DV), `decomporChave` + testes | Testes com chaves geradas e com URL de QR |
 | S2-2 | **Spike iPhone:** leitura de QR com ZXing no iOS Safari e no Android Chrome, com cupons reais | Decisão registrada (lib escolhida) no `02-ARQUITETURA.md` |
 | S2-3 | Componente `FotoComprovante` (captura, compressão ≤ ~300 KB, upload no caminho padrão) | Foto aparece para o gestor via URL assinada |
-| S2-4 | Iniciar/finalizar viagem (`/m/viagem/nova`, `/m/viagem/[id]`) com rota padrão pré-preenchida e sugestão do último caminhão | 1 viagem em andamento por motorista (erro amigável) |
+| S2-4 | Iniciar/finalizar viagem — ciclo ida + volta (`/m/viagem/nova`, `/m/viagem/[id]`) com rota padrão pré-preenchida e sugestão do último caminhão | 1 viagem em andamento por motorista (erro amigável); alerta de km com ciclo de 2 × 290 km |
 | S2-5 | Tela Abastecer (fluxo 5.1 do PRD) com rascunho local e retry | Registro em < 60 s; sem perda ao falhar a rede |
 | S2-6 | `lib/domain/consumo.ts` + `anomalias.ts` + testes (seções 4 e 5 das regras) | Todos os exemplos passam |
 | S2-7 | PWA (Serwist): manifest, ícones, instruções de instalação no iPhone | Instalável em Android e iPhone |
@@ -56,16 +56,16 @@ Sprints de ~1 semana, com dedicação parcial. Cada tarefa tem ID (`S{sprint}-{n
 | S3-1 | Tela Despesa (motorista) com foto | Pedágio, alimentação etc. |
 | S3-2 | Adiantamentos (gestor) | Aparecem no extrato do motorista |
 | S3-3 | Tela de conferência `/g/abastecimentos`: lista com anomalias, foto, marcar conferido, comentário | Filtros: não conferidos, com anomalia alta |
-| S3-4 | Completar viagem pelo gestor (cliente, frete, CT-e/MDF-e) | Viagem sem frete aparece destacada |
+| S3-4 | Lançar fretes da viagem pelo gestor: volta (sempre) e ida (quando houver), com cliente, valor, CT-e/MDF-e | Viagem concluída sem frete aparece destacada |
 
 ## Sprint 4 — Comissão e acerto (RF-14..17, RF-20)
 
-**Pré-requisito:** respostas às perguntas Q1, Q2, Q5 e Q11 do PRD.
+**Pré-requisito:** respostas às perguntas Q2, Q5 e Q11 do PRD (Q1 respondida em 2026-10-01: valor fixo por viagem).
 
 | ID | Tarefa | Critério de aceite |
 |---|---|---|
 | S4-1 | `lib/domain/comissao.ts` + testes (4 tipos, arredondamento por viagem) | Exemplos da seção 6 passam |
-| S4-2 | `lib/domain/acerto.ts` + teste do exemplo completo (saldo R$ 1.645,40) | Passa |
+| S4-2 | `lib/domain/acerto.ts` + teste do exemplo completo (saldo R$ 85,40) | Passa |
 | S4-3 | CRUD de regras de comissão (vigência sem sobreposição com mensagem amigável) | — |
 | S4-4 | Fluxo de acerto (seção 7): criar rascunho → revisar → fechar (snapshot) → pagar | Tentativa de editar item acertado mostra erro do banco traduzido |
 | S4-5 | Reabrir acerto (só dono) | Admin recebe erro; auditoria registra |

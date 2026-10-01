@@ -11,16 +11,24 @@ insert into public.caminhoes (id, placa, apelido, marca, modelo, ano, eixos, con
 
 insert into public.funcionarios (id, nome, cpf, cargo, data_admissao, salario_base_centavos, cnh_categoria) values
   ('00000000-0000-0000-0000-0000000000f1', 'Motorista Teste 1', '00000000191', 'motorista', '2024-01-10', 180000, 'E'),
-  ('00000000-0000-0000-0000-0000000000f2', 'Motorista Teste 2', '00000000272', 'motorista', '2024-03-01', 180000, 'E'),
-  ('00000000-0000-0000-0000-0000000000f3', 'Motorista Teste 3', '00000000353', 'motorista', '2025-02-15', 180000, 'D');
+  ('00000000-0000-0000-0000-0000000000f2', 'Motorista Teste 2', '00000000272', 'motorista', '2024-03-01', 195000, 'E'),
+  ('00000000-0000-0000-0000-0000000000f3', 'Motorista Teste 3', '00000000353', 'motorista', '2025-02-15', 170000, 'D');
 
 insert into public.clientes (id, razao_social, cnpj, prazo_pagamento_dias) values
   ('00000000-0000-0000-0000-0000000000a1', 'Cliente Exemplo Ltda', '11222333000181', 30);
 
-insert into public.regras_comissao (funcionario_id, tipo, percentual, vigencia_inicio) values
-  ('00000000-0000-0000-0000-0000000000f1', 'pct_frete_bruto', 12.00, '2024-01-01'),
-  ('00000000-0000-0000-0000-0000000000f2', 'pct_frete_bruto', 12.00, '2024-01-01'),
-  ('00000000-0000-0000-0000-0000000000f3', 'pct_frete_bruto', 12.00, '2025-01-01');
+-- Comissão: valor fixo por viagem (ciclo ida + volta), diferente por motorista (Q1). Valores fictícios.
+insert into public.regras_comissao (funcionario_id, tipo, valor_centavos, vigencia_inicio) values
+  ('00000000-0000-0000-0000-0000000000f1', 'valor_por_viagem', 15000, '2024-01-01'),
+  ('00000000-0000-0000-0000-0000000000f2', 'valor_por_viagem', 16000, '2024-01-01'),
+  ('00000000-0000-0000-0000-0000000000f3', 'valor_por_viagem', 14000, '2025-01-01');
+
+-- Uma viagem concluída (ciclo SJE → BH → SJE) com o frete da volta, para as telas da gestão.
+insert into public.viagens (id, caminhao_id, motorista_id, origem, destino, data_saida, data_chegada, km_saida, km_chegada, status) values
+  ('00000000-0000-0000-0000-0000000000b1', '00000000-0000-0000-0000-0000000000c1', '00000000-0000-0000-0000-0000000000f1',
+   'São João Evangelista - MG', 'Belo Horizonte - MG', now() - interval '3 days', now() - interval '1 day', 479420, 480000, 'concluida');
+insert into public.fretes (viagem_id, sentido, cliente_id, valor_frete_centavos, peso_kg) values
+  ('00000000-0000-0000-0000-0000000000b1', 'volta', '00000000-0000-0000-0000-0000000000a1', 450000, 14000);
 
 insert into public.documentos (tipo, entidade, caminhao_id, vencimento) values
   ('cronotacografo', 'caminhao', '00000000-0000-0000-0000-0000000000c1', current_date + 10),

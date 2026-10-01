@@ -617,6 +617,70 @@ export type Database = {
         }
         Relationships: []
       }
+      fretes: {
+        Row: {
+          cliente_id: string | null
+          created_at: string
+          cte_chave: string | null
+          id: string
+          mdfe_chave: string | null
+          observacoes: string | null
+          peso_kg: number | null
+          sentido: Database["public"]["Enums"]["sentido_frete"]
+          updated_at: string
+          valor_frete_centavos: number
+          viagem_id: string
+        }
+        Insert: {
+          cliente_id?: string | null
+          created_at?: string
+          cte_chave?: string | null
+          id?: string
+          mdfe_chave?: string | null
+          observacoes?: string | null
+          peso_kg?: number | null
+          sentido: Database["public"]["Enums"]["sentido_frete"]
+          updated_at?: string
+          valor_frete_centavos: number
+          viagem_id: string
+        }
+        Update: {
+          cliente_id?: string | null
+          created_at?: string
+          cte_chave?: string | null
+          id?: string
+          mdfe_chave?: string | null
+          observacoes?: string | null
+          peso_kg?: number | null
+          sentido?: Database["public"]["Enums"]["sentido_frete"]
+          updated_at?: string
+          valor_frete_centavos?: number
+          viagem_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fretes_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fretes_viagem_id_fkey"
+            columns: ["viagem_id"]
+            isOneToOne: false
+            referencedRelation: "viagens"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fretes_viagem_id_fkey"
+            columns: ["viagem_id"]
+            isOneToOne: false
+            referencedRelation: "vw_viagens_resumo"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       funcionarios: {
         Row: {
           ativo: boolean
@@ -769,65 +833,50 @@ export type Database = {
         Row: {
           acerto_id: string | null
           caminhao_id: string
-          cliente_id: string | null
           created_at: string
-          cte_chave: string | null
           data_chegada: string | null
           data_saida: string
           destino: string
           id: string
           km_chegada: number | null
           km_saida: number
-          mdfe_chave: string | null
           motorista_id: string
           observacoes: string | null
           origem: string
-          peso_kg: number | null
           status: Database["public"]["Enums"]["status_viagem"]
           updated_at: string
-          valor_frete_centavos: number | null
         }
         Insert: {
           acerto_id?: string | null
           caminhao_id: string
-          cliente_id?: string | null
           created_at?: string
-          cte_chave?: string | null
           data_chegada?: string | null
           data_saida?: string
           destino: string
           id?: string
           km_chegada?: number | null
           km_saida: number
-          mdfe_chave?: string | null
           motorista_id: string
           observacoes?: string | null
           origem: string
-          peso_kg?: number | null
           status?: Database["public"]["Enums"]["status_viagem"]
           updated_at?: string
-          valor_frete_centavos?: number | null
         }
         Update: {
           acerto_id?: string | null
           caminhao_id?: string
-          cliente_id?: string | null
           created_at?: string
-          cte_chave?: string | null
           data_chegada?: string | null
           data_saida?: string
           destino?: string
           id?: string
           km_chegada?: number | null
           km_saida?: number
-          mdfe_chave?: string | null
           motorista_id?: string
           observacoes?: string | null
           origem?: string
-          peso_kg?: number | null
           status?: Database["public"]["Enums"]["status_viagem"]
           updated_at?: string
-          valor_frete_centavos?: number | null
         }
         Relationships: [
           {
@@ -842,13 +891,6 @@ export type Database = {
             columns: ["caminhao_id"]
             isOneToOne: false
             referencedRelation: "caminhoes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "viagens_cliente_id_fkey"
-            columns: ["cliente_id"]
-            isOneToOne: false
-            referencedRelation: "clientes"
             referencedColumns: ["id"]
           },
           {
@@ -900,76 +942,67 @@ export type Database = {
           abastecimentos_vinculados_centavos: number | null
           acerto_id: string | null
           caminhao_id: string | null
-          cliente_id: string | null
           created_at: string | null
-          cte_chave: string | null
           data_chegada: string | null
           data_saida: string | null
           destino: string | null
+          frete_total_centavos: number | null
           id: string | null
           km_chegada: number | null
           km_rodado: number | null
           km_saida: number | null
-          mdfe_chave: string | null
           motorista_id: string | null
           observacoes: string | null
           origem: string | null
           outras_despesas_centavos: number | null
           pedagio_centavos: number | null
-          peso_kg: number | null
+          quantidade_fretes: number | null
           status: Database["public"]["Enums"]["status_viagem"] | null
           updated_at: string | null
-          valor_frete_centavos: number | null
         }
         Insert: {
           abastecimentos_vinculados_centavos?: never
           acerto_id?: string | null
           caminhao_id?: string | null
-          cliente_id?: string | null
           created_at?: string | null
-          cte_chave?: string | null
           data_chegada?: string | null
           data_saida?: string | null
           destino?: string | null
+          frete_total_centavos?: never
           id?: string | null
           km_chegada?: number | null
           km_rodado?: never
           km_saida?: number | null
-          mdfe_chave?: string | null
           motorista_id?: string | null
           observacoes?: string | null
           origem?: string | null
           outras_despesas_centavos?: never
           pedagio_centavos?: never
-          peso_kg?: number | null
+          quantidade_fretes?: never
           status?: Database["public"]["Enums"]["status_viagem"] | null
           updated_at?: string | null
-          valor_frete_centavos?: number | null
         }
         Update: {
           abastecimentos_vinculados_centavos?: never
           acerto_id?: string | null
           caminhao_id?: string | null
-          cliente_id?: string | null
           created_at?: string | null
-          cte_chave?: string | null
           data_chegada?: string | null
           data_saida?: string | null
           destino?: string | null
+          frete_total_centavos?: never
           id?: string | null
           km_chegada?: number | null
           km_rodado?: never
           km_saida?: number | null
-          mdfe_chave?: string | null
           motorista_id?: string | null
           observacoes?: string | null
           origem?: string | null
           outras_despesas_centavos?: never
           pedagio_centavos?: never
-          peso_kg?: number | null
+          quantidade_fretes?: never
           status?: Database["public"]["Enums"]["status_viagem"] | null
           updated_at?: string | null
-          valor_frete_centavos?: number | null
         }
         Relationships: [
           {
@@ -984,13 +1017,6 @@ export type Database = {
             columns: ["caminhao_id"]
             isOneToOne: false
             referencedRelation: "caminhoes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "viagens_cliente_id_fkey"
-            columns: ["cliente_id"]
-            isOneToOne: false
-            referencedRelation: "clientes"
             referencedColumns: ["id"]
           },
           {
@@ -1016,6 +1042,7 @@ export type Database = {
       entidade_documento: "empresa" | "caminhao" | "funcionario"
       forma_pagamento_abastecimento: "motorista" | "cartao_empresa" | "faturado"
       papel_usuario: "dono" | "admin" | "motorista"
+      sentido_frete: "ida" | "volta"
       status_acerto: "rascunho" | "fechado" | "pago"
       status_viagem: "planejada" | "em_andamento" | "concluida" | "cancelada"
       tipo_comissao:
@@ -1182,6 +1209,7 @@ export const Constants = {
         "faturado",
       ],
       papel_usuario: ["dono", "admin", "motorista"],
+      sentido_frete: ["ida", "volta"],
       status_acerto: ["rascunho", "fechado", "pago"],
       status_viagem: ["planejada", "em_andamento", "concluida", "cancelada"],
       tipo_comissao: [

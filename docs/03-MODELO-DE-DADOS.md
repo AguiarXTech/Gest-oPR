@@ -10,7 +10,8 @@ erDiagram
   PROFILES }o--o| FUNCIONARIOS : "motorista -> funcionario"
   FUNCIONARIOS ||--o{ VIAGENS : dirige
   CAMINHOES ||--o{ VIAGENS : faz
-  CLIENTES ||--o{ VIAGENS : contrata
+  VIAGENS ||--o{ FRETES : "ida e/ou volta"
+  CLIENTES ||--o{ FRETES : contrata
   VIAGENS ||--o{ ABASTECIMENTOS : "opcional"
   VIAGENS ||--o{ DESPESAS_VIAGEM : "opcional"
   CAMINHOES ||--o{ ABASTECIMENTOS : recebe
@@ -35,7 +36,8 @@ erDiagram
 | `funcionarios` | Pessoa (motorista ou não) | Separada de `profiles`: existe funcionário sem login e login sem funcionário (dono/admin) |
 | `caminhoes` | Frota | `capacidade_tanque_l` alimenta a anomalia de litros; `km_atual` é mantido por trigger |
 | `clientes`, `fornecedores` | Cadastros | Fornecedor com `tipo` cobre postos, oficinas e recapadoras (reuso na fase 2). `cnpj` aceita o formato numérico e o **alfanumérico** da Receita (a partir de 07/2026): 12 caracteres `[0-9A-Z]` + 2 DV numéricos; DV conferido em `lib/domain/cnpj.ts` |
-| `viagens` | Um trecho (ver Q3) | Índice único parcial: 1 viagem `em_andamento` por motorista e por caminhão. `valor_frete_centavos` nulo = não informado |
+| `viagens` | Um **ciclo** SJE → BH → SJE (Q3) | Índice único parcial: 1 viagem `em_andamento` por motorista e por caminhão. Sem dados comerciais: o motorista registra só caminhão, km e datas |
+| `fretes` | Trecho carregado de uma viagem | `sentido` (`ida`/`volta`), único por viagem → 0 a 2 fretes. A volta é sempre carregada; a ida, às vezes. Só gestor lê e escreve (motorista sem policy). Bloqueado se a viagem estiver em acerto fechado |
 | `abastecimentos` | Diesel | `nfce_chave` única (antifraude); `tanque_cheio` define a medição de consumo; `forma_pagamento` define se entra no acerto |
 | `despesas_viagem` | Pedágio, alimentação etc. | `reembolsavel` define se entra no acerto |
 | `adiantamentos` | Dinheiro entregue ao motorista | Só gestor escreve |
