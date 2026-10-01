@@ -3,7 +3,7 @@
 import type { Metadata } from 'next';
 import { TesteQr } from './TesteQr';
 
-export const metadata: Metadata = { title: 'Teste do QR · Gestão Frota' };
+export const metadata: Metadata = { title: 'Teste do QR · Gestão RPortugues' };
 
 export default function PaginaTesteQr() {
   return (

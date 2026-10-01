@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { detectarAnomalias, mediana, type AbastecimentoAnalise, type ContextoAnalise } from './anomalias';
+import { detectarAnomalias, mediana, montarContextoAnalise, type AbastecimentoAnalise, type ContextoAnalise } from './anomalias';
 import { CONFIG_PADRAO } from './configuracoes';
 import type { Medicao } from './consumo';
 import { calcularDvChave } from './nfce';
@@ -120,4 +120,43 @@ describe('mediana', () => {
   it('ímpar', () => expect(mediana([3, 1, 2])).toBe(2));
   it('par', () => expect(mediana([4, 1, 3, 2])).toBe(2.5));
   it('vazia', () => expect(mediana([])).toBeNull());
+});
+
+describe('montarContextoAnalise', () => {
+  const h = (id: string, km: number, litros: number, tanqueCheio: boolean, dataHora: string) => ({ id, km, litros, tanqueCheio, dataHora });
+  const historico = [
+    h('a1', 100000, 300, true, '2026-09-01T10:00:00Z'), // outro motorista
+    h('a2', 100580, 190, true, '2026-09-03T10:00:00Z'),
+    h('a3', 101160, 200, true, '2026-09-05T10:00:00Z'),
+    h('a4', 101740, 190, true, '2026-09-07T10:00:00Z'),
+  ];
+
+  it('mede o consumo do novo abastecimento contra o tanque cheio anterior do caminhão', () => {
+    const novo = h('n', 102320, 190, true, '2026-09-09T10:00:00Z');
+    const ctx = montarContextoAnalise(novo, [...historico, novo], 300, [600], CONFIG_PADRAO);
+    expect(ctx.kmLDesteAbastecimento).toBeCloseTo(580 / 190, 5);
+    expect(ctx.medicoesAnteriores).toHaveLength(3);
+    expect(ctx.maiorKmAnterior).toBe(101740);
+    expect(ctx.kmUltimoAbastecimento).toBe(101740);
+  });
+
+  it('funciona também com o histórico que ainda não contém o abastecimento', () => {
+    const novo = h('n', 102320, 190, true, '2026-09-09T10:00:00Z');
+    const ctx = montarContextoAnalise(novo, historico, 300, [], CONFIG_PADRAO);
+    expect(ctx.kmLDesteAbastecimento).toBeNull(); // sem os litros do alvo no histórico não há medição
+    expect(ctx.kmUltimoAbastecimento).toBe(101740);
+  });
+
+  it('km digitado abaixo do último vira KM_REGRESSIVO', () => {
+    const novo = h('n', 99000, 190, true, '2026-09-09T10:00:00Z');
+    const ctx = montarContextoAnalise(novo, [...historico, novo], 300, [], CONFIG_PADRAO);
+    const r = detectarAnomalias({ km: 99000, litros: 190, valorTotalCentavos: 114000, dataHora: novo.dataHora, nfceChave: null, fotoPath: 'x' }, ctx);
+    expect(r.map((x) => x.codigo)).toContain('KM_REGRESSIVO');
+  });
+
+  it('primeiro abastecimento do caminhão: sem referências', () => {
+    const novo = h('n', 100000, 300, true, '2026-09-09T10:00:00Z');
+    const ctx = montarContextoAnalise(novo, [novo], 300, [], CONFIG_PADRAO);
+    expect(ctx).toMatchObject({ maiorKmAnterior: null, kmUltimoAbastecimento: null, kmLDesteAbastecimento: null, medicoesAnteriores: [] });
+  });
 });

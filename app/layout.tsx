@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Gestão Frota',
+  title: 'Gestão RPortugues',
   description: 'Viagens, abastecimentos, acertos e resultado da frota',
 };
 

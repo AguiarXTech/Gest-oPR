@@ -4,7 +4,7 @@ import { AlternarAtivo } from '@/components/gestao/AlternarAtivo';
 import { FormCliente } from '@/components/gestao/FormCliente';
 import { createClient } from '@/lib/supabase/server';
 
-export const metadata: Metadata = { title: 'Cliente · Gestão Frota' };
+export const metadata: Metadata = { title: 'Cliente · Gestão RPortugues' };
 
 export default async function EditarCliente({ params }: PageProps<'/g/clientes/[id]'>) {
   const { id } = await params;

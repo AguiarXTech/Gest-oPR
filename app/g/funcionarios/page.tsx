@@ -5,7 +5,7 @@ import { formatarCpf } from '@/lib/domain/cpf';
 import { createClient } from '@/lib/supabase/server';
 import { cn } from '@/lib/utils';
 
-export const metadata: Metadata = { title: 'Funcionários · Gestão Frota' };
+export const metadata: Metadata = { title: 'Funcionários · Gestão RPortugues' };
 
 export default async function ListaFuncionarios() {
   const supabase = await createClient();

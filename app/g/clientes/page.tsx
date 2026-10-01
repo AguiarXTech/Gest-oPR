@@ -5,7 +5,7 @@ import { formatarCnpj } from '@/lib/domain/cnpj';
 import { createClient } from '@/lib/supabase/server';
 import { cn } from '@/lib/utils';
 
-export const metadata: Metadata = { title: 'Clientes · Gestão Frota' };
+export const metadata: Metadata = { title: 'Clientes · Gestão RPortugues' };
 
 export default async function ListaClientes() {
   const supabase = await createClient();

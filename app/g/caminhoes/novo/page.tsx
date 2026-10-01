@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { FormCaminhao } from '@/components/gestao/FormCaminhao';
 
-export const metadata: Metadata = { title: 'Novo caminhão · Gestão Frota' };
+export const metadata: Metadata = { title: 'Novo caminhão · Gestão RPortugues' };
 
 export default function NovoCaminhao() {
   return (

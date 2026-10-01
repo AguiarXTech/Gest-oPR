@@ -5,7 +5,7 @@ import { formatarPlaca } from '@/lib/domain/placa';
 import { createClient } from '@/lib/supabase/server';
 import { cn } from '@/lib/utils';
 
-export const metadata: Metadata = { title: 'Caminhões · Gestão Frota' };
+export const metadata: Metadata = { title: 'Caminhões · Gestão RPortugues' };
 
 const numero = new Intl.NumberFormat('pt-BR');
 

@@ -5,7 +5,7 @@ import { FormCaminhao } from '@/components/gestao/FormCaminhao';
 import { formatarPlaca } from '@/lib/domain/placa';
 import { createClient } from '@/lib/supabase/server';
 
-export const metadata: Metadata = { title: 'Caminhão · Gestão Frota' };
+export const metadata: Metadata = { title: 'Caminhão · Gestão RPortugues' };
 
 export default async function EditarCaminhao({ params }: PageProps<'/g/caminhoes/[id]'>) {
   const { id } = await params;

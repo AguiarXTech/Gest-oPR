@@ -2,6 +2,7 @@ import { BotaoSair } from '@/components/BotaoSair';
 import { MenuCelular } from '@/components/gestao/MenuCelular';
 import { MenuGestao } from '@/components/gestao/MenuGestao';
 import { obterPerfilAtual } from '@/lib/supabase/perfil';
+import { Marca } from '@/components/base/Marca';
 
 // Moldura grafite (menu) + conteúdo claro, o mesmo padrão da área do motorista.
 export default async function LayoutGestao({ children }: LayoutProps<'/g'>) {
@@ -23,12 +24,12 @@ export default async function LayoutGestao({ children }: LayoutProps<'/g'>) {
       {/* Celular: barra grafite no topo com o menu */}
       <header className="sticky top-0 z-10 flex items-center gap-2 bg-sidebar px-2 py-2 text-sidebar-foreground md:hidden">
         <MenuCelular rodape={usuario} />
-        <span className="text-lg font-bold">Gestão Frota</span>
+        <Marca className="text-lg" />
       </header>
 
       {/* PC: barra lateral grafite fixa */}
       <aside className="sticky top-0 hidden h-svh w-72 shrink-0 flex-col gap-6 overflow-y-auto bg-sidebar p-4 text-sidebar-foreground md:flex">
-        <p className="px-3 pt-2 text-xl font-bold">Gestão Frota</p>
+        <Marca className="px-3 pt-2 text-xl" />
         <MenuGestao />
         <div className="mt-auto">{usuario}</div>
       </aside>

@@ -5,7 +5,7 @@ import { AlternarAtivoFuncionario } from '@/components/gestao/AlternarAtivoFunci
 import { FormFuncionario } from '@/components/gestao/FormFuncionario';
 import { createClient } from '@/lib/supabase/server';
 
-export const metadata: Metadata = { title: 'Funcionário · Gestão Frota' };
+export const metadata: Metadata = { title: 'Funcionário · Gestão RPortugues' };
 
 export default async function FichaFuncionario({ params }: PageProps<'/g/funcionarios/[id]'>) {
   const { id } = await params;

@@ -3,7 +3,7 @@
 // A mesma função roda no aviso ao motorista (contexto parcial, só UX) e na
 // conferência do gestor (contexto completo do caminhão).
 import type { Configuracoes } from './configuracoes';
-import { mediaPonderada, type Medicao } from './consumo';
+import { calcularMedicoes, mediaPonderada, ordenarAbastecimentos, type AbastecimentoConsumo, type Medicao } from './consumo';
 import { decomporChave } from './nfce';
 
 export type Severidade = 'alta' | 'media' | 'baixa';
@@ -137,4 +137,37 @@ export function detectarAnomalias(a: AbastecimentoAnalise, ctx: ContextoAnalise)
   return achadas
     .map((x) => ({ ...x, severidade: SEVERIDADE[x.codigo] }))
     .sort((x, y) => ORDEM[x.severidade] - ORDEM[y.severidade]);
+}
+
+/**
+ * Monta o contexto de análise de UM abastecimento a partir do histórico do caminhão
+ * (que pode já conter o próprio abastecimento). "Anterior" = antes dele na ordem (km, data).
+ */
+export function montarContextoAnalise(
+  alvo: { id: string; km: number; dataHora: string },
+  historicoCaminhao: readonly AbastecimentoConsumo[],
+  capacidadeTanqueL: number | null,
+  precosLitroCentavos: readonly number[],
+  config: Configuracoes,
+): ContextoAnalise {
+  const outros = historicoCaminhao.filter((h) => h.id !== alvo.id);
+  const ordenados = ordenarAbastecimentos([...outros, { ...alvo, litros: 0, tanqueCheio: false }]);
+  const posicao = ordenados.findIndex((h) => h.id === alvo.id);
+  const anteriores = ordenados.slice(0, posicao);
+
+  const comAlvo = historicoCaminhao.some((h) => h.id === alvo.id) ? historicoCaminhao : outros;
+  const medicoes = calcularMedicoes(comAlvo);
+  const medicaoAlvo = medicoes.find((m) => m.abastecimentoId === alvo.id) ?? null;
+  const idsAnteriores = new Set(anteriores.map((h) => h.id));
+
+  return {
+    capacidadeTanqueL,
+    // km regressivo compara com tudo o que foi registrado ANTES no tempo, não na ordem de km
+    maiorKmAnterior: outros.filter((h) => h.dataHora < alvo.dataHora).reduce<number | null>((max, h) => (max === null || h.km > max ? h.km : max), null),
+    kmUltimoAbastecimento: anteriores.at(-1)?.km ?? null,
+    kmLDesteAbastecimento: medicaoAlvo?.kmL ?? null,
+    medicoesAnteriores: medicoes.filter((m) => idsAnteriores.has(m.abastecimentoId)),
+    precosLitroRecentesCentavos: precosLitroCentavos,
+    config,
+  };
 }

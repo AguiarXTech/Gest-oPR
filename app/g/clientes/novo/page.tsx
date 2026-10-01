@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { FormCliente } from '@/components/gestao/FormCliente';
 
-export const metadata: Metadata = { title: 'Novo cliente · Gestão Frota' };
+export const metadata: Metadata = { title: 'Novo cliente · Gestão RPortugues' };
 
 export default function NovoCliente() {
   return (

@@ -3,8 +3,9 @@ import Image from 'next/image';
 import estrada from '@/public/fundo-estrada.jpg';
 import fundo from '@/public/fundo-login.jpg';
 import { FormLogin } from './FormLogin';
+import { Marca } from '@/components/base/Marca';
 
-export const metadata: Metadata = { title: 'Entrar · Gestão Frota' };
+export const metadata: Metadata = { title: 'Entrar · Gestão RPortugues' };
 
 // Mesmo desenho em qualquer tela: foto dos caminhões no topo, formulário embaixo.
 // No celular ocupa a tela toda; no PC vira um cartão centralizado no grafite
@@ -34,7 +35,9 @@ export default function LoginPage() {
 
         <div className="relative mx-auto -mt-6 flex w-full max-w-sm flex-col gap-6 px-6 pb-[max(2rem,env(safe-area-inset-bottom))] md:max-w-none md:px-8 md:pb-8">
           <div className="flex flex-col gap-2">
-            <h1 className="text-4xl">Gestão Frota</h1>
+            <h1 className="text-3xl">
+              <Marca />
+            </h1>
             <p className="text-lg text-white/75">Entre com seu CPF ou e-mail e a senha que o escritório passou.</p>
           </div>
           <FormLogin />

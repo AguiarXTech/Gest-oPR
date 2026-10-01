@@ -4,7 +4,7 @@ import { AlternarAtivo } from '@/components/gestao/AlternarAtivo';
 import { FormFornecedor } from '@/components/gestao/FormFornecedor';
 import { createClient } from '@/lib/supabase/server';
 
-export const metadata: Metadata = { title: 'Fornecedor · Gestão Frota' };
+export const metadata: Metadata = { title: 'Fornecedor · Gestão RPortugues' };
 
 export default async function EditarFornecedor({ params }: PageProps<'/g/fornecedores/[id]'>) {
   const { id } = await params;

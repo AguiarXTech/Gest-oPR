@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/server';
 import { cn } from '@/lib/utils';
 import { TIPOS_FORNECEDOR } from '@/lib/validations/fornecedor';
 
-export const metadata: Metadata = { title: 'Fornecedores · Gestão Frota' };
+export const metadata: Metadata = { title: 'Fornecedores · Gestão RPortugues' };
 
 export default async function ListaFornecedores() {
   const supabase = await createClient();

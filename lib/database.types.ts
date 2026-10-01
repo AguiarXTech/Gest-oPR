@@ -1031,6 +1031,10 @@ export type Database = {
     }
     Functions: {
       contexto_privilegiado: { Args: never; Returns: boolean }
+      dados_analise_abastecimento: {
+        Args: { p_caminhao_id: string }
+        Returns: Json
+      }
       funcionario_atual: { Args: never; Returns: string }
       is_gestor: { Args: never; Returns: boolean }
       papel_atual: {

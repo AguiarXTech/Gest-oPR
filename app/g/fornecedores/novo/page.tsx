@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { FormFornecedor } from '@/components/gestao/FormFornecedor';
 
-export const metadata: Metadata = { title: 'Novo fornecedor · Gestão Frota' };
+export const metadata: Metadata = { title: 'Novo fornecedor · Gestão RPortugues' };
 
 export default function NovoFornecedor() {
   return (
