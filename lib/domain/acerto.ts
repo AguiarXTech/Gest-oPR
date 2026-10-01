@@ -77,3 +77,22 @@ export function verificarFechamento(e: EntradaAcerto, alertasGravesPendentes: nu
     alertasGravesPendentes > 0 ? [`${alertasGravesPendentes} abastecimento(s) com alerta grave ainda não conferido(s).`] : [];
   return { erros, avisos };
 }
+
+/**
+ * Comissão ESTIMADA para o extrato do motorista, que não vê o frete (Q6).
+ * Valor fixo por viagem e por km não dependem do frete (a volta é sempre carregada,
+ * Q3); os tipos em % só são conhecidos no acerto.
+ */
+export function estimarComissao(viagens: readonly { dataSaida: string; kmRodado: number }[], regras: readonly RegraComissao[]) {
+  let totalCentavos = 0;
+  let dependeDoFrete = 0;
+  let semRegra = 0;
+  for (const v of viagens) {
+    const regra = regraVigente(regras, v.dataSaida);
+    if (!regra) semRegra++;
+    else if (regra.tipo === 'valor_por_viagem') totalCentavos += regra.valorCentavos ?? 0;
+    else if (regra.tipo === 'valor_por_km') totalCentavos += v.kmRodado * (regra.valorCentavos ?? 0);
+    else dependeDoFrete++;
+  }
+  return { totalCentavos, dependeDoFrete, semRegra };
+}

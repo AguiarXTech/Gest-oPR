@@ -1,5 +1,6 @@
 // Carrega um acerto e monta a entrada do domínio (lib/domain/acerto.ts).
 // Usado pela tela do acerto e pela ação de fechar (que recalcula na hora).
+import type { Tables } from '@/lib/database.types';
 import { calcularAcerto, verificarFechamento, type EntradaAcerto } from '@/lib/domain/acerto';
 import type { RegraComissao } from '@/lib/domain/comissao';
 import { competencia, ratearDiesel } from '@/lib/domain/resultado';
@@ -8,6 +9,21 @@ import { obterConfiguracoes } from '@/lib/supabase/configuracoes';
 import type { createClient } from '@/lib/supabase/server';
 
 type Cliente = Awaited<ReturnType<typeof createClient>>;
+
+/** Linha de `regras_comissao` → regra do domínio. */
+export function paraRegraDominio(r: Tables<'regras_comissao'>): RegraComissao {
+  return {
+    id: r.id,
+    tipo: r.tipo,
+    percentual: r.percentual === null ? null : Number(r.percentual),
+    valorCentavos: r.valor_centavos,
+    deduzPedagio: r.deduz_pedagio,
+    deduzCombustivel: r.deduz_combustivel,
+    apenasComFrete: r.apenas_com_frete,
+    vigenciaInicio: r.vigencia_inicio,
+    vigenciaFim: r.vigencia_fim,
+  };
+}
 
 export async function carregarAcerto(supabase: Cliente, id: string) {
   const { data: acerto } = await supabase.from('acertos').select('*, funcionarios(nome)').eq('id', id).maybeSingle();
@@ -29,17 +45,7 @@ export async function carregarAcerto(supabase: Cliente, id: string) {
     supabase.from('regras_comissao').select('*').eq('funcionario_id', acerto.motorista_id),
   ]);
 
-  const regrasDominio: RegraComissao[] = (regras ?? []).map((r) => ({
-    id: r.id,
-    tipo: r.tipo,
-    percentual: r.percentual === null ? null : Number(r.percentual),
-    valorCentavos: r.valor_centavos,
-    deduzPedagio: r.deduz_pedagio,
-    deduzCombustivel: r.deduz_combustivel,
-    apenasComFrete: r.apenas_com_frete,
-    vigenciaInicio: r.vigencia_inicio,
-    vigenciaFim: r.vigencia_fim,
-  }));
+  const regrasDominio = (regras ?? []).map(paraRegraDominio);
 
   // Diesel rateado só é preciso na comissão sobre frete líquido que desconta combustível.
   const precisaRateio = regrasDominio.some((r) => r.tipo === 'pct_frete_liquido' && r.deduzCombustivel);

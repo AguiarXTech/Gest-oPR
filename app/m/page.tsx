@@ -51,7 +51,7 @@ export default async function HomeMotorista() {
           <BotaoGrande href="/m/viagem/nova" rotulo="Iniciar viagem" icone={Truck} pronto largo />
         )}
         <BotaoGrande href="/m/despesa" rotulo="Despesa" icone={Receipt} pronto />
-        <BotaoGrande href="/m/extrato" rotulo="Meu extrato" icone={Wallet} pronto={false} />
+        <BotaoGrande href="/m/extrato" rotulo="Meu extrato" icone={Wallet} pronto />
       </div>
 
       <BotaoSair className="mt-auto pt-6" />

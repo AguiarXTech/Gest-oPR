@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { calcularAcerto, verificarFechamento, type EntradaAcerto } from './acerto';
+import { calcularAcerto, estimarComissao, verificarFechamento, type EntradaAcerto } from './acerto';
 import type { RegraComissao } from './comissao';
 
 const regra150: RegraComissao = {
@@ -82,5 +82,22 @@ describe('verificarFechamento', () => {
     const r = verificarFechamento(exemplo, 2);
     expect(r.erros).toEqual([]);
     expect(r.avisos).toEqual(['2 abastecimento(s) com alerta grave ainda não conferido(s).']);
+  });
+});
+
+describe('estimarComissao (extrato do motorista)', () => {
+  const v = (dia: number) => ({ dataSaida: `2026-09-${dia}T10:00:00Z`, kmRodado: 580 });
+
+  it('valor fixo: viagens × valor', () => {
+    expect(estimarComissao([v(10), v(12), v(14)], [regra150])).toEqual({ totalCentavos: 45000, dependeDoFrete: 0, semRegra: 0 });
+  });
+
+  it('regra em % depende do frete: fica para o acerto', () => {
+    const pct: RegraComissao = { ...regra150, tipo: 'pct_frete_bruto', percentual: 12, valorCentavos: null };
+    expect(estimarComissao([v(10)], [pct])).toEqual({ totalCentavos: 0, dependeDoFrete: 1, semRegra: 0 });
+  });
+
+  it('sem regra vigente', () => {
+    expect(estimarComissao([v(10)], [])).toEqual({ totalCentavos: 0, dependeDoFrete: 0, semRegra: 1 });
   });
 });
