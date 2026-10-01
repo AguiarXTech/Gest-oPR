@@ -69,7 +69,10 @@ Usuários **não técnicos**. Simplicidade vence completude.
   - funções de domínio em verbo no infinitivo (`calcularSaldoAcerto`).
 - **Rotas**: `/m/*` para motorista (mobile-first, botões grandes, no máximo 3 toques para registrar um abastecimento); `/g/*` para gestão (dono/admin).
 - **Validação**: todo input passa por schema Zod em `lib/validations/`, reaproveitado no form e na server action.
-- **Commits**: Conventional Commits em português (`feat(abastecimento): leitura de QR da NFC-e`).
+- **Commits**: português claro, para entender só batendo o olho no histórico ou no GitHub Actions.
+  - Título: verbo no presente + o que mudou, até ~70 caracteres, **sem** prefixos técnicos (`feat`, `fix`, `chore`) e sem jargão. Se houver tarefa do roadmap, o ID vai no fim entre parênteses.
+  - Corpo (opcional): até 4 linhas dizendo o porquê ou o efeito prático.
+  - Exemplos: `Cria tela de abastecimento com leitura do QR do cupom (S2-5)`, `Corrige cálculo da comissão quando a viagem não tem frete`, `Atualiza regras de acerto no documento de negócio`.
 - **Acessibilidade mínima**: alvos de toque ≥ 44 px, contraste AA, labels em todos os campos.
 
 ## 6. Comandos
