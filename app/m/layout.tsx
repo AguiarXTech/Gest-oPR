@@ -10,7 +10,7 @@ export default async function LayoutMotorista({ children }: LayoutProps<'/m'>) {
     <div className="flex min-h-full flex-1 flex-col">
       <header className="sticky top-0 z-10 bg-sidebar text-sidebar-foreground">
         <div className="mx-auto flex w-full max-w-md items-center justify-between gap-3 px-4 py-3">
-          <Marca className="text-base" />
+          <Marca className="h-11" />
           <p className="truncate text-right font-semibold">{perfil?.nome}</p>
         </div>
       </header>

@@ -23,7 +23,7 @@ export function MenuCelular({ rodape }: { rodape: React.ReactNode }) {
         className="w-72 gap-6 overflow-y-auto border-sidebar-border bg-sidebar p-4 text-sidebar-foreground"
       >
         <SheetTitle className="px-3 pt-2 text-lg text-sidebar-foreground">
-          <Marca />
+          <Marca className="h-12" />
         </SheetTitle>
         <MenuGestao aoNavegar={() => setAberto(false)} />
         <div className="mt-auto">{rodape}</div>

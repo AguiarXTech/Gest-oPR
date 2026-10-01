@@ -24,12 +24,12 @@ export default async function LayoutGestao({ children }: LayoutProps<'/g'>) {
       {/* Celular: barra grafite no topo com o menu */}
       <header className="sticky top-0 z-10 flex items-center gap-2 bg-sidebar px-2 py-2 text-sidebar-foreground md:hidden">
         <MenuCelular rodape={usuario} />
-        <Marca className="text-lg" />
+        <Marca className="h-11" />
       </header>
 
       {/* PC: barra lateral grafite fixa */}
       <aside className="sticky top-0 hidden h-svh w-72 shrink-0 flex-col gap-6 overflow-y-auto bg-sidebar p-4 text-sidebar-foreground md:flex">
-        <Marca className="px-3 pt-2 text-xl" />
+        <Marca className="mx-3 mt-1 h-14" />
         <MenuGestao />
         <div className="mt-auto">{usuario}</div>
       </aside>

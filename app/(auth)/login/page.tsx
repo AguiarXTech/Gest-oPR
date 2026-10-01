@@ -36,7 +36,7 @@ export default function LoginPage() {
         <div className="relative mx-auto -mt-6 flex w-full max-w-sm flex-col gap-6 px-6 pb-[max(2rem,env(safe-area-inset-bottom))] md:max-w-none md:px-8 md:pb-8">
           <div className="flex flex-col gap-2">
             <h1 className="text-3xl">
-              <Marca />
+              <Marca comGestao />
             </h1>
             <p className="text-lg text-white/75">Entre com seu CPF ou e-mail e a senha que o escritório passou.</p>
           </div>
