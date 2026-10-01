@@ -21,6 +21,9 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
+  // Barra do navegador no celular no mesmo grafite da tela de login.
+  themeColor: '#13171a',
+  viewportFit: 'cover',
 };
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {

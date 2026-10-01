@@ -2,10 +2,14 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+/* Sem tema escuro: o app é só claro. Mantém `dark:` preso a uma classe que nunca é aplicada. */
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --color-background: var(--background);
+  --color-grafite: var(--grafite);
+  --color-sucesso: var(--sucesso);
+  --color-alerta: var(--alerta);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
@@ -49,73 +53,47 @@
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+  /* Paleta tirada da foto do login: grafite (fundo) + terra (lona e estrada).
+     Só essas duas cores de marca; o resto é neutro. Ver docs/07-GUIA-VISUAL.md. */
+  --grafite: oklch(0.205 0.008 235);
+  /* Fundo das telas um pouco mais escuro que o branco, para os cartões brancos se destacarem. */
+  --background: oklch(0.965 0.004 75);
+  --foreground: var(--grafite);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
+  --card-foreground: var(--grafite);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
+  --popover-foreground: var(--grafite);
+  --primary: oklch(0.56 0.15 45);
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.955 0.005 75);
+  --secondary-foreground: var(--grafite);
+  --muted: oklch(0.955 0.005 75);
+  --muted-foreground: oklch(0.47 0.01 235);
+  --accent: oklch(0.95 0.025 55);
+  --accent-foreground: var(--grafite);
+  --destructive: oklch(0.55 0.2 27);
+  --sucesso: oklch(0.5 0.12 150);
+  --alerta: oklch(0.6 0.14 70);
+  --border: oklch(0.9 0.006 75);
+  --input: oklch(0.86 0.008 75);
+  --ring: oklch(0.56 0.15 45);
+  --chart-1: oklch(0.56 0.15 45);
+  --chart-2: oklch(0.205 0.008 235);
+  --chart-3: oklch(0.47 0.01 235);
+  --chart-4: oklch(0.72 0.1 55);
+  --chart-5: oklch(0.86 0.008 75);
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  /* Moldura do app (menu lateral, barras do topo): o mesmo grafite do login. */
+  --sidebar: var(--grafite);
+  --sidebar-foreground: oklch(0.97 0 0);
+  --sidebar-primary: oklch(0.56 0.15 45);
+  --sidebar-primary-foreground: oklch(0.99 0 0);
+  --sidebar-accent: oklch(1 0 0 / 8%);
+  --sidebar-accent-foreground: oklch(0.99 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.56 0.15 45);
 }
 
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
-}
 
 @layer base {
   * {
@@ -126,5 +104,13 @@
   }
   html {
     @apply font-sans;
+  }
+  h1,
+  h2,
+  h3 {
+    @apply font-heading tracking-tight text-balance;
+  }
+  h1 {
+    @apply font-bold;
   }
 }

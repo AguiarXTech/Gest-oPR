@@ -49,7 +49,7 @@ export function TesteQr() {
               return (
                 <li
                   key={resultados.length - i}
-                  className={`flex flex-col gap-1 rounded-xl border-2 p-3 text-sm ${d ? 'border-green-600' : 'border-destructive'}`}
+                  className={`flex flex-col gap-1 rounded-xl border-2 p-3 text-sm ${d ? 'border-sucesso' : 'border-destructive'}`}
                 >
                   <p className="font-medium">
                     {d ? '✓ Chave válida' : '✗ Sem chave válida'} · {nomesMetodo[r.metodo]} · {r.ms} ms · {r.hora}

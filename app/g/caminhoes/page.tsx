@@ -20,7 +20,7 @@ export default async function ListaCaminhoes() {
   return (
     <>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold">Caminhões</h1>
+        <h1 className="text-3xl">Caminhões</h1>
         <Link
           href="/g/caminhoes/novo"
           className="inline-flex h-11 items-center gap-2 rounded-lg bg-primary px-4 text-base font-medium text-primary-foreground hover:bg-primary/80"
@@ -41,7 +41,7 @@ export default async function ListaCaminhoes() {
           <li key={c.id}>
             <Link
               href={`/g/caminhoes/${c.id}`}
-              className={cn('flex flex-col gap-1 rounded-xl border p-4 hover:bg-muted', !c.ativo && 'opacity-60')}
+              className={cn('flex flex-col gap-1 rounded-xl border bg-card p-4 shadow-xs hover:border-primary/40', !c.ativo && 'opacity-60')}
             >
               <div className="flex items-center justify-between gap-2">
                 <span className="font-mono text-lg font-semibold">{formatarPlaca(c.placa)}</span>

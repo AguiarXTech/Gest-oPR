@@ -5,16 +5,16 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { menuGestao } from './navegacao';
 
-/** Lista de navegação da gestão, usada na barra lateral (PC) e no menu do celular. */
+/** Lista de navegação da gestão, na moldura grafite (barra lateral no PC e menu do celular). */
 export function MenuGestao({ aoNavegar }: { aoNavegar?: () => void }) {
   const caminho = usePathname();
 
   return (
-    <nav aria-label="Menu da gestão" className="flex flex-col gap-4">
+    <nav aria-label="Menu da gestão" className="flex flex-col gap-5">
       {menuGestao.map((grupo, i) => (
         <div key={grupo.titulo ?? i} className="flex flex-col gap-1">
           {grupo.titulo && (
-            <p className="px-3 pb-1 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+            <p className="px-3 pb-1 text-xs font-semibold tracking-wider text-sidebar-foreground/60 uppercase">
               {grupo.titulo}
             </p>
           )}
@@ -24,10 +24,12 @@ export function MenuGestao({ aoNavegar }: { aoNavegar?: () => void }) {
 
             if (!pronto) {
               return (
-                <span key={href} aria-disabled="true" className={cn(classes, 'text-muted-foreground/60')}>
-                  <Icone className="size-5" aria-hidden />
-                  {rotulo}
-                  <span className="ml-auto text-xs">em breve</span>
+                <span key={href} aria-disabled="true" className={cn(classes, 'text-sidebar-foreground/45')}>
+                  <Icone className="size-5 shrink-0" aria-hidden />
+                  <span className="truncate">{rotulo}</span>
+                  <span className="ml-auto shrink-0 rounded-full bg-sidebar-accent px-2 py-0.5 text-xs whitespace-nowrap">
+                    em breve
+                  </span>
                 </span>
               );
             }
@@ -38,9 +40,14 @@ export function MenuGestao({ aoNavegar }: { aoNavegar?: () => void }) {
                 href={href}
                 onClick={aoNavegar}
                 aria-current={ativo ? 'page' : undefined}
-                className={cn(classes, ativo ? 'bg-primary text-primary-foreground' : 'hover:bg-muted')}
+                className={cn(
+                  classes,
+                  ativo
+                    ? 'bg-sidebar-primary font-semibold text-sidebar-primary-foreground'
+                    : 'text-sidebar-foreground/85 hover:bg-sidebar-accent hover:text-sidebar-foreground',
+                )}
               >
-                <Icone className="size-5" aria-hidden />
+                <Icone className="size-5 shrink-0" aria-hidden />
                 {rotulo}
               </Link>
             );

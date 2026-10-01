@@ -16,15 +16,16 @@ export default async function PainelGestao() {
   return (
     <>
       <div>
-        <h1 className="text-2xl font-semibold">Olá, {primeiroNome}</h1>
+        <h1 className="text-3xl">Olá, {primeiroNome}</h1>
         <p className="text-muted-foreground">Resumo do mês da frota.</p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {cards.map(({ titulo, descricao }) => (
-          <section key={titulo} className="flex flex-col gap-2 rounded-xl border p-5">
-            <h2 className="font-medium">{titulo}</h2>
-            <p className="text-3xl font-semibold text-muted-foreground/50">—</p>
+          <section key={titulo} className="flex flex-col gap-3 rounded-xl border bg-card p-5 shadow-xs">
+            <h2 className="text-sm font-semibold text-muted-foreground">{titulo}</h2>
+            {/* Quando houver dados: valor em text-3xl font-bold tabular-nums. */}
+            <p className="text-xl font-semibold text-muted-foreground">Sem dados ainda</p>
             <p className="text-sm text-muted-foreground">{descricao}</p>
           </section>
         ))}

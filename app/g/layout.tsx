@@ -3,34 +3,39 @@ import { MenuCelular } from '@/components/gestao/MenuCelular';
 import { MenuGestao } from '@/components/gestao/MenuGestao';
 import { obterPerfilAtual } from '@/lib/supabase/perfil';
 
+// Moldura grafite (menu) + conteúdo claro, o mesmo padrão da área do motorista.
 export default async function LayoutGestao({ children }: LayoutProps<'/g'>) {
   const perfil = await obterPerfilAtual();
   const papel = perfil?.papel === 'dono' ? 'Dono' : 'Administração';
 
+  const usuario = (
+    <div className="flex flex-col gap-3 border-t border-sidebar-border pt-4">
+      <div className="px-3">
+        <p className="truncate font-semibold">{perfil?.nome}</p>
+        <p className="text-sm text-sidebar-foreground/60">{papel}</p>
+      </div>
+      <BotaoSair naMoldura />
+    </div>
+  );
+
   return (
     <div className="flex min-h-full flex-1 flex-col md:flex-row">
-      {/* Celular: barra no topo com menu */}
-      <header className="sticky top-0 z-10 flex items-center justify-between gap-2 border-b bg-background px-2 py-2 md:hidden">
-        <MenuCelular />
-        <span className="font-semibold">Gestão Frota</span>
-        <BotaoSair />
+      {/* Celular: barra grafite no topo com o menu */}
+      <header className="sticky top-0 z-10 flex items-center gap-2 bg-sidebar px-2 py-2 text-sidebar-foreground md:hidden">
+        <MenuCelular rodape={usuario} />
+        <span className="text-lg font-bold">Gestão Frota</span>
       </header>
 
-      {/* PC: barra lateral fixa */}
-      <aside className="hidden w-64 shrink-0 flex-col gap-6 border-r p-4 md:flex">
-        <div className="px-3">
-          <p className="text-lg font-semibold">Gestão Frota</p>
-          <p className="text-sm text-muted-foreground">
-            {perfil?.nome} · {papel}
-          </p>
-        </div>
+      {/* PC: barra lateral grafite fixa */}
+      <aside className="sticky top-0 hidden h-svh w-72 shrink-0 flex-col gap-6 overflow-y-auto bg-sidebar p-4 text-sidebar-foreground md:flex">
+        <p className="px-3 pt-2 text-xl font-bold">Gestão Frota</p>
         <MenuGestao />
-        <div className="mt-auto px-3">
-          <BotaoSair />
-        </div>
+        <div className="mt-auto">{usuario}</div>
       </aside>
 
-      <main className="flex flex-1 flex-col gap-6 p-4 md:p-8">{children}</main>
+      <main className="flex-1 p-4 md:p-8">
+        <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">{children}</div>
+      </main>
     </div>
   );
 }

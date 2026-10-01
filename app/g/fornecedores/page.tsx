@@ -19,7 +19,7 @@ export default async function ListaFornecedores() {
   return (
     <>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold">Fornecedores</h1>
+        <h1 className="text-3xl">Fornecedores</h1>
         <Link
           href="/g/fornecedores/novo"
           className="inline-flex h-11 items-center gap-2 rounded-lg bg-primary px-4 text-base font-medium text-primary-foreground hover:bg-primary/80"
@@ -42,7 +42,7 @@ export default async function ListaFornecedores() {
           <li key={f.id}>
             <Link
               href={`/g/fornecedores/${f.id}`}
-              className={cn('flex flex-col gap-1 rounded-xl border p-4 hover:bg-muted', !f.ativo && 'opacity-60')}
+              className={cn('flex flex-col gap-1 rounded-xl border bg-card p-4 shadow-xs hover:border-primary/40', !f.ativo && 'opacity-60')}
             >
               <div className="flex items-start justify-between gap-2">
                 <span className="text-lg font-semibold">{f.nome}</span>

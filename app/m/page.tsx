@@ -1,6 +1,7 @@
 // Home do motorista: viagem em andamento + botões grandes (PRD 5.1, RNF-01).
 // Ao entregar cada tela, troque `pronto` do botão correspondente para true.
 import { Flag, Fuel, Receipt, Truck, Wallet } from 'lucide-react';
+import { BotaoSair } from '@/components/BotaoSair';
 import { BotaoGrande } from '@/components/motorista/BotaoGrande';
 import { createClient } from '@/lib/supabase/server';
 
@@ -26,31 +27,34 @@ export default async function HomeMotorista() {
   return (
     <>
       {viagem ? (
-        <section className="flex flex-col gap-1 rounded-2xl border-2 border-primary p-4">
-          <p className="text-sm font-medium text-muted-foreground">Viagem em andamento</p>
-          <p className="text-xl font-semibold">
+        <section className="flex flex-col gap-1 rounded-2xl bg-grafite p-5 text-white shadow-xs">
+          <p className="text-sm font-medium text-white/70">Viagem em andamento</p>
+          <p className="text-2xl font-bold">
             {viagem.origem} → {viagem.destino}
           </p>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-white/70">
             {viagem.caminhoes?.placa} · saiu {dataHora.format(new Date(viagem.data_saida))} · {km.format(viagem.km_saida)} km
           </p>
         </section>
       ) : (
-        <section className="rounded-2xl border border-dashed p-4 text-center text-muted-foreground">
-          Nenhuma viagem em andamento.
+        <section className="rounded-2xl border bg-card p-5 shadow-xs">
+          <p className="text-lg font-semibold">Nenhuma viagem em andamento</p>
+          <p className="text-muted-foreground">Toque em Iniciar viagem quando sair.</p>
         </section>
       )}
 
       <div className="grid grid-cols-2 gap-3">
-        <BotaoGrande href="/m/abastecer" rotulo="Abastecer" icone={Fuel} pronto={false} destaque />
+        <BotaoGrande href="/m/abastecer" rotulo="Abastecer" icone={Fuel} pronto={false} destaque largo />
         {viagem ? (
-          <BotaoGrande href={`/m/viagem/${viagem.id}`} rotulo="Finalizar viagem" icone={Flag} pronto={false} />
+          <BotaoGrande href={`/m/viagem/${viagem.id}`} rotulo="Finalizar viagem" icone={Flag} pronto={false} largo />
         ) : (
-          <BotaoGrande href="/m/viagem/nova" rotulo="Iniciar viagem" icone={Truck} pronto={false} />
+          <BotaoGrande href="/m/viagem/nova" rotulo="Iniciar viagem" icone={Truck} pronto={false} largo />
         )}
         <BotaoGrande href="/m/despesa" rotulo="Despesa" icone={Receipt} pronto={false} />
         <BotaoGrande href="/m/extrato" rotulo="Meu extrato" icone={Wallet} pronto={false} />
       </div>
+
+      <BotaoSair className="mt-auto pt-6" />
     </>
   );
 }

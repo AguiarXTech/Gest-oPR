@@ -16,7 +16,7 @@ export default async function EditarCaminhao({ params }: PageProps<'/g/caminhoes
   return (
     <div className="flex max-w-2xl flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-semibold">
+        <h1 className="text-3xl">
           {formatarPlaca(caminhao.placa)}
           {caminhao.apelido && <span className="font-normal text-muted-foreground"> · {caminhao.apelido}</span>}
         </h1>

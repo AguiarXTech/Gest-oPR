@@ -20,7 +20,7 @@ export function AlternarAtivoFuncionario({ funcionarioId, ativo }: { funcionario
       </p>
       <p
         aria-live="polite"
-        className={`text-sm font-medium empty:hidden ${estado.erro ? 'text-destructive' : 'text-green-700 dark:text-green-400'}`}
+        className={`text-sm font-medium empty:hidden ${estado.erro ? 'text-destructive' : 'text-sucesso'}`}
       >
         {estado.erro ?? estado.ok}
       </p>

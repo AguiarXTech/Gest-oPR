@@ -5,20 +5,25 @@ import { useState } from 'react';
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { MenuGestao } from './MenuGestao';
 
-export function MenuCelular() {
+/** Menu da gestão no celular. `rodape`: bloco do usuário (nome + Sair), montado no layout. */
+export function MenuCelular({ rodape }: { rodape: React.ReactNode }) {
   const [aberto, setAberto] = useState(false);
 
   return (
     <Sheet open={aberto} onOpenChange={setAberto}>
       <SheetTrigger
         aria-label="Abrir menu"
-        className="flex size-11 items-center justify-center rounded-lg hover:bg-muted"
+        className="flex size-11 items-center justify-center rounded-lg hover:bg-sidebar-accent"
       >
         <MenuIcon className="size-6" />
       </SheetTrigger>
-      <SheetContent side="left" className="w-72 overflow-y-auto p-4">
-        <SheetTitle className="px-3 pt-2 text-lg font-semibold">Gestão Frota</SheetTitle>
+      <SheetContent
+        side="left"
+        className="w-72 gap-6 overflow-y-auto border-sidebar-border bg-sidebar p-4 text-sidebar-foreground"
+      >
+        <SheetTitle className="px-3 pt-2 text-lg font-bold text-sidebar-foreground">Gestão Frota</SheetTitle>
         <MenuGestao aoNavegar={() => setAberto(false)} />
+        <div className="mt-auto">{rodape}</div>
       </SheetContent>
     </Sheet>
   );
