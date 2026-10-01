@@ -44,7 +44,7 @@ export default async function HomeMotorista() {
       )}
 
       <div className="grid grid-cols-2 gap-3">
-        <BotaoGrande href="/m/abastecer" rotulo="Abastecer" icone={Fuel} pronto={false} destaque largo />
+        <BotaoGrande href="/m/abastecer" rotulo="Abastecer" icone={Fuel} pronto destaque largo />
         {viagem ? (
           <BotaoGrande href={`/m/viagem/${viagem.id}`} rotulo="Finalizar viagem" icone={Flag} pronto largo />
         ) : (

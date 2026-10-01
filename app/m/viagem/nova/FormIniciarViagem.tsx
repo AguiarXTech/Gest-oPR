@@ -13,6 +13,7 @@ import { formatarPlaca } from '@/lib/domain/placa';
 import { createClient } from '@/lib/supabase/client';
 import { repetirSeFalharRede, traduzirErroBanco } from '@/lib/supabase/erros';
 import { cn } from '@/lib/utils';
+import { gerarUuid, jaFoiSalvo } from '@/lib/uuid';
 import { iniciarViagemSchema, type IniciarViagemDados, type IniciarViagemForm } from '@/lib/validations/viagem';
 
 type Caminhao = { id: string; placa: string; apelido: string | null; km_atual: number };
@@ -39,6 +40,8 @@ export function FormIniciarViagem({ funcionarioId, caminhoes, caminhaoSugerido, 
   const [mudarRota, setMudarRota] = useState(false);
   // km abaixo do último registrado: avisa e pede um segundo toque para confirmar.
   const [avisoKm, setAvisoKm] = useState(false);
+  // id gerado no celular: se a resposta se perder e o app repetir, não duplica (jaFoiSalvo)
+  const [idViagem] = useState(gerarUuid);
 
   const sugerido = caminhoes.some((c) => c.id === caminhaoSugerido) ? caminhaoSugerido : caminhoes.length === 1 ? caminhoes[0].id : '';
 
@@ -62,13 +65,8 @@ export function FormIniciarViagem({ funcionarioId, caminhoes, caminhaoSugerido, 
     ...repetirSeFalharRede,
     mutationFn: async (dados: IniciarViagemDados) => {
       // motorista_id é forçado pelo trigger para o funcionário logado
-      const { data, error } = await supabase
-        .from('viagens')
-        .insert({ ...dados, motorista_id: funcionarioId })
-        .select('id')
-        .single();
-      if (error) throw error;
-      return data.id;
+      const { error } = await supabase.from('viagens').insert({ ...dados, id: idViagem, motorista_id: funcionarioId });
+      if (error && !jaFoiSalvo(error)) throw error;
     },
     onSuccess: () => {
       router.replace('/m');

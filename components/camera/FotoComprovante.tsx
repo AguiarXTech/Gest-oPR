@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { BUCKET_COMPROVANTES, caminhoComprovante, dimensionar, TAMANHO_ALVO_BYTES } from '@/lib/domain/comprovante';
 import { createClient } from '@/lib/supabase/client';
+import { gerarUuid } from '@/lib/uuid';
 import { cn } from '@/lib/utils';
 
 type Props = {
@@ -19,16 +20,6 @@ type Props = {
 };
 
 type Estado = 'vazio' | 'processando' | 'pronta' | 'erro';
-
-/** crypto.randomUUID só existe em https; no http da rede local usa getRandomValues. */
-function gerarUuid(): string {
-  if (typeof crypto.randomUUID === 'function') return crypto.randomUUID();
-  const b = crypto.getRandomValues(new Uint8Array(16));
-  b[6] = (b[6] & 0x0f) | 0x40;
-  b[8] = (b[8] & 0x3f) | 0x80;
-  const h = [...b].map((x) => x.toString(16).padStart(2, '0')).join('');
-  return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`;
-}
 
 /** Redimensiona e reduz a qualidade até ficar perto de 300 KB. */
 async function comprimir(arquivo: File): Promise<Blob> {
