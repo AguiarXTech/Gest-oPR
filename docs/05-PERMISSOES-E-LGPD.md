@@ -28,12 +28,12 @@ Legenda: **T** = total · **L** = leitura · **P** = só os próprios registros 
 
 ## 2. Checklist de segurança
 
-- [ ] Signup público desabilitado no Supabase (Auth → Providers → Email → "Allow new users to sign up" = off).
+- [x] Signup público desabilitado no Supabase (Auth → Providers → Email → "Allow new users to sign up" = off). *Feito no projeto DEV; repetir no painel da produção.*
 - [ ] `SUPABASE_SERVICE_ROLE_KEY` apenas em variáveis de servidor da Vercel.
 - [ ] Toda tabela nova com `enable row level security` + policies + teste.
 - [ ] Bucket `comprovantes` privado; exibir via `createSignedUrl` com validade curta (ex.: 10 min).
-- [ ] Senhas: mínimo de 8 caracteres; gestor pode resetar via server action.
-- [ ] Desligamento de motorista: `profiles.ativo = false` + banir o usuário no Auth (`ban_duration`) no mesmo fluxo. Os helpers já tratam `ativo = false` como sem papel.
+- [x] Senhas: mínimo de 8 caracteres; gestor pode resetar via server action (ficha do funcionário, S1-4). *Feito no projeto DEV; repetir no painel da produção.*
+- [x] Desligamento de motorista: `profiles.ativo = false` + banir o usuário no Auth (`ban_duration`) no mesmo fluxo. Os helpers já tratam `ativo = false` como sem papel. *(S1-5: botão na ficha do funcionário; trigger `sincronizar_perfil_funcionario` leva `ativo` e `nome` para o perfil.)*
 - [ ] Rodar o "Security Advisor" do painel do Supabase antes de cada deploy com migration.
 - [ ] MFA para dono/admin (fase 2; opcional).
 

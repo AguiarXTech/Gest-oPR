@@ -7,7 +7,7 @@ import { revalidatePath } from 'next/cache';
 import { DOMINIO_EMAIL_INTERNO } from '@/lib/domain/login';
 import { criarClienteAdmin } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
-import { criarAcessoSchema, redefinirSenhaSchema } from '@/lib/validations/acesso';
+import { alterarAtivoSchema, criarAcessoSchema, redefinirSenhaSchema } from '@/lib/validations/acesso';
 
 export type EstadoAcao = { erro?: string; ok?: string };
 
@@ -94,4 +94,55 @@ export async function redefinirSenha(_anterior: EstadoAcao, formData: FormData):
   }
 
   return { ok: 'Senha redefinida. Passe a nova senha para o funcionário.' };
+}
+
+// Bloqueio "permanente" no Auth (~100 anos); "none" remove o bloqueio.
+const BAN_DESATIVADO = '876000h';
+
+/**
+ * Desativa ou reativa o funcionário (S1-5). O trigger do banco leva o `ativo`
+ * para o perfil, e a RLS passa a negar todas as leituras. Aqui também se
+ * bloqueia o login no Auth, para a sessão não ser renovada.
+ */
+export async function alterarAtivoFuncionario(_anterior: EstadoAcao, formData: FormData): Promise<EstadoAcao> {
+  const supabase = await clienteDoGestor();
+  if (!supabase) return { erro: 'Você não tem permissão para alterar funcionários.' };
+
+  const dados = alterarAtivoSchema.safeParse(Object.fromEntries(formData));
+  if (!dados.success) return { erro: 'Dados inválidos. Recarregue a página.' };
+  const { funcionarioId, ativo } = dados.data;
+
+  const [{ data: perfil }, { data: sessao }] = await Promise.all([
+    supabase.from('profiles').select('id').eq('funcionario_id', funcionarioId).maybeSingle(),
+    supabase.auth.getUser(),
+  ]);
+  if (!ativo && perfil && perfil.id === sessao.user?.id) {
+    return { erro: 'Você não pode desativar o seu próprio acesso.' };
+  }
+
+  // Auth primeiro e banco depois; se o banco falhar, desfaz o Auth. Assim nada
+  // fica pela metade e o gestor pode simplesmente tentar de novo.
+  const admin = criarClienteAdmin();
+  const banir = (bloquear: boolean) =>
+    perfil
+      ? admin.auth.admin.updateUserById(perfil.id, { ban_duration: bloquear ? BAN_DESATIVADO : 'none' })
+      : Promise.resolve({ error: null });
+
+  const { error: erroAuth } = await banir(!ativo);
+  if (erroAuth) return { erro: 'Não foi possível alterar o login. Tente de novo.' };
+
+  const { error } = await supabase
+    .from('funcionarios')
+    .update({ ativo })
+    .eq('id', funcionarioId)
+    .select('id')
+    .single();
+  if (error) {
+    await banir(ativo);
+    return { erro: 'Não foi possível salvar. Tente de novo.' };
+  }
+
+  revalidatePath('/g/funcionarios');
+  revalidatePath(`/g/funcionarios/${funcionarioId}`);
+  return { ok: ativo ? 'Funcionário reativado.' : 'Funcionário desativado. Ele não consegue mais entrar no app.' };
 }

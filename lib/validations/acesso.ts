@@ -6,12 +6,17 @@ import { z } from 'zod';
 const senha = z.string().min(8, 'A senha precisa ter pelo menos 8 caracteres.').max(72, 'Senha longa demais.');
 
 export const criarAcessoSchema = z.object({
-  funcionarioId: z.uuid(),
+  funcionarioId: z.guid(),
   papel: z.enum(['motorista', 'admin'], 'Escolha o tipo de acesso.'),
   senha,
 });
 
+export const alterarAtivoSchema = z.object({
+  funcionarioId: z.guid(),
+  ativo: z.enum(['true', 'false']).transform((v) => v === 'true'),
+});
+
 export const redefinirSenhaSchema = z.object({
-  funcionarioId: z.uuid(),
+  funcionarioId: z.guid(),
   senha,
 });
