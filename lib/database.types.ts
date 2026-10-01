@@ -1031,6 +1031,10 @@ export type Database = {
     }
     Functions: {
       contexto_privilegiado: { Args: never; Returns: boolean }
+      criar_acerto: {
+        Args: { p_fim: string; p_inicio: string; p_motorista_id: string }
+        Returns: string
+      }
       dados_analise_abastecimento: {
         Args: { p_caminhao_id: string }
         Returns: Json
