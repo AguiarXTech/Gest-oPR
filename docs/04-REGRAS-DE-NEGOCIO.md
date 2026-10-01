@@ -42,10 +42,14 @@ O QR da NFC-e é uma URL da SEFAZ. Na versão 2, o parâmetro `p` tem o formato 
 
 ```
 extrairChave(texto):
-  1. se for URL e tiver parâmetro p → pegar p.split('|')[0]
-  2. senão → primeira sequência de 44 dígitos no texto (/\d{44}/)
-  3. remover espaços; validar com validarChave
+  1. se for URL e tiver parâmetro p → pegar p.split('|')[0]  (QR v2/v3)
+     se tiver chNFe → usar o valor                            (QR antigo)
+  2. senão → remover espaços, passar para maiúsculas e pegar a primeira
+     sequência no formato da chave (/\d{6}[0-9A-Z]{14}\d{24}/)
+  3. remover espaços, maiúsculas; validar com validarChave (formato + DV)
 ```
+
+**CNPJ alfanumérico (NT 2025.001):** desde 07/2026 o CNPJ do emitente (posições 7–20) pode ter letras; as demais posições continuam numéricas. Vale para NFC-e, NF-e, CT-e e MDF-e (checks do banco na migration `20261001000003`).
 
 ### 3.2 Estrutura da chave (44 dígitos)
 
@@ -63,7 +67,7 @@ extrairChave(texto):
 
 ### 3.3 Dígito verificador (módulo 11)
 
-Percorra os 43 primeiros dígitos **da direita para a esquerda**, multiplicando pelos pesos 2, 3, …, 9, 2, 3, … e somando os produtos.
+Percorra os 43 primeiros caracteres **da direita para a esquerda**, multiplicando o valor de cada um pelos pesos 2, 3, …, 9, 2, 3, … e somando os produtos. O valor de um caractere é o **código ASCII − 48** (dígitos valem eles mesmos; `A` = 17, `B` = 18…).
 
 ```
 resto = soma % 11
