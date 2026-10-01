@@ -83,6 +83,10 @@ flowchart LR
 
 - Supabase Auth com e-mail + senha. Sem autocadastro: o signup público fica **desabilitado** no painel do Supabase.
 - O gestor cria usuários em `/g/funcionarios` → server action com `service_role` chama `auth.admin.createUser` e insere em `public.profiles` (papel + `funcionario_id`).
+  - O acesso nasce na ficha do funcionário (`/g/funcionarios/[id]` → "Criar acesso ao app"). O login é **sempre o CPF** (e-mail interno `{cpf}@frota.local`, ADR 0001), mesmo que o funcionário tenha e-mail.
+  - Papéis possíveis pela tela: `motorista` ou `admin`. O `dono` não é criado pela tela.
+  - O gestor redefine a senha na mesma ficha (não há recuperação por e-mail).
+  - A chave de serviço fica em `lib/supabase/admin.ts` (`import 'server-only'`). Toda server action confere `is_gestor()` com a sessão do usuário antes de usá-la; leituras continuam com a sessão do usuário (RLS).
 - O papel é lido por `public.papel_atual()` (função `security definer`) nas policies. **Não** use `user_metadata` para autorização, porque o próprio usuário pode alterá-lo.
 - `proxy.ts` (no Next.js 16 o `middleware.ts` passou a se chamar `proxy.ts`) renova a sessão e redireciona: motorista → `/m`, dono/admin → `/g`. Isso é UX; a segurança real está na RLS.
 

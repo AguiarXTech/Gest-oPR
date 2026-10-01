@@ -121,9 +121,9 @@ Não implemente regra definitiva para os itens abaixo antes da resposta. Use con
 
 | # | Pergunta | Impacta | Suposição provisória |
 |---|---|---|---|
-| Q1 | Qual é exatamente a regra de comissão? (% sobre frete bruto? líquido de quê? valor por viagem?) Há salário-base além da comissão? | RF-14/15 | % sobre frete bruto, configurável |
+| Q1 | ~~Qual é exatamente a regra de comissão? Há salário-base além da comissão?~~ **Respondida em 2026-10-01:** comissão é um **valor fixo em R$ por viagem**, e uma viagem = **ida e volta** (não por trecho). Cada motorista tem o próprio valor de comissão e o próprio salário-base. | RF-14/15 | Tipo `valor_por_viagem`, um valor por motorista |
 | Q2 | O acerto é por viagem, semanal ou mensal? | RF-15 | Mensal, com período livre |
-| Q3 | A volta (BH → SJE) é carregada (tem frete) ou vazia? | Receita, RF-07 | Cada trecho é uma viagem; volta pode ter frete zero |
+| Q3 | ~~A volta (BH → SJE) é carregada (tem frete) ou vazia?~~ **Respondida em 2026-10-01:** a volta (BH → SJE) é **sempre carregada**; a ida (SJE → BH) vai **vazia na maioria das vezes**, mas às vezes leva carga. Cada trecho carregado tem o seu frete (≈ 3 a 6 fretes por semana). A duração varia com a liberação da carga (ex.: sai sábado e só descarrega segunda). O motorista dá **início** ao sair e **fim** na volta, depois de descarregar. | Receita, RF-05/06/07 | Ver proposta de modelo "viagem = ciclo com 2 fretes" (pendente de aprovação) |
 | Q4 | Quem registra o valor do frete: o gestor ou vem do CT-e? | RF-07 | Gestor digita |
 | Q5 | Existe diária/ajuda de custo fixa além do reembolso de despesas? | RF-15 | Não; só reembolso |
 | Q6 | O motorista pode ver o valor do frete das próprias viagens? | RF-17 | Sim (transparência da comissão) |

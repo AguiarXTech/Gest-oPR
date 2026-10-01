@@ -1,28 +1,9 @@
 import { z } from 'zod';
 import { lerDecimal, lerInteiro } from '@/lib/domain/numeros';
 import { normalizarPlaca, validarPlaca } from '@/lib/domain/placa';
+import { inteiroOpcional, textoOpcional } from './comum';
 
 // Os campos chegam do formulário como texto; o schema converte para o formato do banco.
-
-const textoOpcional = z
-  .string()
-  .trim()
-  .transform((v) => v || null);
-
-function inteiroOpcional(min: number, max: number, mensagem: string) {
-  return z
-    .string()
-    .trim()
-    .transform((v, ctx) => {
-      if (!v) return null;
-      const n = lerInteiro(v);
-      if (n === null || n < min || n > max) {
-        ctx.addIssue({ code: 'custom', message: mensagem });
-        return z.NEVER;
-      }
-      return n;
-    });
-}
 
 export const caminhaoSchema = z.object({
   placa: z

@@ -39,7 +39,7 @@ export const menuGestao: GrupoMenu[] = [
     titulo: 'Cadastros',
     itens: [
       { href: '/g/caminhoes', rotulo: 'Caminhões', icone: Truck, pronto: true },
-      { href: '/g/funcionarios', rotulo: 'Funcionários', icone: Users, pronto: false },
+      { href: '/g/funcionarios', rotulo: 'Funcionários', icone: Users, pronto: true },
       { href: '/g/clientes', rotulo: 'Clientes', icone: Building2, pronto: false },
       { href: '/g/fornecedores', rotulo: 'Fornecedores', icone: Store, pronto: false },
       { href: '/g/documentos', rotulo: 'Documentos', icone: FileText, pronto: false },

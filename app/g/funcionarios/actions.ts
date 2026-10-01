@@ -1,0 +1,97 @@
+'use server';
+
+// Ações que exigem a chave de serviço (AGENTS.md §4.6). Toda ação confere,
+// no servidor, que quem chamou é gestor: a tela escondida não é proteção.
+
+import { revalidatePath } from 'next/cache';
+import { DOMINIO_EMAIL_INTERNO } from '@/lib/domain/login';
+import { criarClienteAdmin } from '@/lib/supabase/admin';
+import { createClient } from '@/lib/supabase/server';
+import { criarAcessoSchema, redefinirSenhaSchema } from '@/lib/validations/acesso';
+
+export type EstadoAcao = { erro?: string; ok?: string };
+
+/** Cliente com a sessão do usuário, se ele for dono/admin ativo; senão null. */
+async function clienteDoGestor() {
+  const supabase = await createClient();
+  const { data: gestor } = await supabase.rpc('is_gestor');
+  return gestor ? supabase : null;
+}
+
+export async function criarAcesso(_anterior: EstadoAcao, formData: FormData): Promise<EstadoAcao> {
+  const supabase = await clienteDoGestor();
+  if (!supabase) return { erro: 'Você não tem permissão para criar acessos.' };
+
+  const dados = criarAcessoSchema.safeParse(Object.fromEntries(formData));
+  if (!dados.success) return { erro: dados.error.issues[0].message };
+  const { funcionarioId, papel, senha } = dados.data;
+
+  // Leituras com a sessão do gestor (RLS); a chave de serviço só para o Auth.
+  const { data: funcionario } = await supabase
+    .from('funcionarios')
+    .select('id, nome, cpf, ativo')
+    .eq('id', funcionarioId)
+    .maybeSingle();
+  if (!funcionario) return { erro: 'Funcionário não encontrado.' };
+  if (!funcionario.ativo) return { erro: 'Funcionário desativado não pode receber acesso.' };
+
+  const { data: perfilExistente } = await supabase
+    .from('profiles')
+    .select('id')
+    .eq('funcionario_id', funcionarioId)
+    .maybeSingle();
+  if (perfilExistente) return { erro: 'Este funcionário já tem acesso.' };
+
+  const admin = criarClienteAdmin();
+  const { data: criado, error: erroAuth } = await admin.auth.admin.createUser({
+    email: `${funcionario.cpf}@${DOMINIO_EMAIL_INTERNO}`,
+    password: senha,
+    email_confirm: true,
+  });
+  if (erroAuth) {
+    if (erroAuth.code === 'email_exists') return { erro: 'Já existe um acesso com este CPF.' };
+    if (erroAuth.code === 'weak_password') return { erro: 'Senha fraca. Use pelo menos 8 caracteres.' };
+    return { erro: 'Não foi possível criar o acesso. Tente de novo.' };
+  }
+
+  const { error: erroPerfil } = await admin.from('profiles').insert({
+    id: criado.user.id,
+    nome: funcionario.nome,
+    papel,
+    funcionario_id: funcionario.id,
+  });
+  if (erroPerfil) {
+    // Desfaz o usuário do Auth para não deixar login sem perfil.
+    await admin.auth.admin.deleteUser(criado.user.id);
+    return { erro: 'Não foi possível criar o acesso. Tente de novo.' };
+  }
+
+  revalidatePath('/g/funcionarios');
+  revalidatePath(`/g/funcionarios/${funcionarioId}`);
+  return { ok: 'Acesso criado. Passe o CPF e a senha para o funcionário.' };
+}
+
+export async function redefinirSenha(_anterior: EstadoAcao, formData: FormData): Promise<EstadoAcao> {
+  const supabase = await clienteDoGestor();
+  if (!supabase) return { erro: 'Você não tem permissão para redefinir senhas.' };
+
+  const dados = redefinirSenhaSchema.safeParse(Object.fromEntries(formData));
+  if (!dados.success) return { erro: dados.error.issues[0].message };
+
+  const { data: perfil } = await supabase
+    .from('profiles')
+    .select('id')
+    .eq('funcionario_id', dados.data.funcionarioId)
+    .maybeSingle();
+  if (!perfil) return { erro: 'Este funcionário ainda não tem acesso.' };
+
+  const { error } = await criarClienteAdmin().auth.admin.updateUserById(perfil.id, {
+    password: dados.data.senha,
+  });
+  if (error) {
+    if (error.code === 'weak_password') return { erro: 'Senha fraca. Use pelo menos 8 caracteres.' };
+    return { erro: 'Não foi possível redefinir a senha. Tente de novo.' };
+  }
+
+  return { ok: 'Senha redefinida. Passe a nova senha para o funcionário.' };
+}
