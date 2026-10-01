@@ -30,6 +30,18 @@ export const SEVERIDADE: Record<CodigoAnomalia, Severidade> = {
   SEM_NFCE: 'baixa',
 };
 
+/** Título curto para etiquetas (a mensagem completa traz os números). */
+export const TITULO_ANOMALIA: Record<CodigoAnomalia, string> = {
+  KM_REGRESSIVO: 'km voltou',
+  LITROS_ACIMA_TANQUE: 'litros acima do tanque',
+  CONSUMO_FORA_FAIXA: 'consumo fora do normal',
+  PRECO_FORA_FAIXA: 'preço fora do normal',
+  INTERVALO_CURTO: 'intervalo curto',
+  SEM_NFCE: 'sem nota',
+  SEM_FOTO: 'sem foto',
+  MES_DIVERGENTE: 'nota de outro mês',
+};
+
 const ORDEM: Record<Severidade, number> = { alta: 0, media: 1, baixa: 2 };
 
 export type AbastecimentoAnalise = {
