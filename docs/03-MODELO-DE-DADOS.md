@@ -1,0 +1,106 @@
+# 03 — Modelo de dados
+
+**Fonte de verdade:** `supabase/migrations/`. Este documento explica o **porquê** do modelo. Se divergir da migration, a migration vale, e este doc deve ser corrigido.
+
+## 1. Diagrama (MVP)
+
+```mermaid
+erDiagram
+  AUTH_USERS ||--|| PROFILES : "1:1"
+  PROFILES }o--o| FUNCIONARIOS : "motorista -> funcionario"
+  FUNCIONARIOS ||--o{ VIAGENS : dirige
+  CAMINHOES ||--o{ VIAGENS : faz
+  CLIENTES ||--o{ VIAGENS : contrata
+  VIAGENS ||--o{ ABASTECIMENTOS : "opcional"
+  VIAGENS ||--o{ DESPESAS_VIAGEM : "opcional"
+  CAMINHOES ||--o{ ABASTECIMENTOS : recebe
+  FUNCIONARIOS ||--o{ ABASTECIMENTOS : registra
+  FUNCIONARIOS ||--o{ ADIANTAMENTOS : recebe
+  FUNCIONARIOS ||--o{ REGRAS_COMISSAO : tem
+  FUNCIONARIOS ||--o{ ACERTOS : recebe
+  ACERTOS ||--o{ VIAGENS : consolida
+  ACERTOS ||--o{ ABASTECIMENTOS : consolida
+  ACERTOS ||--o{ DESPESAS_VIAGEM : consolida
+  ACERTOS ||--o{ ADIANTAMENTOS : consolida
+  FORNECEDORES ||--o{ ABASTECIMENTOS : "posto"
+  CAMINHOES ||--o{ DOCUMENTOS : possui
+  FUNCIONARIOS ||--o{ DOCUMENTOS : possui
+```
+
+## 2. Tabelas do MVP
+
+| Tabela | Papel | Decisões relevantes |
+|---|---|---|
+| `profiles` | Liga o usuário do Auth ao papel e ao funcionário | O papel **não** fica em `user_metadata` (o usuário pode editar). Escrita só via service role |
+| `funcionarios` | Pessoa (motorista ou não) | Separada de `profiles`: existe funcionário sem login e login sem funcionário (dono/admin) |
+| `caminhoes` | Frota | `capacidade_tanque_l` alimenta a anomalia de litros; `km_atual` é mantido por trigger |
+| `clientes`, `fornecedores` | Cadastros | Fornecedor com `tipo` cobre postos, oficinas e recapadoras (reuso na fase 2) |
+| `viagens` | Um trecho (ver Q3) | Índice único parcial: 1 viagem `em_andamento` por motorista e por caminhão. `valor_frete_centavos` nulo = não informado |
+| `abastecimentos` | Diesel | `nfce_chave` única (antifraude); `tanque_cheio` define a medição de consumo; `forma_pagamento` define se entra no acerto |
+| `despesas_viagem` | Pedágio, alimentação etc. | `reembolsavel` define se entra no acerto |
+| `adiantamentos` | Dinheiro entregue ao motorista | Só gestor escreve |
+| `regras_comissao` | Parâmetros por motorista | Constraint de exclusão impede vigências sobrepostas |
+| `acertos` | Fechamento por período | `regra_snapshot` guarda a regra usada (histórico imutável mesmo que a regra mude depois) |
+| `documentos` | Vencimentos | Histórico: renovação = novo registro; a view `vw_documentos_status` pega o mais recente |
+| `configuracoes` | Limiares | Chave/valor JSON, lidos pelas funções de domínio |
+| `auditoria` | Log | Gravada por trigger `security definer`; ninguém escreve direto |
+
+### Por que as anomalias não são colunas
+
+As anomalias são **derivadas** do histórico e dos limiares, que podem mudar. Gravá-las criaria dado desatualizado e daria ao motorista um campo para "limpar". Elas são calculadas em `lib/domain/anomalias.ts` sobre a consulta.
+
+### Garantias no banco (não só na UI)
+
+| Garantia | Mecanismo |
+|---|---|
+| Motorista não vê dados de outro | RLS |
+| Motorista não define frete, cliente, CT-e, conferência nem acerto | Triggers `proteger_*_motorista` |
+| Item de acerto fechado é imutável | Trigger `bloquear_item_acertado` |
+| Só o dono reabre acerto; acerto pago é imutável | Trigger `validar_transicao_acerto` |
+| Nota fiscal não é usada duas vezes | `unique (nfce_chave)` |
+| Km coerente | Checks + trigger de `km_atual` |
+
+## 3. Views
+
+| View | Uso |
+|---|---|
+| `vw_viagens_resumo` | Viagem + km rodado + pedágio + outras despesas + abastecimentos vinculados |
+| `vw_documentos_status` | Documento mais recente por entidade/tipo + `dias_para_vencer` |
+
+As duas views usam `security_invoker = true`, então respeitam a RLS de quem consulta. O cálculo de resultado (com rateio de diesel) e o de comissão ficam em TypeScript (`lib/domain/`), para serem testáveis e ficarem num só lugar.
+
+## 4. Fase 2 (não migrar ainda)
+
+Esboço para orientar decisões do MVP. Os nomes podem mudar.
+
+```
+pneus (id, marca_fogo UNIQUE, dot, marca, modelo, medida, valor_compra_centavos,
+       nf_compra, fornecedor_id, vida_atual smallint default 0,
+       status enum(estoque, montado, em_recapagem, descartado), motivo_descarte, ...)
+
+montagens_pneu (id, pneu_id, caminhao_id, posicao text, km_montagem int,
+                km_retirada int null, data_montagem, data_retirada, sulco_mm_retirada)
+  -- unique parcial: (caminhao_id, posicao) where km_retirada is null
+  -- unique parcial: (pneu_id) where km_retirada is null
+
+eventos_pneu (id, pneu_id, tipo enum(compra, recapagem_envio, recapagem_retorno,
+              conserto, aferição, descarte), data, custo_centavos, fornecedor_id, sulco_mm, obs)
+
+itens_estoque (id, codigo, descricao, unidade, estoque_minimo)
+movimentos_estoque (id, item_id, tipo enum(entrada, saida, ajuste), quantidade,
+                    custo_unit_centavos, caminhao_id, manutencao_id, nf, data)
+
+planos_manutencao (id, caminhao_id, item, intervalo_km, intervalo_dias, ultimo_km, ultima_data)
+manutencoes (id, caminhao_id, data, km, tipo enum(preventiva, corretiva), descricao,
+             custo_centavos, fornecedor_id, anexo_path)
+
+lancamentos_financeiros (id, tipo enum(pagar, receber), categoria, descricao,
+                         valor_centavos, vencimento, pago_em, caminhao_id, viagem_id,
+                         cliente_id, fornecedor_id)
+
+checklists (id, viagem_id, caminhao_id, motorista_id, respostas jsonb, fotos text[], data)
+multas (id, caminhao_id, funcionario_id, data_infracao, auto, valor_centavos,
+        prazo_indicacao, status)
+```
+
+**Impacto no MVP:** nenhum. Não é preciso criar colunas agora. Só mantenha `fornecedores.tipo` e `caminhoes.configuracao_eixos`, que já existem.
