@@ -1,19 +1,36 @@
-// Painel provisório da gestão (S1-1). Navegação e painel de verdade: S1-2 e S5.
-import { BotaoSair } from '@/components/BotaoSair';
+// Painel da gestão. Os quatro cards seguem o fluxo 5.3 do PRD; os números
+// entram na Sprint 5 (RF-19). Por enquanto mostram só a estrutura.
 import { obterPerfilAtual } from '@/lib/supabase/perfil';
+
+const cards = [
+  { titulo: 'Receita do mês', descricao: 'Soma dos fretes das viagens do mês' },
+  { titulo: 'Custo de diesel', descricao: 'Total abastecido no mês' },
+  { titulo: 'Resultado por caminhão', descricao: 'Receita menos custos, por placa' },
+  { titulo: 'Alertas', descricao: 'Abastecimentos suspeitos e documentos vencendo' },
+];
 
 export default async function PainelGestao() {
   const perfil = await obterPerfilAtual();
+  const primeiroNome = perfil?.nome.split(' ')[0];
 
   return (
-    <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-6 p-6">
-      <div className="flex items-center justify-between gap-4">
-        <h1 className="text-2xl font-semibold">Olá, {perfil?.nome}</h1>
-        <BotaoSair />
+    <>
+      <div>
+        <h1 className="text-2xl font-semibold">Olá, {primeiroNome}</h1>
+        <p className="text-muted-foreground">Resumo do mês da frota.</p>
       </div>
-      <p className="text-muted-foreground">
-        Área de gestão ({perfil?.papel === 'dono' ? 'dono' : 'administração'}). Cadastros e painel chegam em breve.
-      </p>
-    </main>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        {cards.map(({ titulo, descricao }) => (
+          <section key={titulo} className="flex flex-col gap-2 rounded-xl border p-5">
+            <h2 className="font-medium">{titulo}</h2>
+            <p className="text-3xl font-semibold text-muted-foreground/50">—</p>
+            <p className="text-sm text-muted-foreground">{descricao}</p>
+          </section>
+        ))}
+      </div>
+
+      <p className="text-sm text-muted-foreground">Os números do painel aparecem quando viagens e abastecimentos começarem a ser registrados.</p>
+    </>
   );
 }
