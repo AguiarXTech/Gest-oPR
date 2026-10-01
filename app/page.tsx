@@ -1,12 +1,7 @@
-// Tela inicial provisória (S0-1). O proxy.ts redireciona usuários logados
-// para /m ou /g; a tela de login entra na S1-1.
+// O proxy.ts redireciona "/" para /login, /m ou /g conforme a sessão.
+// Este redirect só roda se o proxy não interceptar a rota.
+import { redirect } from 'next/navigation';
+
 export default function Home() {
-  return (
-    <main className="flex flex-1 flex-col items-center justify-center gap-4 p-6 text-center">
-      <h1 className="text-3xl font-semibold">Gestão Frota</h1>
-      <p className="max-w-sm text-zinc-600">
-        Viagens, abastecimentos, acertos e resultado por caminhão.
-      </p>
-    </main>
-  );
+  redirect('/login');
 }

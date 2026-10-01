@@ -35,7 +35,7 @@ export async function atualizarSessao(request: NextRequest) {
   const rotaProtegida = pathname.startsWith('/m') || pathname.startsWith('/g');
 
   if (!user) {
-    if (rotaProtegida) return redirecionar(request, '/login', response);
+    if (rotaProtegida || pathname === '/') return redirecionar(request, '/login', response);
     return response;
   }
 
