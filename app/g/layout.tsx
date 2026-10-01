@@ -21,10 +21,11 @@ export default async function LayoutGestao({ children }: LayoutProps<'/g'>) {
 
   return (
     <div className="flex min-h-full flex-1 flex-col md:flex-row">
-      {/* Celular: barra grafite no topo com o menu */}
-      <header className="sticky top-0 z-10 flex items-center gap-2 bg-sidebar px-2 py-2 text-sidebar-foreground md:hidden">
+      {/* Celular: barra grafite no topo, menu à esquerda e logo centralizado
+          (a coluna vazia da direita tem a largura do botão, para o logo ficar no meio exato). */}
+      <header className="sticky top-0 z-10 grid grid-cols-[2.75rem_1fr_2.75rem] items-center gap-2 bg-sidebar px-2 py-2 text-sidebar-foreground md:hidden">
         <MenuCelular rodape={usuario} />
-        <Marca className="h-11" />
+        <Marca className="h-11 justify-self-center" />
       </header>
 
       {/* PC: barra lateral grafite fixa */}

@@ -9,9 +9,10 @@ export default async function LayoutMotorista({ children }: LayoutProps<'/m'>) {
   return (
     <div className="flex min-h-full flex-1 flex-col">
       <header className="sticky top-0 z-10 bg-sidebar text-sidebar-foreground">
-        <div className="mx-auto flex w-full max-w-md items-center justify-between gap-3 px-4 py-3">
+        {/* Logo centralizado, nome do motorista logo abaixo. */}
+        <div className="mx-auto flex w-full max-w-md flex-col items-center gap-1 px-4 pt-3 pb-2">
           <Marca className="h-11" />
-          <p className="truncate text-right font-semibold">{perfil?.nome}</p>
+          <p className="max-w-full truncate text-sm font-semibold text-sidebar-foreground/80">{perfil?.nome}</p>
         </div>
       </header>
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
