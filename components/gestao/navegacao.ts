@@ -31,7 +31,7 @@ export const menuGestao: GrupoMenu[] = [
     itens: [
       { href: '/g/viagens', rotulo: 'Viagens', icone: Route, pronto: true },
       { href: '/g/abastecimentos', rotulo: 'Abastecimentos', icone: Fuel, pronto: true },
-      { href: '/g/adiantamentos', rotulo: 'Adiantamentos', icone: HandCoins, pronto: false },
+      { href: '/g/adiantamentos', rotulo: 'Adiantamentos', icone: HandCoins, pronto: true },
       { href: '/g/acertos', rotulo: 'Acertos', icone: Calculator, pronto: false },
     ],
   },
