@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { AcessoFuncionario } from '@/components/gestao/AcessoFuncionario';
 import { AlternarAtivoFuncionario } from '@/components/gestao/AlternarAtivoFuncionario';
 import { FormFuncionario } from '@/components/gestao/FormFuncionario';
+import { RegrasComissao } from '@/components/gestao/RegrasComissao';
 import { createClient } from '@/lib/supabase/server';
 
 export const metadata: Metadata = { title: 'Funcionário · Gestão RPortugues' };
@@ -10,11 +11,10 @@ export const metadata: Metadata = { title: 'Funcionário · Gestão RPortugues' 
 export default async function FichaFuncionario({ params }: PageProps<'/g/funcionarios/[id]'>) {
   const { id } = await params;
   const supabase = await createClient();
-  const { data: funcionario } = await supabase
-    .from('funcionarios')
-    .select('*, profiles(papel)')
-    .eq('id', id)
-    .maybeSingle();
+  const [{ data: funcionario }, { data: regras }] = await Promise.all([
+    supabase.from('funcionarios').select('*, profiles(papel)').eq('id', id).maybeSingle(),
+    supabase.from('regras_comissao').select('*').eq('funcionario_id', id).order('vigencia_inicio', { ascending: false }),
+  ]);
   if (!funcionario) notFound();
 
   const { profiles, ...dados } = funcionario;
@@ -34,6 +34,11 @@ export default async function FichaFuncionario({ params }: PageProps<'/g/funcion
           papel={profiles?.papel ?? null}
           funcionarioAtivo={funcionario.ativo}
         />
+      </section>
+
+      <section className="flex flex-col gap-4 rounded-xl border bg-card p-4 shadow-xs sm:p-6">
+        <h2 className="text-lg font-semibold">Comissão</h2>
+        <RegrasComissao funcionarioId={funcionario.id} regras={regras ?? []} />
       </section>
 
       <section className="flex flex-col gap-4">
