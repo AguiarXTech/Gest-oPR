@@ -37,6 +37,8 @@ const nomeMes = (mes: string) =>
     new Date(`${mes}-15T12:00:00Z`),
   );
 
+const primeiraMaiuscula = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
+
 type Alerta = { texto: string; href: string; grave: boolean };
 
 export default async function PainelGestao({ searchParams }: PageProps<'/g'>) {
@@ -156,7 +158,7 @@ export default async function PainelGestao({ searchParams }: PageProps<'/g'>) {
           >
             <ChevronLeft className="size-6" aria-hidden />
           </Link>
-          <span className="font-semibold capitalize">{nomeMes(mes)}</span>
+          <span className="font-semibold">{primeiraMaiuscula(nomeMes(mes))}</span>
           {mes < atual ? (
             <Link
               href={`/g?mes=${deslocar(mes, 1)}`}
@@ -190,50 +192,8 @@ export default async function PainelGestao({ searchParams }: PageProps<'/g'>) {
           </p>
         </section>
 
-        <section className="flex flex-col gap-2 rounded-xl border bg-card p-5 shadow-xs sm:col-span-2 xl:col-span-1">
-          <h2 className="text-sm font-semibold text-muted-foreground">Resultado por caminhão</h2>
-          <p
-            className={cn(
-              'text-3xl font-bold tabular-nums',
-              frota.resultadoCentavos < 0 && 'text-destructive',
-            )}
-          >
-            {formatarBRL(frota.resultadoCentavos)}
-          </p>
-          <ul className="flex flex-col divide-y">
-            {caminhoes.map((c) => (
-              <li key={c.id}>
-                <Link
-                  href={`/g/caminhoes/${c.id}?mes=${mes}`}
-                  className="flex min-h-11 items-center justify-between gap-3 py-2 hover:text-primary"
-                >
-                  <span className="flex flex-col">
-                    <span className="font-mono font-semibold">{formatarPlaca(c.placa)}</span>
-                    <span className="text-xs text-muted-foreground tabular-nums">
-                      {c.viagens.length} viage{c.viagens.length === 1 ? 'm' : 'ns'}
-                      {c.resultado.kmPorLitro !== null &&
-                        ` · ${kmL.format(c.resultado.kmPorLitro)} km/L`}
-                    </span>
-                  </span>
-                  <span
-                    className={cn(
-                      'font-semibold tabular-nums',
-                      c.resultado.resultadoCentavos < 0 && 'text-destructive',
-                    )}
-                  >
-                    {formatarBRL(c.resultado.resultadoCentavos)}
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-          <p className="text-xs text-muted-foreground">
-            Receita − diesel − pedágio − despesas − manutenção − comissão. Toque na placa para ver
-            as viagens.
-          </p>
-        </section>
 
-        <section className="flex flex-col gap-2 rounded-xl border bg-card p-5 shadow-xs sm:col-span-2 xl:col-span-1">
+        <section className="flex flex-col gap-2 rounded-xl border bg-card p-5 shadow-xs sm:col-span-2 xl:col-span-2">
           <h2 className="text-sm font-semibold text-muted-foreground">Alertas</h2>
           {alertas.length === 0 ? (
             <p className="font-semibold text-sucesso">✓ Nada pendente</p>
@@ -259,8 +219,8 @@ export default async function PainelGestao({ searchParams }: PageProps<'/g'>) {
 
       <section className="flex flex-col gap-3">
         <h2 className="text-xl font-semibold">Resumo do mês</h2>
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-          <DemonstrativoResultado titulo="Total da frota" subtitulo={`${caminhoes.length} caminhões`} r={frota} destaque />
+        <DemonstrativoResultado titulo="Total da frota" subtitulo={`${caminhoes.length} caminhões`} r={frota} destaque />
+        <div className="flex flex-col gap-2">
           {caminhoes.map((c) => (
             <DemonstrativoResultado
               key={c.id}
@@ -268,9 +228,11 @@ export default async function PainelGestao({ searchParams }: PageProps<'/g'>) {
               subtitulo={[c.apelido, `${c.viagens.length} viage${c.viagens.length === 1 ? 'm' : 'ns'}`].filter(Boolean).join(' · ')}
               r={c.resultado}
               href={`/g/caminhoes/${c.id}?mes=${mes}`}
+              recolhido
             />
           ))}
         </div>
+        <p className="text-xs text-muted-foreground">Toque num caminhão para ver as contas dele.</p>
       </section>
 
       {!temMovimento && (

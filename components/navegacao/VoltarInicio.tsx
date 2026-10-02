@@ -11,7 +11,7 @@ export function VoltarInicio({ inicio, rotulo }: { inicio: '/m' | '/g'; rotulo: 
   return (
     <Link
       href={inicio}
-      className="-ml-2 inline-flex min-h-11 items-center gap-1 self-start rounded-lg px-2 font-medium text-primary hover:bg-muted"
+      className="-mb-4 -ml-2 inline-flex min-h-11 items-center gap-1 self-start rounded-lg px-2 font-medium text-primary hover:bg-muted"
     >
       <ChevronLeft className="size-5" aria-hidden /> {rotulo}
     </Link>

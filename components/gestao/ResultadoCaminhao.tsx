@@ -26,7 +26,7 @@ export function ResultadoCaminhao({ dados, nomeMes }: { dados: CaminhaoDoMes | u
   return (
     <section className="flex flex-col gap-4 rounded-2xl border bg-card p-4 shadow-xs sm:p-6">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h2 className="text-lg font-semibold capitalize">Resultado de {nomeMes}</h2>
+        <h2 className="text-lg font-semibold">Resultado de {nomeMes}</h2>
         <p className={cn('text-2xl font-bold tabular-nums', r.resultadoCentavos < 0 && 'text-destructive')}>{formatarBRL(r.resultadoCentavos)}</p>
       </div>
       <div>
