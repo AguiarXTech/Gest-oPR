@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
+import { Download } from 'lucide-react';
 import Link from 'next/link';
 import { TITULO_ANOMALIA, type Severidade } from '@/lib/domain/anomalias';
 import { formatarBRL } from '@/lib/domain/dinheiro';
 import { formatarPlaca } from '@/lib/domain/placa';
-import { formatarData, formatarDataHora, formatarKm, formatarLitros } from '@/lib/formatar';
+import { formatarData, formatarDataHora, formatarKm, formatarLitros, hojeIso } from '@/lib/formatar';
 import { analisarDesde } from '@/lib/supabase/conferencia';
 import { obterConfiguracoes } from '@/lib/supabase/configuracoes';
 import { createClient } from '@/lib/supabase/server';
@@ -162,6 +163,27 @@ export default async function Conferencia({ searchParams }: PageProps<'/g/abaste
         ))}
       </nav>
       <p className="text-sm text-muted-foreground">Últimos {PERIODO_DIAS} dias.</p>
+      {tipo === 'abastecimentos' && (
+        <details className="rounded-xl border bg-card p-3 shadow-xs">
+          <summary className="flex min-h-11 cursor-pointer items-center gap-2 font-medium">
+            <Download className="size-5" aria-hidden /> Baixar planilha de abastecimentos (CSV)
+          </summary>
+          <form action="/g/exportar/abastecimentos" className="mt-3 flex flex-wrap items-end gap-2">
+            {[
+              ['de', 'De', desde.toISOString().slice(0, 10)],
+              ['ate', 'Até', hojeIso()],
+            ].map(([nome, rotulo, padrao]) => (
+              <label key={nome} className="flex flex-col gap-1 text-sm font-medium">
+                {rotulo}
+                <input type="date" name={nome} required defaultValue={padrao} className="h-11 rounded-lg border border-input bg-transparent px-2.5 text-base" />
+              </label>
+            ))}
+            <button type="submit" className="inline-flex h-11 items-center rounded-lg border px-4 font-medium hover:bg-muted">
+              Baixar CSV
+            </button>
+          </form>
+        </details>
+      )}
       {conteudo}
     </>
   );

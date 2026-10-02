@@ -19,3 +19,7 @@ export const formatarLitros = (litros: number) => `${fLitros.format(litros)} L`;
 
 /** Data de hoje (Brasília) no formato do <input type="date">. */
 export const hojeIso = () => new Intl.DateTimeFormat('en-CA', { timeZone: fuso }).format(new Date());
+
+const fDataHoraCompleta = new Intl.DateTimeFormat('pt-BR', { timeZone: fuso, day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+/** dd/mm/aaaa hh:mm (planilhas: o ano não pode faltar). */
+export const formatarDataHoraCompleta = (iso: string) => fDataHoraCompleta.format(new Date(iso)).replace(',', '');

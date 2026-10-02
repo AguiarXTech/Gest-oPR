@@ -1,13 +1,19 @@
-import { Plus } from 'lucide-react';
+import { Download, Plus } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { STATUS_ACERTO } from '@/components/acerto/status';
 import { formatarBRL } from '@/lib/domain/dinheiro';
-import { formatarData } from '@/lib/formatar';
+import { formatarData, hojeIso } from '@/lib/formatar';
 import { createClient } from '@/lib/supabase/server';
 import { cn } from '@/lib/utils';
 
 export const metadata: Metadata = { title: 'Acertos · Gestão RPortugues' };
+
+/** aaaa-mm do mês passado (o acerto do mês costuma ser fechado no começo do seguinte). */
+function mesAnterior() {
+  const [ano, mes] = hojeIso().split('-').map(Number);
+  return mes === 1 ? `${ano - 1}-12` : `${ano}-${String(mes - 1).padStart(2, '0')}`;
+}
 
 export default async function Acertos() {
   const supabase = await createClient();
@@ -29,6 +35,16 @@ export default async function Acertos() {
           Novo acerto
         </Link>
       </div>
+
+      <form action="/g/exportar/acertos" className="flex flex-wrap items-end gap-2 rounded-xl border bg-card p-3 shadow-xs">
+        <label className="flex flex-col gap-1 text-sm font-medium">
+          Planilha para o contador (mês)
+          <input type="month" name="competencia" required defaultValue={mesAnterior()} className="h-11 rounded-lg border border-input bg-transparent px-2.5 text-base" />
+        </label>
+        <button type="submit" className="inline-flex h-11 items-center gap-2 rounded-lg border px-4 font-medium hover:bg-muted">
+          <Download className="size-5" aria-hidden /> Baixar CSV
+        </button>
+      </form>
 
       {(acertos ?? []).length === 0 && (
         <p className="rounded-xl border border-dashed p-6 text-center text-muted-foreground">Nenhum acerto ainda.</p>
