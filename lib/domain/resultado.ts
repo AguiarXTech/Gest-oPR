@@ -13,3 +13,45 @@ export function ratearDiesel(dieselMesCentavos: number, kmViagem: number, kmTota
 export function competencia(iso: string): string {
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo', year: 'numeric', month: '2-digit' }).format(new Date(iso));
 }
+
+export type EntradaResultado = {
+  /** Viagens concluídas do caminhão no mês. */
+  viagens: { freteCentavos: number; kmRodado: number; comissaoCentavos: number }[];
+  dieselCentavos: number;
+  litros: number;
+  pedagioCentavos: number;
+  despesasCentavos: number;
+};
+
+export type Resultado = {
+  receitaCentavos: number;
+  dieselCentavos: number;
+  pedagioCentavos: number;
+  despesasCentavos: number;
+  comissaoCentavos: number;
+  resultadoCentavos: number;
+  km: number;
+  /** Custo total ÷ km (centavos por km), ou null sem km. */
+  custoPorKmCentavos: number | null;
+  /** km rodado nas viagens ÷ litros do mês (aproximado; o exato é por tanque cheio, §4). */
+  kmPorLitro: number | null;
+};
+
+/** Resultado por caminhão/mês (§8.1): receita − diesel − pedágio − despesas − comissão. */
+export function calcularResultado(e: EntradaResultado): Resultado {
+  const receitaCentavos = e.viagens.reduce((t, v) => t + v.freteCentavos, 0);
+  const comissaoCentavos = e.viagens.reduce((t, v) => t + v.comissaoCentavos, 0);
+  const km = e.viagens.reduce((t, v) => t + v.kmRodado, 0);
+  const custo = e.dieselCentavos + e.pedagioCentavos + e.despesasCentavos + comissaoCentavos;
+  return {
+    receitaCentavos,
+    dieselCentavos: e.dieselCentavos,
+    pedagioCentavos: e.pedagioCentavos,
+    despesasCentavos: e.despesasCentavos,
+    comissaoCentavos,
+    resultadoCentavos: receitaCentavos - custo,
+    km,
+    custoPorKmCentavos: km > 0 ? Math.round(custo / km) : null,
+    kmPorLitro: km > 0 && e.litros > 0 ? km / e.litros : null,
+  };
+}
