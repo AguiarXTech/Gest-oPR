@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { ApagarAdiantamento } from '@/components/gestao/ApagarAdiantamento';
+import { ApagarRegistro } from '@/components/gestao/ApagarRegistro';
 import { FormAdiantamento } from '@/components/gestao/FormAdiantamento';
 import { formatarBRL } from '@/lib/domain/dinheiro';
 import { formatarData } from '@/lib/formatar';
@@ -49,7 +49,7 @@ export default async function Adiantamentos() {
                 </span>
                 <span className="flex items-center gap-2">
                   <span className="font-semibold tabular-nums">{formatarBRL(a.valor_centavos)}</span>
-                  {!a.acertos && <ApagarAdiantamento id={a.id} />}
+                  {!a.acertos && <ApagarRegistro tabela="adiantamentos" id={a.id} rotulo="adiantamento" />}
                 </span>
               </li>
             ))}

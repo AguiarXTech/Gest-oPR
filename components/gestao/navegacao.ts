@@ -42,7 +42,7 @@ export const menuGestao: GrupoMenu[] = [
       { href: '/g/funcionarios', rotulo: 'Funcionários', icone: Users, pronto: true },
       { href: '/g/clientes', rotulo: 'Clientes', icone: Building2, pronto: true },
       { href: '/g/fornecedores', rotulo: 'Fornecedores', icone: Store, pronto: true },
-      { href: '/g/documentos', rotulo: 'Documentos', icone: FileText, pronto: false },
+      { href: '/g/documentos', rotulo: 'Documentos', icone: FileText, pronto: true },
     ],
   },
   { itens: [{ href: '/g/configuracoes', rotulo: 'Configurações', icone: Settings, pronto: false }] },

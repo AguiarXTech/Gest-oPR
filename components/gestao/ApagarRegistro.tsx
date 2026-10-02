@@ -8,15 +8,15 @@ import { Button } from '@/components/ui/button';
 import { createClient } from '@/lib/supabase/client';
 import { traduzirErroBanco } from '@/lib/supabase/erros';
 
-/** Apaga um adiantamento lançado errado (o banco recusa se estiver em acerto fechado). */
-export function ApagarAdiantamento({ id }: { id: string }) {
+/** Apaga um registro lançado errado (o banco recusa se estiver em acerto fechado). */
+export function ApagarRegistro({ tabela, id, rotulo }: { tabela: 'adiantamentos' | 'documentos'; id: string; rotulo: string }) {
   const router = useRouter();
   const [supabase] = useState(createClient);
   const [confirmando, setConfirmando] = useState(false);
 
   const apagar = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.from('adiantamentos').delete().eq('id', id);
+      const { error } = await supabase.from(tabela).delete().eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => router.refresh(),
@@ -25,7 +25,7 @@ export function ApagarAdiantamento({ id }: { id: string }) {
   if (apagar.isError) return <span className="text-sm text-destructive">{traduzirErroBanco(apagar.error)}</span>;
   if (!confirmando) {
     return (
-      <Button type="button" variant="ghost" size="icon" aria-label="Apagar adiantamento" onClick={() => setConfirmando(true)}>
+      <Button type="button" variant="ghost" size="icon" aria-label={`Apagar ${rotulo}`} onClick={() => setConfirmando(true)}>
         <Trash2 aria-hidden />
       </Button>
     );
