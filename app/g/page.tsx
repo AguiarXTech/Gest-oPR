@@ -14,6 +14,7 @@ import { carregarSituacaoManutencao } from '@/lib/supabase/manutencao';
 import { situacaoMulta } from '@/lib/domain/multas';
 import { hojeIso } from '@/lib/formatar';
 import { carregarMes } from '@/lib/supabase/painel';
+import { DemonstrativoResultado } from '@/components/gestao/DemonstrativoResultado';
 import { obterPerfilAtual } from '@/lib/supabase/perfil';
 import { createClient } from '@/lib/supabase/server';
 import { cn } from '@/lib/utils';
@@ -255,6 +256,22 @@ export default async function PainelGestao({ searchParams }: PageProps<'/g'>) {
           )}
         </section>
       </div>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="text-xl font-semibold">Resumo do mês</h2>
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          <DemonstrativoResultado titulo="Total da frota" subtitulo={`${caminhoes.length} caminhões`} r={frota} destaque />
+          {caminhoes.map((c) => (
+            <DemonstrativoResultado
+              key={c.id}
+              titulo={formatarPlaca(c.placa)}
+              subtitulo={[c.apelido, `${c.viagens.length} viage${c.viagens.length === 1 ? 'm' : 'ns'}`].filter(Boolean).join(' · ')}
+              r={c.resultado}
+              href={`/g/caminhoes/${c.id}?mes=${mes}`}
+            />
+          ))}
+        </div>
+      </section>
 
       {!temMovimento && (
         <p className="text-sm text-muted-foreground">
