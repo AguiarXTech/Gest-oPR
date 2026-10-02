@@ -32,9 +32,9 @@ erDiagram
 
 | Tabela | Papel | Decisões relevantes |
 |---|---|---|
-| `profiles` | Liga o usuário do Auth ao papel e ao funcionário | O papel **não** fica em `user_metadata` (o usuário pode editar). Escrita só via service role |
+| `profiles` | Liga o usuário do Auth ao papel e ao funcionário | O papel **não** fica em `user_metadata` (o usuário pode editar). Escrita só via service role. Dono/admin pode ter `funcionario_id` (quem também dirige): ganha a área do motorista, e as telas de `/m` filtram explicitamente pelo próprio funcionário |
 | `funcionarios` | Pessoa (motorista ou não) | Separada de `profiles`: existe funcionário sem login e login sem funcionário (dono/admin) |
-| `caminhoes` | Frota | `capacidade_tanque_l` alimenta a anomalia de litros; `km_atual` é mantido por trigger |
+| `caminhoes` | Frota | `capacidade_tanque_l` alimenta a anomalia de litros; `km_atual` é mantido por trigger; `foto_path` em `comprovantes/caminhoes/{id}/` (leitura para qualquer usuário ativo) |
 | `clientes`, `fornecedores` | Cadastros | Fornecedor com `tipo` cobre postos, oficinas e recapadoras (reuso na fase 2). `cnpj` aceita o formato numérico e o **alfanumérico** da Receita (a partir de 07/2026): 12 caracteres `[0-9A-Z]` + 2 DV numéricos; DV conferido em `lib/domain/cnpj.ts` |
 | `viagens` | Um **ciclo** SJE → BH → SJE (Q3) | Índice único parcial: 1 viagem `em_andamento` por motorista e por caminhão. Sem dados comerciais: o motorista registra só caminhão, km e datas |
 | `fretes` | Trecho carregado de uma viagem | `sentido` (`ida`/`volta`), único por viagem → 0 a 2 fretes. A volta é sempre carregada; a ida, às vezes. Só gestor lê e escreve (motorista sem policy). Bloqueado se a viagem estiver em acerto fechado |
@@ -48,6 +48,7 @@ erDiagram
 | `planos_manutencao` | Itens do plano preventivo por caminhão | Intervalo por km e/ou dias (check exige um dos dois); `ultimo_km`/`ultima_data` atualizados por trigger ao cumprir o item |
 | `manutencoes` | Manutenção feita (preventiva/corretiva) | Custo e oficina; o `km` atualiza `caminhoes.km_atual` (mesmo trigger de viagens/abastecimentos); entra no resultado |
 | `manutencao_itens` | Itens do plano cumpridos numa manutenção | PK (manutencao_id, plano_id) |
+| `despesas_pessoais` | Controle pessoal do motorista (opcional) | Só o próprio lê/escreve (RLS sem policy de gestor); `funcionario_id` forçado por trigger. Fora do acerto e do resultado |
 | `multas` | Infrações | `funcionario_id` sugerido pela viagem em curso; `prazo_indicacao` = notificação + `multa_prazo_indicacao_dias`. Só gestor (motorista sem acesso) |
 | `auditoria` | Log | Gravada por trigger `security definer`; ninguém escreve direto |
 

@@ -13,6 +13,8 @@ Legenda: **T** = total · **L** = leitura · **P** = só os próprios registros 
 | Fornecedores | T | T | L |
 | Viagens | T | T | P: cria; edita só `em_andamento` e sem acerto |
 | Fretes (cliente, valor, CT-e/MDF-e) | T | T | — (Q6: nem frete nem custos do caminhão) |
+| Despesas pessoais | P (se também dirige) | P (se também dirige) | P — **só o próprio; a gestão não vê** |
+| Manutenção, multas | T | T | — |
 | Abastecimentos | T | T | P: cria; edita/apaga enquanto não conferido e sem acerto |
 | Despesas de viagem | T | T | idem abastecimentos |
 | Adiantamentos | T | T | L (P) |

@@ -65,6 +65,10 @@ A operação hoje depende de papel, WhatsApp e memória. Isso gera cinco problem
 | RF-35 | Multas: o app sugere quem dirigia pela viagem daquele momento e controla o prazo para indicar o condutor (padrão 30 dias, configurável) | gestor |
 | RF-36 | Foto do painel (km) no abastecimento, opcional, para conferência | motorista |
 | RF-37 | Mandar o demonstrativo do acerto fechado pelo WhatsApp do motorista (sem frete nem custos, Q6) | gestor |
+| RF-38 | Despesas pessoais do motorista (opcional): alimentação, pernoite etc., só para o controle dele. **Só ele vê** (nem a gestão); não entram no acerto | motorista |
+| RF-39 | Dono/admin que também dirige usa a área do motorista: o cadastro de funcionário com o CPF dele é ligado ao login existente ("Criar acesso" liga, mantendo o papel) | dono/admin |
+| RF-40 | Foto de cada caminhão (lista, ficha e escolha do caminhão pelo motorista) | gestor |
+| RF-41 | Botão "voltar ao início" em todas as telas; no painel, resumo do mês do total da frota e de cada caminhão (fretes, diesel, pedágio, despesas, manutenção, comissão, resultado) | todos |
 
 ### 4.2 Fase 2
 
