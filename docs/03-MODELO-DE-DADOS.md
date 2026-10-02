@@ -45,6 +45,10 @@ erDiagram
 | `acertos` | Fechamento por período | `regra_snapshot` guarda a regra usada (histórico imutável mesmo que a regra mude depois) |
 | `documentos` | Vencimentos | Histórico: renovação = novo registro; a view `vw_documentos_status` pega o mais recente |
 | `configuracoes` | Limiares | Chave/valor JSON, lidos pelas funções de domínio |
+| `planos_manutencao` | Itens do plano preventivo por caminhão | Intervalo por km e/ou dias (check exige um dos dois); `ultimo_km`/`ultima_data` atualizados por trigger ao cumprir o item |
+| `manutencoes` | Manutenção feita (preventiva/corretiva) | Custo e oficina; o `km` atualiza `caminhoes.km_atual` (mesmo trigger de viagens/abastecimentos); entra no resultado |
+| `manutencao_itens` | Itens do plano cumpridos numa manutenção | PK (manutencao_id, plano_id) |
+| `multas` | Infrações | `funcionario_id` sugerido pela viagem em curso; `prazo_indicacao` = notificação + `multa_prazo_indicacao_dias`. Só gestor (motorista sem acesso) |
 | `auditoria` | Log | Gravada por trigger `security definer`; ninguém escreve direto |
 
 ### Por que as anomalias não são colunas
@@ -92,17 +96,12 @@ itens_estoque (id, codigo, descricao, unidade, estoque_minimo)
 movimentos_estoque (id, item_id, tipo enum(entrada, saida, ajuste), quantidade,
                     custo_unit_centavos, caminhao_id, manutencao_id, nf, data)
 
-planos_manutencao (id, caminhao_id, item, intervalo_km, intervalo_dias, ultimo_km, ultima_data)
-manutencoes (id, caminhao_id, data, km, tipo enum(preventiva, corretiva), descricao,
-             custo_centavos, fornecedor_id, anexo_path)
 
 lancamentos_financeiros (id, tipo enum(pagar, receber), categoria, descricao,
                          valor_centavos, vencimento, pago_em, caminhao_id, viagem_id,
                          cliente_id, fornecedor_id)
 
 checklists (id, viagem_id, caminhao_id, motorista_id, respostas jsonb, fotos text[], data)
-multas (id, caminhao_id, funcionario_id, data_infracao, auto, valor_centavos,
-        prazo_indicacao, status)
 ```
 
 **Impacto no MVP:** nenhum. Não é preciso criar colunas agora. Só mantenha `fornecedores.tipo` e `caminhoes.configuracao_eixos`, que já existem.

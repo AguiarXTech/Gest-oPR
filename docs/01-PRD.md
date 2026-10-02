@@ -57,16 +57,23 @@ A operação hoje depende de papel, WhatsApp e memória. Isso gera cinco problem
 | RF-21 | Auditoria: toda alteração em tabela financeira/operacional é registrada (quem, quando, antes/depois) | sistema |
 | RF-22 | App instalável (PWA) em Android e iPhone | todos |
 
+### 4.1.1 Adições do piloto (pedido de 2026-10-01, após pesquisa de mercado)
+
+| ID | Requisito | Perfil |
+|---|---|---|
+| RF-32 | Manutenção preventiva por km e/ou tempo: plano por caminhão, aviso de "chegando" e "vencida" pelo km que chega dos abastecimentos; registro da manutenção com oficina e custo, que entra no resultado | gestor |
+| RF-35 | Multas: o app sugere quem dirigia pela viagem daquele momento e controla o prazo para indicar o condutor (padrão 30 dias, configurável) | gestor |
+| RF-36 | Foto do painel (km) no abastecimento, opcional, para conferência | motorista |
+| RF-37 | Mandar o demonstrativo do acerto fechado pelo WhatsApp do motorista (sem frete nem custos, Q6) | gestor |
+
 ### 4.2 Fase 2
 
 | ID | Requisito |
 |---|---|
 | RF-30 | Pneus com ciclo de vida: estoque → montagem (caminhão + posição) → rodízio → retirada → recapagem → descarte, com CPK |
 | RF-31 | Estoque de peças/itens com entradas, saídas por caminhão e estoque mínimo |
-| RF-32 | Manutenção preventiva por km/tempo, com alertas gerados a partir do hodômetro dos abastecimentos |
 | RF-33 | Checklist pré-viagem com fotos |
 | RF-34 | Contas a pagar/receber e fluxo de caixa |
-| RF-35 | Multas (registro, condutor, prazo de indicação) |
 
 ### 4.3 Fase 3 (opcional)
 

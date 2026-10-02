@@ -218,12 +218,13 @@ receita  = Σ fretes (ida + volta) das viagens concluídas no mês
 diesel   = Σ valor dos abastecimentos do caminhão no mês
 pedagio  = Σ despesas tipo pedagio das viagens do caminhão no mês
 despesas = Σ outras despesas das viagens do caminhão no mês
+manutencao = Σ manutenções do caminhão no mês (oficina e peças)
 comissao = Σ comissão calculada das viagens (mesmo sem acerto fechado; marcar "estimada" se não fechado)
-resultado = receita − diesel − pedagio − despesas − comissao
-custo_por_km = (diesel + pedagio + despesas + comissao) / km rodados no mês
+resultado = receita − diesel − pedagio − despesas − manutencao − comissao
+custo_por_km = (diesel + pedagio + despesas + manutencao + comissao) / km rodados no mês
 ```
 
-A fase 2 soma manutenção, pneus (via CPK × km) e custos fixos (seguro, parcelas, IPVA rateado).
+Manutenção entra desde 2026-10-01. A fase 2 soma pneus (via CPK × km) e custos fixos (seguro, parcelas, IPVA rateado).
 
 ### 8.2 Por viagem (diesel rateado)
 
@@ -263,7 +264,27 @@ Quando um documento é renovado, cria-se um **novo registro**. O anterior fica c
 
 ---
 
-## 10. Pneus (fase 2 — especificação antecipada)
+## 10. Manutenção preventiva (`manutencao.ts`) — RF-32
+
+Cada item do plano tem intervalo por km e/ou por dias, a partir da última vez feito.
+
+```
+faltaKm   = ultimo_km + intervalo_km − km_atual do caminhão
+faltaDias = (ultima_data + intervalo_dias) − hoje
+vencido   se faltaKm < 0 ou faltaDias < 0  (vale o que vencer primeiro)
+próximo   se faltaKm ≤ manutencao_aviso_km (1.000) ou faltaDias ≤ manutencao_aviso_dias (15)
+sem_registro se falta a última vez (não dá para calcular)
+```
+
+O km atual vem dos abastecimentos, viagens e manutenções (trigger). Cumprir um item numa manutenção atualiza `ultimo_km`/`ultima_data` (se for a mais recente).
+
+## 11. Multas (`multas.ts`) — RF-35
+
+- Quem dirigia = motorista da viagem do caminhão em curso no momento da infração (`data_saida ≤ t ≤ data_chegada`, ou até agora se em andamento). O gestor pode trocar.
+- `prazo_indicacao = notificada_em + multa_prazo_indicacao_dias` (padrão 30). Sem indicar no prazo vem a multa NIC (mesmo valor) e os pontos ficam com a empresa.
+- Situação: `indicar_atrasado` (prazo passou sem indicar) · `indicar` · `pagar` · `resolvida`.
+
+## 12. Pneus (fase 2 — especificação antecipada)
 
 **Identificação.** `marca_fogo` (número gravado no pneu, único) + DOT.
 

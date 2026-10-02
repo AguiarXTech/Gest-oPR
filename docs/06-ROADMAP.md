@@ -84,6 +84,17 @@ Sprints de ~1 semana, com dedicação parcial. Cada tarefa tem ID (`S{sprint}-{n
 | S5-5 | Tela de auditoria simples (filtro por tabela/registro) | Mostra antes/depois |
 | S5-6 | Configurações editáveis (limiares) | Mudança reflete nas anomalias |
 
+## Adições do piloto (2026-10-01)
+
+| ID | Tarefa | Situação |
+|---|---|---|
+| A-1 | Manutenção preventiva (RF-32): `planos_manutencao`, `manutencoes`, `manutencao_itens`; avisos no painel; custo no resultado | Feito |
+| A-2 | Multas (RF-35): motorista sugerido pela viagem, prazo de indicação, alerta no painel | Feito |
+| A-3 | Foto do painel no abastecimento (RF-36) | Feito |
+| A-4 | Demonstrativo do acerto pelo WhatsApp (RF-37) | Feito |
+
+Migration `20261001000007`. Próximas candidatas (pesquisa de 2026-10-01): pneus com estoque e CPK, custos fixos e contas a receber, checklist pré-viagem, avisos no celular.
+
 ## Piloto (4 semanas)
 
 - Produção: Supabase gratuito com backup noturno (ADR-0004) + Vercel + domínio. Passar para o Pro ao fim do piloto.
@@ -97,10 +108,10 @@ Sprints de ~1 semana, com dedicação parcial. Cada tarefa tem ID (`S{sprint}-{n
 
 Ordem sugerida, justificada pelo impacto em custo:
 
-1. **Manutenção preventiva** (RF-32): usa o km que já chega pelos abastecimentos. Baixo esforço, evita quebra na estrada.
+1. ~~Manutenção preventiva (RF-32)~~: antecipada para o piloto (A-1).
 2. **Pneus** (RF-30): segundo maior custo variável; modelo esboçado em `03-MODELO-DE-DADOS.md`.
 3. **Contas a pagar/receber** (RF-34): completa o resultado com custos fixos.
-4. **Estoque de peças** (RF-31), **checklist** (RF-33), **multas** (RF-35).
+4. **Estoque de peças** (RF-31), **checklist** (RF-33). Multas (RF-35) foram antecipadas para o piloto (A-2).
 
 ## Riscos e mitigação
 
