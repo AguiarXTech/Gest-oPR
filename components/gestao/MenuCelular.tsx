@@ -20,7 +20,7 @@ export function MenuCelular({ rodape }: { rodape: React.ReactNode }) {
       </SheetTrigger>
       <SheetContent
         side="left"
-        className="w-72 gap-6 overflow-y-auto border-sidebar-border bg-sidebar p-4 text-sidebar-foreground"
+        className="w-72 gap-6 overflow-y-auto border-sidebar-border bg-sidebar p-4 pt-[max(1rem,env(safe-area-inset-top))] text-sidebar-foreground"
       >
         <SheetTitle className="px-3 pt-2 text-lg text-sidebar-foreground">
           <Marca className="h-12" />

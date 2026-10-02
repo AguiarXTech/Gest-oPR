@@ -16,6 +16,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: 'Gestão RPortugues',
   description: 'Viagens, abastecimentos, acertos e resultado da frota',
+  // App instalado no iPhone: abre em tela cheia, com o grafite por baixo da barra de status
+  // (os topos das telas somam env(safe-area-inset-top) para o conteúdo não ficar embaixo dela).
+  appleWebApp: { capable: true, title: 'RPortugues', statusBarStyle: 'black-translucent' },
 };
 
 export const viewport: Viewport = {

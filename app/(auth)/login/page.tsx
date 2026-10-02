@@ -1,4 +1,6 @@
+import { Smartphone } from 'lucide-react';
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import Image from 'next/image';
 import estrada from '@/public/fundo-estrada.jpg';
 import fundo from '@/public/fundo-login.jpg';
@@ -31,6 +33,14 @@ export default function LoginPage() {
           />
           {/* Funde a foto no grafite do formulário. */}
           <div className="absolute inset-0 bg-linear-to-b from-transparent from-60% to-grafite" />
+          {/* No canto da foto para ser visto sem rolar a tela (passo a passo em /instalar). */}
+          <Link
+            href="/instalar"
+            className="absolute top-[max(0.75rem,env(safe-area-inset-top))] right-3 inline-flex min-h-11 items-center gap-2 rounded-full bg-black/55 px-4 text-sm font-semibold text-white backdrop-blur-sm hover:bg-black/70"
+          >
+            <Smartphone className="size-5" aria-hidden />
+            Instalar no celular
+          </Link>
         </div>
 
         <div className="relative mx-auto -mt-6 flex w-full max-w-sm flex-col gap-6 px-6 pb-[max(2rem,env(safe-area-inset-bottom))] md:max-w-none md:px-8 md:pb-8">

@@ -10,7 +10,7 @@ export default async function LayoutMotorista({ children }: LayoutProps<'/m'>) {
     <div className="flex min-h-full flex-1 flex-col">
       <header className="sticky top-0 z-10 bg-sidebar text-sidebar-foreground">
         {/* Logo centralizado, nome do motorista logo abaixo. */}
-        <div className="mx-auto flex w-full max-w-md flex-col items-center gap-1 px-4 pt-3 pb-2">
+        <div className="mx-auto flex w-full max-w-md flex-col items-center gap-1 px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-2">
           <Marca className="h-11" />
           <p className="max-w-full truncate text-sm font-semibold text-sidebar-foreground/80">{perfil?.nome}</p>
         </div>

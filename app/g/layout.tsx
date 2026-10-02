@@ -23,7 +23,7 @@ export default async function LayoutGestao({ children }: LayoutProps<'/g'>) {
     <div className="flex min-h-full flex-1 flex-col md:flex-row">
       {/* Celular: barra grafite no topo, menu à esquerda e logo centralizado
           (a coluna vazia da direita tem a largura do botão, para o logo ficar no meio exato). */}
-      <header className="sticky top-0 z-10 grid grid-cols-[2.75rem_1fr_2.75rem] items-center gap-2 bg-sidebar px-2 py-2 text-sidebar-foreground md:hidden">
+      <header className="sticky top-0 z-10 grid grid-cols-[2.75rem_1fr_2.75rem] items-center gap-2 bg-sidebar px-2 pt-[max(0.5rem,env(safe-area-inset-top))] pb-2 text-sidebar-foreground md:hidden">
         <MenuCelular rodape={usuario} />
         <Marca className="h-11 justify-self-center" />
       </header>
