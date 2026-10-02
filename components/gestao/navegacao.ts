@@ -7,9 +7,11 @@ import {
   LayoutDashboard,
   Route,
   Settings,
+  Siren,
   Store,
   Truck,
   Users,
+  Wrench,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -33,6 +35,8 @@ export const menuGestao: GrupoMenu[] = [
       { href: '/g/abastecimentos', rotulo: 'Abastecimentos', icone: Fuel, pronto: true },
       { href: '/g/adiantamentos', rotulo: 'Adiantamentos', icone: HandCoins, pronto: true },
       { href: '/g/acertos', rotulo: 'Acertos', icone: Calculator, pronto: true },
+      { href: '/g/manutencao', rotulo: 'Manutenção', icone: Wrench, pronto: true },
+      { href: '/g/multas', rotulo: 'Multas', icone: Siren, pronto: true },
     ],
   },
   {

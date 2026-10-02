@@ -21,6 +21,8 @@ export type EntradaResultado = {
   litros: number;
   pedagioCentavos: number;
   despesasCentavos: number;
+  /** Oficina e peças do mês (manutenções registradas pela gestão). */
+  manutencaoCentavos?: number;
 };
 
 export type Resultado = {
@@ -28,6 +30,7 @@ export type Resultado = {
   dieselCentavos: number;
   pedagioCentavos: number;
   despesasCentavos: number;
+  manutencaoCentavos: number;
   comissaoCentavos: number;
   resultadoCentavos: number;
   km: number;
@@ -37,17 +40,19 @@ export type Resultado = {
   kmPorLitro: number | null;
 };
 
-/** Resultado por caminhão/mês (§8.1): receita − diesel − pedágio − despesas − comissão. */
+/** Resultado por caminhão/mês (§8.1): receita − diesel − pedágio − despesas − manutenção − comissão. */
 export function calcularResultado(e: EntradaResultado): Resultado {
   const receitaCentavos = e.viagens.reduce((t, v) => t + v.freteCentavos, 0);
   const comissaoCentavos = e.viagens.reduce((t, v) => t + v.comissaoCentavos, 0);
   const km = e.viagens.reduce((t, v) => t + v.kmRodado, 0);
-  const custo = e.dieselCentavos + e.pedagioCentavos + e.despesasCentavos + comissaoCentavos;
+  const manutencaoCentavos = e.manutencaoCentavos ?? 0;
+  const custo = e.dieselCentavos + e.pedagioCentavos + e.despesasCentavos + manutencaoCentavos + comissaoCentavos;
   return {
     receitaCentavos,
     dieselCentavos: e.dieselCentavos,
     pedagioCentavos: e.pedagioCentavos,
     despesasCentavos: e.despesasCentavos,
+    manutencaoCentavos,
     comissaoCentavos,
     resultadoCentavos: receitaCentavos - custo,
     km,

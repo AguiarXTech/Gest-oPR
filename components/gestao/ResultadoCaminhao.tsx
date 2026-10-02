@@ -34,6 +34,7 @@ export function ResultadoCaminhao({ dados, nomeMes }: { dados: CaminhaoDoMes | u
         <Linha rotulo="Diesel" valor={r.dieselCentavos} menos />
         <Linha rotulo="Pedágio" valor={r.pedagioCentavos} menos />
         <Linha rotulo="Outras despesas" valor={r.despesasCentavos} menos />
+        <Linha rotulo="Manutenção" valor={r.manutencaoCentavos} menos />
         <Linha rotulo="Comissão" valor={r.comissaoCentavos} menos />
       </div>
       <p className="text-sm text-muted-foreground tabular-nums">

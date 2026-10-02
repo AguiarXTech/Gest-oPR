@@ -46,6 +46,18 @@ describe('calcularResultado (regras §8.1)', () => {
     expect(r.kmPorLitro).toBeCloseTo(2.95, 2);
   });
 
+  it('manutenção entra no custo', () => {
+    const r = calcularResultado({
+      viagens: [{ freteCentavos: 450000, kmRodado: 580, comissaoCentavos: 15000 }],
+      dieselCentavos: 0,
+      litros: 0,
+      pedagioCentavos: 0,
+      despesasCentavos: 0,
+      manutencaoCentavos: 120000,
+    });
+    expect(r).toMatchObject({ manutencaoCentavos: 120000, resultadoCentavos: 450000 - 15000 - 120000 });
+  });
+
   it('mês sem viagens: resultado negativo do que gastou, sem custo por km', () => {
     const r = calcularResultado({ viagens: [], dieselCentavos: 50000, litros: 80, pedagioCentavos: 0, despesasCentavos: 0 });
     expect(r).toMatchObject({ receitaCentavos: 0, resultadoCentavos: -50000, custoPorKmCentavos: null, kmPorLitro: null });
