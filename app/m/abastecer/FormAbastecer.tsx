@@ -69,6 +69,7 @@ export function FormAbastecer({ funcionarioId, viagem, caminhoes, postos, config
     nfce_chave: null,
     nfce_url: null,
     foto_path: '',
+    foto_painel_path: null,
   };
   // Rascunho: lido uma vez ao abrir. O id vai junto para a nova tentativa não duplicar.
   const [inicial] = useState<Rascunho>(() => {
@@ -260,6 +261,14 @@ export function FormAbastecer({ funcionarioId, viagem, caminhoes, postos, config
           rotulo=""
         />
         {errors.foto_path && <p className="font-medium text-destructive">{errors.foto_path.message}</p>}
+        <div className="mt-2 border-t pt-3">
+          <FotoComprovante
+            funcionarioId={funcionarioId}
+            caminho={valores.foto_painel_path || null}
+            onChange={(c) => setValue('foto_painel_path', c)}
+            rotulo="Foto do painel mostrando o km (opcional)"
+          />
+        </div>
       </section>
 
       {/* 3. Dados */}

@@ -57,6 +57,11 @@ export const abastecimentoSchema = z.object({
     .refine((v) => v === null || validarChave(v), 'Chave da nota inválida.'),
   nfce_url: z.string().nullable(),
   foto_path: z.string({ error: 'Tire a foto do cupom.' }).min(1, 'Tire a foto do cupom.'),
+  /** Foto do painel com o km (opcional; antifraude). */
+  foto_painel_path: z
+    .string()
+    .nullish()
+    .transform((v) => v || null),
 });
 
 export type AbastecimentoForm = z.input<typeof abastecimentoSchema>;

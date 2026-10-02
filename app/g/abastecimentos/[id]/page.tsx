@@ -72,7 +72,15 @@ export default async function DetalheAbastecimento({ params }: PageProps<'/g/aba
             </div>
           ))}
         </dl>
-        <VerComprovante caminho={a.foto_path} alt="Foto do cupom do abastecimento" />
+        <div className="flex flex-col gap-4">
+          <VerComprovante caminho={a.foto_path} alt="Foto do cupom do abastecimento" />
+          {a.foto_painel_path && (
+            <div className="flex flex-col gap-1">
+              <p className="font-medium">Foto do painel (km)</p>
+              <VerComprovante caminho={a.foto_painel_path} alt="Foto do painel com o km" />
+            </div>
+          )}
+        </div>
       </div>
 
       {a.nfce_chave && <p className="font-mono text-xs break-all text-muted-foreground">Chave: {a.nfce_chave}</p>}
