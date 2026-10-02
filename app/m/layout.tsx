@@ -1,6 +1,7 @@
 import { obterPerfilAtual } from '@/lib/supabase/perfil';
 import { Marca } from '@/components/base/Marca';
 import { Assinatura } from '@/components/base/Assinatura';
+import { VoltarInicio } from '@/components/navegacao/VoltarInicio';
 
 // Moldura grafite no topo + conteúdo claro, o mesmo padrão da gestão.
 // O "Sair" fica no fim da home, longe do polegar, para não ser tocado sem querer.
@@ -17,6 +18,7 @@ export default async function LayoutMotorista({ children }: LayoutProps<'/m'>) {
         </div>
       </header>
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+        <VoltarInicio inicio="/m" rotulo="Início" />
         {children}
         <Assinatura claro className="pt-2" />
       </main>

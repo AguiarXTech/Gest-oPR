@@ -4,6 +4,9 @@ import { MenuGestao } from '@/components/gestao/MenuGestao';
 import { obterPerfilAtual } from '@/lib/supabase/perfil';
 import { Marca } from '@/components/base/Marca';
 import { Assinatura } from '@/components/base/Assinatura';
+import { VoltarInicio } from '@/components/navegacao/VoltarInicio';
+import { Truck } from 'lucide-react';
+import Link from 'next/link';
 
 // Moldura grafite (menu) + conteúdo claro, o mesmo padrão da área do motorista.
 export default async function LayoutGestao({ children }: LayoutProps<'/g'>) {
@@ -16,6 +19,14 @@ export default async function LayoutGestao({ children }: LayoutProps<'/g'>) {
         <p className="truncate font-semibold">{perfil?.nome}</p>
         <p className="text-sm text-sidebar-foreground/60">{papel}</p>
       </div>
+      {perfil?.funcionario_id && (
+        <Link
+          href="/m"
+          className="flex min-h-11 items-center justify-center gap-2 rounded-lg border border-sidebar-border px-3 font-medium hover:bg-sidebar-accent"
+        >
+          <Truck className="size-5" aria-hidden /> Área do motorista
+        </Link>
+      )}
       <BotaoSair naMoldura />
       <Assinatura className="pt-1" />
     </div>
@@ -38,7 +49,10 @@ export default async function LayoutGestao({ children }: LayoutProps<'/g'>) {
       </aside>
 
       <main className="flex-1 p-4 md:p-8">
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">{children}</div>
+        <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
+          <VoltarInicio inicio="/g" rotulo="Painel" />
+          {children}
+        </div>
       </main>
     </div>
   );
