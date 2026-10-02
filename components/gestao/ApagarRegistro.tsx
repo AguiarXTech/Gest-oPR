@@ -9,7 +9,7 @@ import { createClient } from '@/lib/supabase/client';
 import { traduzirErroBanco } from '@/lib/supabase/erros';
 
 /** Apaga um registro lançado errado (o banco recusa se estiver em acerto fechado). */
-export function ApagarRegistro({ tabela, id, rotulo }: { tabela: 'adiantamentos' | 'documentos'; id: string; rotulo: string }) {
+export function ApagarRegistro({ tabela, id, rotulo }: { tabela: 'adiantamentos' | 'documentos' | 'planos_manutencao' | 'manutencoes' | 'multas'; id: string; rotulo: string }) {
   const router = useRouter();
   const [supabase] = useState(createClient);
   const [confirmando, setConfirmando] = useState(false);
