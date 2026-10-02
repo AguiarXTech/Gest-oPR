@@ -16,7 +16,7 @@ import { cn } from '@/lib/utils';
 import { gerarUuid, jaFoiSalvo } from '@/lib/uuid';
 import { iniciarViagemSchema, type IniciarViagemDados, type IniciarViagemForm } from '@/lib/validations/viagem';
 
-type Caminhao = { id: string; placa: string; apelido: string | null; km_atual: number };
+type Caminhao = { id: string; placa: string; apelido: string | null; km_atual: number; fotoUrl?: string | null };
 
 type Props = {
   funcionarioId: string;
@@ -99,6 +99,10 @@ export function FormIniciarViagem({ funcionarioId, caminhoes, caminhaoSugerido, 
               caminhaoId === c.id && 'border-primary ring-2 ring-primary',
             )}
           >
+            {c.fotoUrl && (
+              // eslint-disable-next-line @next/next/no-img-element -- URL assinada temporária do Storage
+              <img src={c.fotoUrl} alt="" className="size-16 shrink-0 rounded-xl object-cover" />
+            )}
             <input type="radio" value={c.id} {...register('caminhao_id', { onChange: () => setAvisoKm(false) })} className="sr-only" />
             <span className="flex flex-1 flex-col">
               <span className="font-mono text-xl font-bold">{formatarPlaca(c.placa)}</span>

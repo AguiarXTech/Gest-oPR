@@ -2,6 +2,7 @@ import { Plus } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { formatarPlaca } from '@/lib/domain/placa';
+import { urlsFotosCaminhoes } from '@/lib/supabase/fotosCaminhoes';
 import { createClient } from '@/lib/supabase/server';
 import { cn } from '@/lib/utils';
 
@@ -13,9 +14,11 @@ export default async function ListaCaminhoes() {
   const supabase = await createClient();
   const { data: caminhoes, error } = await supabase
     .from('caminhoes')
-    .select('id, placa, apelido, marca, modelo, ano, configuracao_eixos, capacidade_tanque_l, km_atual, ativo')
+    .select('id, placa, apelido, marca, modelo, ano, configuracao_eixos, capacidade_tanque_l, km_atual, ativo, foto_path')
     .order('ativo', { ascending: false })
     .order('placa');
+
+  const fotos = await urlsFotosCaminhoes(supabase, caminhoes ?? []);
 
   return (
     <>
@@ -41,8 +44,12 @@ export default async function ListaCaminhoes() {
           <li key={c.id}>
             <Link
               href={`/g/caminhoes/${c.id}`}
-              className={cn('flex flex-col gap-1 rounded-xl border bg-card p-4 shadow-xs hover:border-primary/40', !c.ativo && 'opacity-60')}
+              className={cn('flex flex-col gap-1 overflow-hidden rounded-xl border bg-card p-4 shadow-xs hover:border-primary/40', !c.ativo && 'opacity-60')}
             >
+              {fotos.get(c.id) && (
+                // eslint-disable-next-line @next/next/no-img-element -- URL assinada temporária do Storage
+                <img src={fotos.get(c.id)} alt="" className="-mx-4 -mt-4 mb-2 aspect-[16/9] w-[calc(100%+2rem)] max-w-none object-cover" />
+              )}
               <div className="flex items-center justify-between gap-2">
                 <span className="font-mono text-lg font-semibold">{formatarPlaca(c.placa)}</span>
                 {!c.ativo && <span className="rounded-full bg-muted px-2 py-0.5 text-xs">desativado</span>}

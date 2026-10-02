@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { AlternarAtivo } from '@/components/gestao/AlternarAtivo';
 import { FormCaminhao } from '@/components/gestao/FormCaminhao';
+import { FotoCaminhao } from '@/components/gestao/FotoCaminhao';
+import { urlsFotosCaminhoes } from '@/lib/supabase/fotosCaminhoes';
 import { ResultadoCaminhao } from '@/components/gestao/ResultadoCaminhao';
 import { competencia } from '@/lib/domain/resultado';
 import { carregarMes } from '@/lib/supabase/painel';
@@ -35,6 +37,8 @@ export default async function EditarCaminhao({ params, searchParams }: PageProps
         </h1>
         {!caminhao.ativo && <p className="text-sm text-muted-foreground">Caminhão desativado.</p>}
       </div>
+
+      <FotoCaminhao caminhaoId={caminhao.id} url={(await urlsFotosCaminhoes(supabase, [caminhao])).get(caminhao.id) ?? null} />
 
       <ResultadoCaminhao dados={doMes.caminhoes.find((c) => c.id === caminhao.id)} nomeMes={nomeMes(mes)} />
 
