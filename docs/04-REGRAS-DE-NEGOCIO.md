@@ -187,9 +187,9 @@ Uma viagem concluída **sem nenhum frete lançado** **impede o fechamento do ace
 
 | Componente | Cálculo |
 |---|---|
-| `total_frete` | Σ fretes das viagens (informativo; guardado em `total_frete_centavos`) |
+| `total_frete` | Σ fretes das viagens (só informativo na tela da gestão; **não** é gravado no acerto, que o motorista lê — Q6) |
 | `total_comissao` | Σ comissão por viagem |
-| `total_reembolsos` | Σ despesas com `reembolsavel = true` + Σ abastecimentos com `forma_pagamento = 'motorista'` |
+| `total_reembolsos` | Σ despesas com `reembolsavel = true` + Σ abastecimentos com `forma_pagamento = 'motorista'` (Q5: só despesas do caminhão são reembolsáveis por padrão; Q11: o diesel é faturado no posto, então normalmente não entra) |
 | `total_adiantamentos` | Σ adiantamentos |
 | `saldo` | `total_comissao + total_reembolsos − total_adiantamentos` |
 

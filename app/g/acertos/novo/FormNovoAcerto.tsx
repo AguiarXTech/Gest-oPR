@@ -6,6 +6,8 @@ import { useState } from 'react';
 import { Campo } from '@/components/gestao/Campo';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { periodoSugerido, type TipoPeriodo } from '@/lib/domain/acerto';
+import { hojeIso } from '@/lib/formatar';
 import { createClient } from '@/lib/supabase/client';
 import { traduzirErroBanco } from '@/lib/supabase/erros';
 
@@ -51,6 +53,36 @@ export function FormNovoAcerto({ motoristas, inicioPadrao, fimPadrao }: Props) {
           ))}
         </select>
       </Campo>
+      <fieldset className="flex flex-col gap-2">
+        <legend className="mb-1 font-medium">Período</legend>
+        <div className="grid grid-cols-3 gap-2">
+          {(
+            [
+              ['mensal', 'Mês passado'],
+              ['quinzenal', 'Quinzena passada'],
+              ['semanal', 'Semana passada'],
+            ] as [TipoPeriodo, string][]
+          ).map(([tipo, rotulo]) => {
+            const p = periodoSugerido(tipo, hojeIso());
+            const ativo = p.inicio === inicio && p.fim === fim;
+            return (
+              <Button
+                key={tipo}
+                type="button"
+                variant={ativo ? 'default' : 'outline'}
+                aria-pressed={ativo}
+                onClick={() => {
+                  setInicio(p.inicio);
+                  setFim(p.fim);
+                }}
+                className="h-auto min-h-11 py-2 whitespace-normal"
+              >
+                {rotulo}
+              </Button>
+            );
+          })}
+        </div>
+      </fieldset>
       <div className="grid grid-cols-2 gap-3">
         <Campo id="inicio" rotulo="De">
           <Input id="inicio" type="date" required value={inicio} onChange={(e) => setInicio(e.target.value)} />

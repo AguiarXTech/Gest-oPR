@@ -122,16 +122,16 @@ Não implemente regra definitiva para os itens abaixo antes da resposta. Use con
 | # | Pergunta | Impacta | Suposição provisória |
 |---|---|---|---|
 | Q1 | ~~Qual é exatamente a regra de comissão? Há salário-base além da comissão?~~ **Respondida em 2026-10-01:** comissão é um **valor fixo em R$ por viagem**, e uma viagem = **ida e volta** (não por trecho). Cada motorista tem o próprio valor de comissão e o próprio salário-base. | RF-14/15 | Tipo `valor_por_viagem`, um valor por motorista |
-| Q2 | O acerto é por viagem, semanal ou mensal? | RF-15 | Mensal, com período livre |
+| Q2 | ~~O acerto é por viagem, semanal ou mensal?~~ **Respondida em 2026-10-01:** período livre, com atalhos para **mensal, quinzenal (15 dias) e semanal (7 dias)** | RF-15 | Implementado: `periodoSugerido` (último período fechado; semana de segunda a domingo) |
 | Q3 | ~~A volta (BH → SJE) é carregada (tem frete) ou vazia?~~ **Respondida em 2026-10-01:** a volta (BH → SJE) é **sempre carregada**; a ida (SJE → BH) vai **vazia na maioria das vezes**, mas às vezes leva carga. Cada trecho carregado tem o seu frete (≈ 3 a 6 fretes por semana). A duração varia com a liberação da carga (ex.: sai sábado e só descarrega segunda). O motorista dá **início** ao sair e **fim** na volta, depois de descarregar. | Receita, RF-05/06/07 | Implementado: viagem = ciclo; tabela `fretes` com 0 a 2 fretes por viagem (migration `20261001000002`) |
 | Q4 | Quem registra o valor do frete: o gestor ou vem do CT-e? | RF-07 | Gestor digita |
-| Q5 | Existe diária/ajuda de custo fixa além do reembolso de despesas? | RF-15 | Não; só reembolso |
-| Q6 | O motorista pode ver o valor do frete das próprias viagens? | RF-17 | **Não, por enquanto** (revisto em 2026-10-01): com a comissão fixa por viagem, o frete não é necessário para o motorista conferir o que recebe. Confirmar com o dono |
+| Q5 | ~~Existe diária/ajuda de custo fixa além do reembolso de despesas?~~ **Respondida em 2026-10-01:** não há diária, e a empresa **não paga alimentação, pernoite etc.**; só reembolsa **despesas do caminhão** pagas pelo motorista | RF-11/15 | Implementado: `despesaReembolsavel` (pedágio, borracharia, manutenção, estacionamento, lavagem, chapa); alimentação e pernoite saem da tela do motorista |
+| Q6 | ~~O motorista pode ver o valor do frete das próprias viagens?~~ **Respondida em 2026-10-01:** **não**; o motorista não tem acesso ao frete **nem a nada relacionado às despesas do caminhão** | RF-17 | Implementado: sem policy em `fretes`; acerto sem total de fretes; sem preços de diesel na análise do motorista (migration `20261001000006`) |
 | Q7 | Cada motorista tem caminhão fixo? | UX RF-05 | Não; escolhe na saída, sugerindo o último usado |
 | Q8 | Os motoristas têm e-mail? | RF-01 | Se não tiverem, usar e-mail interno `cpf@frota.local` gerado pelo gestor (ver ADR 0001) |
 | Q9 | Configuração de eixos de cada caminhão (toco, truck, carreta)? | Fase 2 pneus e pedágio | Cadastrar por caminhão |
 | Q10 | A empresa usa TAG de pedágio? | Registro de pedágio | Pedágio lançado como despesa da viagem |
-| Q11 | Como o diesel é pago: dinheiro do motorista (reembolsa no acerto), cartão da empresa ou faturado no posto? | RF-08, RF-15 | Campo `forma_pagamento` por abastecimento; só `motorista` entra no acerto |
+| Q11 | ~~Como o diesel é pago?~~ **Respondida em 2026-10-01:** **faturado direto no posto** | RF-08, RF-15 | Implementado: abastecimento do motorista grava `forma_pagamento = faturado` e não entra no acerto; o campo continua no banco para exceções |
 
 ## 8. Critérios de aceite do MVP (piloto)
 

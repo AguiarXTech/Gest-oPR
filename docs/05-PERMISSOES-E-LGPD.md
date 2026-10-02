@@ -12,7 +12,7 @@ Legenda: **T** = total · **L** = leitura · **P** = só os próprios registros 
 | Clientes | T | T | — |
 | Fornecedores | T | T | L |
 | Viagens | T | T | P: cria; edita só `em_andamento` e sem acerto |
-| Fretes (cliente, valor, CT-e/MDF-e) | T | T | — (ver Q6) |
+| Fretes (cliente, valor, CT-e/MDF-e) | T | T | — (Q6: nem frete nem custos do caminhão) |
 | Abastecimentos | T | T | P: cria; edita/apaga enquanto não conferido e sem acerto |
 | Despesas de viagem | T | T | idem abastecimentos |
 | Adiantamentos | T | T | L (P) |
