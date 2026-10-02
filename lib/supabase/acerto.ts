@@ -26,7 +26,7 @@ export function paraRegraDominio(r: Tables<'regras_comissao'>): RegraComissao {
 }
 
 export async function carregarAcerto(supabase: Cliente, id: string) {
-  const { data: acerto } = await supabase.from('acertos').select('*, funcionarios(nome)').eq('id', id).maybeSingle();
+  const { data: acerto } = await supabase.from('acertos').select('*, funcionarios(nome, telefone)').eq('id', id).maybeSingle();
   if (!acerto) return null;
 
   const [{ data: viagens }, { data: abastecimentos }, { data: despesas }, { data: adiantamentos }, { data: regras }] = await Promise.all([

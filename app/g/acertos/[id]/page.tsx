@@ -11,13 +11,30 @@ import { createClient } from '@/lib/supabase/server';
 import { cn } from '@/lib/utils';
 import { FORMAS_PAGAMENTO } from '@/lib/validations/abastecimento';
 import { TIPOS_DESPESA } from '@/lib/validations/despesa';
+import { linkWhatsApp, telefoneWhatsApp, textoDemonstrativo } from '@/lib/domain/whatsapp';
+import { MessageCircle } from 'lucide-react';
 import { AcoesAcerto } from './AcoesAcerto';
 
 export const metadata: Metadata = { title: 'Acerto · Gestão RPortugues' };
 
-function Linha({ rotulo, valor, forte, negativo }: { rotulo: string; valor: number; forte?: boolean; negativo?: boolean }) {
+function Linha({
+  rotulo,
+  valor,
+  forte,
+  negativo,
+}: {
+  rotulo: string;
+  valor: number;
+  forte?: boolean;
+  negativo?: boolean;
+}) {
   return (
-    <div className={cn('flex justify-between gap-3 py-1.5', forte && 'border-t pt-3 text-lg font-bold')}>
+    <div
+      className={cn(
+        'flex justify-between gap-3 py-1.5',
+        forte && 'border-t pt-3 text-lg font-bold',
+      )}
+    >
       <span>{rotulo}</span>
       <span className="tabular-nums">
         {negativo ? '− ' : ''}
@@ -32,7 +49,8 @@ export default async function DetalheAcerto({ params }: PageProps<'/g/acertos/[i
   const supabase = await createClient();
   const [dados, perfil] = await Promise.all([carregarAcerto(supabase, id), obterPerfilAtual()]);
   if (!dados) notFound();
-  const { acerto, viagens, abastecimentos, despesas, adiantamentos, resultado, verificacao } = dados;
+  const { acerto, viagens, abastecimentos, despesas, adiantamentos, resultado, verificacao } =
+    dados;
 
   // Rascunho mostra o cálculo de agora; fechado/pago mostra o que foi gravado no fechamento.
   const t =
@@ -56,10 +74,19 @@ export default async function DetalheAcerto({ params }: PageProps<'/g/acertos/[i
         <h1 className="text-3xl">{acerto.funcionarios?.nome}</h1>
         <p className="flex flex-wrap items-center gap-2 text-muted-foreground">
           {formatarData(acerto.periodo_inicio)} a {formatarData(acerto.periodo_fim)}
-          <span className={cn('rounded-full px-2 py-0.5 text-sm font-medium text-foreground', STATUS_ACERTO[acerto.status].classe)}>
+          <span
+            className={cn(
+              'rounded-full px-2 py-0.5 text-sm font-medium text-foreground',
+              STATUS_ACERTO[acerto.status].classe,
+            )}
+          >
             {STATUS_ACERTO[acerto.status].rotulo}
           </span>
-          {acerto.pago_em && <span>· pago em {formatarData(acerto.pago_em)} ({acerto.forma_pagamento})</span>}
+          {acerto.pago_em && (
+            <span>
+              · pago em {formatarData(acerto.pago_em)} ({acerto.forma_pagamento})
+            </span>
+          )}
         </p>
       </div>
 
@@ -78,7 +105,10 @@ export default async function DetalheAcerto({ params }: PageProps<'/g/acertos/[i
           {verificacao.avisos.map((a) => (
             <p key={a}>
               ⚠ {a}{' '}
-              <Link href="/g/abastecimentos?filtro=graves" className="font-medium text-primary underline">
+              <Link
+                href="/g/abastecimentos?filtro=graves"
+                className="font-medium text-primary underline"
+              >
                 Conferir
               </Link>
             </p>
@@ -88,14 +118,61 @@ export default async function DetalheAcerto({ params }: PageProps<'/g/acertos/[i
 
       <section className="rounded-2xl border bg-card p-4 shadow-xs sm:p-6">
         <h2 className="mb-2 text-lg font-semibold">Demonstrativo</h2>
-        <Linha rotulo={`Comissão (${viagens.length} viagem${viagens.length === 1 ? '' : 'ns'})`} valor={t.totalComissaoCentavos} />
-        <Linha rotulo="Reembolsos (despesas + diesel pago pelo motorista)" valor={t.totalReembolsosCentavos} />
+        <Linha
+          rotulo={`Comissão (${viagens.length} viagem${viagens.length === 1 ? '' : 'ns'})`}
+          valor={t.totalComissaoCentavos}
+        />
+        <Linha
+          rotulo="Reembolsos (despesas + diesel pago pelo motorista)"
+          valor={t.totalReembolsosCentavos}
+        />
         <Linha rotulo="Adiantamentos" valor={t.totalAdiantamentosCentavos} negativo />
-        <Linha rotulo={t.saldoCentavos >= 0 ? 'Saldo a pagar ao motorista' : 'Saldo: o motorista deve'} valor={Math.abs(t.saldoCentavos)} forte />
-        <p className="mt-2 text-sm text-muted-foreground">Fretes das viagens (informativo): {formatarBRL(t.totalFreteCentavos)}</p>
+        <Linha
+          rotulo={t.saldoCentavos >= 0 ? 'Saldo a pagar ao motorista' : 'Saldo: o motorista deve'}
+          valor={Math.abs(t.saldoCentavos)}
+          forte
+        />
+        <p className="mt-2 text-sm text-muted-foreground">
+          Fretes das viagens (informativo): {formatarBRL(t.totalFreteCentavos)}
+        </p>
       </section>
 
-      <AcoesAcerto id={acerto.id} status={acerto.status} podeFechar={verificacao.erros.length === 0} souDono={perfil?.papel === 'dono'} />
+      {acerto.status !== 'rascunho' && (
+        <a
+          href={linkWhatsApp(
+            telefoneWhatsApp(acerto.funcionarios?.telefone ?? null),
+            textoDemonstrativo({
+              nome: acerto.funcionarios?.nome ?? '',
+              inicio: formatarData(acerto.periodo_inicio),
+              fim: formatarData(acerto.periodo_fim),
+              viagens: viagens.length,
+              comissaoCentavos: acerto.total_comissao_centavos,
+              reembolsosCentavos: acerto.total_reembolsos_centavos,
+              adiantamentosCentavos: acerto.total_adiantamentos_centavos,
+              saldoCentavos: acerto.saldo_centavos,
+              pagoEm: acerto.pago_em ? formatarData(acerto.pago_em) : null,
+            }),
+          )}
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex h-14 items-center justify-center gap-2 rounded-lg border bg-card text-lg font-semibold shadow-xs hover:bg-muted"
+        >
+          <MessageCircle className="size-6 text-sucesso" aria-hidden /> Mandar demonstrativo no
+          WhatsApp
+        </a>
+      )}
+      {acerto.status !== 'rascunho' && !telefoneWhatsApp(acerto.funcionarios?.telefone ?? null) && (
+        <p className="-mt-4 text-sm text-muted-foreground">
+          Sem telefone no cadastro do motorista: o WhatsApp vai pedir o contato.
+        </p>
+      )}
+
+      <AcoesAcerto
+        id={acerto.id}
+        status={acerto.status}
+        podeFechar={verificacao.erros.length === 0}
+        souDono={perfil?.papel === 'dono'}
+      />
 
       <section className="flex flex-col gap-2">
         <h2 className="text-lg font-semibold">Viagens ({viagens.length})</h2>
@@ -104,22 +181,35 @@ export default async function DetalheAcerto({ params }: PageProps<'/g/acertos/[i
             const c = comissaoDe.get(v.id);
             return (
               <li key={v.id}>
-                <Link href={`/g/viagens/${v.id}`} className="flex justify-between gap-3 p-3 hover:bg-muted">
+                <Link
+                  href={`/g/viagens/${v.id}`}
+                  className="flex justify-between gap-3 p-3 hover:bg-muted"
+                >
                   <span className="flex flex-col">
                     <span className="font-medium tabular-nums">
-                      {formatarDataHora(v.data_saida)} · <span className="font-mono">{v.caminhoes ? formatarPlaca(v.caminhoes.placa) : ''}</span>
+                      {formatarDataHora(v.data_saida)} ·{' '}
+                      <span className="font-mono">
+                        {v.caminhoes ? formatarPlaca(v.caminhoes.placa) : ''}
+                      </span>
                     </span>
                     <span className="text-sm text-muted-foreground tabular-nums">
-                      {v.km_chegada !== null && formatarKm(v.km_chegada - v.km_saida)} · fretes {formatarBRL(c?.freteCentavos ?? 0)}
-                      {v.fretes.length === 0 && <span className="font-semibold text-destructive"> · sem frete</span>}
+                      {v.km_chegada !== null && formatarKm(v.km_chegada - v.km_saida)} · fretes{' '}
+                      {formatarBRL(c?.freteCentavos ?? 0)}
+                      {v.fretes.length === 0 && (
+                        <span className="font-semibold text-destructive"> · sem frete</span>
+                      )}
                     </span>
                   </span>
-                  <span className="font-semibold tabular-nums">{formatarBRL(c?.comissaoCentavos ?? 0)}</span>
+                  <span className="font-semibold tabular-nums">
+                    {formatarBRL(c?.comissaoCentavos ?? 0)}
+                  </span>
                 </Link>
               </li>
             );
           })}
-          {viagens.length === 0 && <li className="p-3 text-muted-foreground">Nenhuma viagem concluída no período.</li>}
+          {viagens.length === 0 && (
+            <li className="p-3 text-muted-foreground">Nenhuma viagem concluída no período.</li>
+          )}
         </ul>
       </section>
 
@@ -128,11 +218,20 @@ export default async function DetalheAcerto({ params }: PageProps<'/g/acertos/[i
         <ul className="flex flex-col divide-y rounded-xl border bg-card">
           {abastecimentos.map((a) => (
             <li key={a.id}>
-              <Link href={`/g/abastecimentos/${a.id}`} className="flex justify-between gap-3 p-3 hover:bg-muted">
+              <Link
+                href={`/g/abastecimentos/${a.id}`}
+                className="flex justify-between gap-3 p-3 hover:bg-muted"
+              >
                 <span className="tabular-nums">
-                  {formatarDataHora(a.data_hora)} · {FORMAS_PAGAMENTO[a.forma_pagamento]} {a.conferido ? '✓' : ''}
+                  {formatarDataHora(a.data_hora)} · {FORMAS_PAGAMENTO[a.forma_pagamento]}{' '}
+                  {a.conferido ? '✓' : ''}
                 </span>
-                <span className={cn('font-semibold tabular-nums', a.forma_pagamento !== 'motorista' && 'text-muted-foreground line-through')}>
+                <span
+                  className={cn(
+                    'font-semibold tabular-nums',
+                    a.forma_pagamento !== 'motorista' && 'text-muted-foreground line-through',
+                  )}
+                >
                   {formatarBRL(a.valor_total_centavos)}
                 </span>
               </Link>
@@ -140,7 +239,9 @@ export default async function DetalheAcerto({ params }: PageProps<'/g/acertos/[i
           ))}
           {abastecimentos.length === 0 && <li className="p-3 text-muted-foreground">Nenhum.</li>}
         </ul>
-        <p className="text-sm text-muted-foreground">Riscados: pagos pela empresa, não entram no reembolso.</p>
+        <p className="text-sm text-muted-foreground">
+          Riscados: pagos pela empresa, não entram no reembolso.
+        </p>
       </section>
 
       <section className="flex flex-col gap-2">
@@ -148,11 +249,19 @@ export default async function DetalheAcerto({ params }: PageProps<'/g/acertos/[i
         <ul className="flex flex-col divide-y rounded-xl border bg-card">
           {despesas.map((d) => (
             <li key={d.id}>
-              <Link href={`/g/abastecimentos/despesas/${d.id}`} className="flex justify-between gap-3 p-3 hover:bg-muted">
+              <Link
+                href={`/g/abastecimentos/despesas/${d.id}`}
+                className="flex justify-between gap-3 p-3 hover:bg-muted"
+              >
                 <span>
                   {formatarData(d.data)} · {TIPOS_DESPESA[d.tipo]} {d.conferido ? '✓' : ''}
                 </span>
-                <span className={cn('font-semibold tabular-nums', !d.reembolsavel && 'text-muted-foreground line-through')}>
+                <span
+                  className={cn(
+                    'font-semibold tabular-nums',
+                    !d.reembolsavel && 'text-muted-foreground line-through',
+                  )}
+                >
                   {formatarBRL(d.valor_centavos)}
                 </span>
               </Link>
