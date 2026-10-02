@@ -335,6 +335,7 @@ export type Database = {
           configuracao_eixos: string | null
           created_at: string
           eixos: number | null
+          foto_path: string | null
           id: string
           km_atual: number
           marca: string | null
@@ -351,6 +352,7 @@ export type Database = {
           configuracao_eixos?: string | null
           created_at?: string
           eixos?: number | null
+          foto_path?: string | null
           id?: string
           km_atual?: number
           marca?: string | null
@@ -367,6 +369,7 @@ export type Database = {
           configuracao_eixos?: string | null
           created_at?: string
           eixos?: number | null
+          foto_path?: string | null
           id?: string
           km_atual?: number
           marca?: string | null
@@ -430,6 +433,47 @@ export type Database = {
           valor?: Json
         }
         Relationships: []
+      }
+      despesas_pessoais: {
+        Row: {
+          categoria: string
+          created_at: string
+          data: string
+          descricao: string | null
+          funcionario_id: string
+          id: string
+          updated_at: string
+          valor_centavos: number
+        }
+        Insert: {
+          categoria: string
+          created_at?: string
+          data?: string
+          descricao?: string | null
+          funcionario_id: string
+          id?: string
+          updated_at?: string
+          valor_centavos: number
+        }
+        Update: {
+          categoria?: string
+          created_at?: string
+          data?: string
+          descricao?: string | null
+          funcionario_id?: string
+          id?: string
+          updated_at?: string
+          valor_centavos?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "despesas_pessoais_funcionario_id_fkey"
+            columns: ["funcionario_id"]
+            isOneToOne: false
+            referencedRelation: "funcionarios"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       despesas_viagem: {
         Row: {
