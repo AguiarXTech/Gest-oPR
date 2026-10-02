@@ -96,3 +96,44 @@ export function estimarComissao(viagens: readonly { dataSaida: string; kmRodado:
   }
   return { totalCentavos, dependeDoFrete, semRegra };
 }
+
+/**
+ * Q5 (2026-10-01): a empresa não paga alimentação, pernoite etc.; só reembolsa as
+ * despesas do caminhão que o motorista pagou do bolso. O gestor pode mudar na conferência.
+ */
+export const DESPESAS_DO_CAMINHAO = ['pedagio', 'borracharia', 'manutencao', 'estacionamento', 'lavagem', 'chapa'] as const;
+
+export function despesaReembolsavel(tipo: string): boolean {
+  return (DESPESAS_DO_CAMINHAO as readonly string[]).includes(tipo);
+}
+
+export type TipoPeriodo = 'mensal' | 'quinzenal' | 'semanal';
+
+/**
+ * Q2 (2026-10-01): o acerto pode ser mensal, de 15 ou de 7 dias. Sugere o último período
+ * FECHADO antes de `hoje` (aaaa-mm-dd). A semana começa na segunda-feira (AGENTS.md §4.3).
+ */
+export function periodoSugerido(tipo: TipoPeriodo, hoje: string): { inicio: string; fim: string } {
+  const d = (iso: string) => new Date(`${iso}T12:00:00Z`);
+  const iso = (x: Date) => x.toISOString().slice(0, 10);
+  const somar = (x: Date, dias: number) => new Date(x.getTime() + dias * 86_400_000);
+  const ultimoDiaDoMes = (ano: number, mes: number) => new Date(Date.UTC(ano, mes, 0)).getUTCDate(); // mes 1-12
+  const [ano, mes, dia] = hoje.split('-').map(Number);
+
+  if (tipo === 'semanal') {
+    const h = d(hoje);
+    const diasDesdeSegunda = (h.getUTCDay() + 6) % 7;
+    const segundaPassada = somar(h, -diasDesdeSegunda - 7);
+    return { inicio: iso(segundaPassada), fim: iso(somar(segundaPassada, 6)) };
+  }
+
+  const [aAnt, mAnt] = mes === 1 ? [ano - 1, 12] : [ano, mes - 1];
+  const mm = (m: number) => String(m).padStart(2, '0');
+  if (tipo === 'mensal') {
+    return { inicio: `${aAnt}-${mm(mAnt)}-01`, fim: `${aAnt}-${mm(mAnt)}-${ultimoDiaDoMes(aAnt, mAnt)}` };
+  }
+  // quinzenal: a partir do dia 16, a 1ª quinzena do mês já fechou; antes disso, a 2ª do mês anterior
+  return dia >= 16
+    ? { inicio: `${ano}-${mm(mes)}-01`, fim: `${ano}-${mm(mes)}-15` }
+    : { inicio: `${aAnt}-${mm(mAnt)}-16`, fim: `${aAnt}-${mm(mAnt)}-${ultimoDiaDoMes(aAnt, mAnt)}` };
+}

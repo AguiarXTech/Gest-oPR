@@ -84,7 +84,7 @@ export default async function Extrato() {
       <section className="rounded-2xl border bg-card p-5 shadow-xs">
         <h2 className="mb-2 text-lg font-semibold">A receber no próximo acerto</h2>
         <Linha rotulo={`Comissão (${pendentes.length} viage${pendentes.length === 1 ? 'm' : 'ns'})`} valor={estimativa.totalCentavos} />
-        <Linha rotulo="Reembolsos (despesas e diesel que você pagou)" valor={reembolsos} />
+        <Linha rotulo="Reembolsos (despesas do caminhão que você pagou)" valor={reembolsos} />
         <Linha rotulo="Adiantamentos recebidos" valor={adiant} negativo />
         <Linha rotulo={saldo >= 0 ? 'Saldo estimado' : 'Você deve (estimado)'} valor={Math.abs(saldo)} forte />
         <p className="mt-2 text-sm text-muted-foreground">

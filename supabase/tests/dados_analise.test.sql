@@ -35,9 +35,9 @@ select is(
 select ok(
   not (public.dados_analise_abastecimento('cccccccc-0000-0000-0000-000000000001') -> 'abastecimentos' -> 0) ?| array['motorista_id', 'foto_path', 'nfce_chave'],
   'sem motorista, foto nem nota');
-select ok(
-  (public.dados_analise_abastecimento('cccccccc-0000-0000-0000-000000000001') -> 'precos_litro_centavos') @> '[600]'::jsonb,
-  'preço por litro em centavos (150000 / 250 = 600)');
+select is(
+  public.dados_analise_abastecimento('cccccccc-0000-0000-0000-000000000001') -> 'precos_litro_centavos',
+  '[]'::jsonb, 'motorista não recebe preços (custo do caminhão, Q6)');
 
 -- ===== M1 desativado =====
 reset role;

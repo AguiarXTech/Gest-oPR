@@ -39,7 +39,7 @@ export default async function DetalheAcerto({ params }: PageProps<'/g/acertos/[i
     acerto.status === 'rascunho'
       ? resultado
       : {
-          totalFreteCentavos: acerto.total_frete_centavos,
+          totalFreteCentavos: resultado.totalFreteCentavos,
           totalComissaoCentavos: acerto.total_comissao_centavos,
           totalReembolsosCentavos: acerto.total_reembolsos_centavos,
           totalAdiantamentosCentavos: acerto.total_adiantamentos_centavos,

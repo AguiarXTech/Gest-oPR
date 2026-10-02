@@ -25,7 +25,6 @@ export async function fecharAcerto(acertoId: string): Promise<EstadoFechamento> 
     .from('acertos')
     .update({
       status: 'fechado',
-      total_frete_centavos: resultado.totalFreteCentavos,
       total_comissao_centavos: resultado.totalComissaoCentavos,
       total_reembolsos_centavos: resultado.totalReembolsosCentavos,
       total_adiantamentos_centavos: resultado.totalAdiantamentosCentavos,

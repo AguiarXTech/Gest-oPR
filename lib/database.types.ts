@@ -171,7 +171,6 @@ export type Database = {
           status: Database["public"]["Enums"]["status_acerto"]
           total_adiantamentos_centavos: number
           total_comissao_centavos: number
-          total_frete_centavos: number
           total_reembolsos_centavos: number
           updated_at: string
         }
@@ -191,7 +190,6 @@ export type Database = {
           status?: Database["public"]["Enums"]["status_acerto"]
           total_adiantamentos_centavos?: number
           total_comissao_centavos?: number
-          total_frete_centavos?: number
           total_reembolsos_centavos?: number
           updated_at?: string
         }
@@ -211,7 +209,6 @@ export type Database = {
           status?: Database["public"]["Enums"]["status_acerto"]
           total_adiantamentos_centavos?: number
           total_comissao_centavos?: number
-          total_frete_centavos?: number
           total_reembolsos_centavos?: number
           updated_at?: string
         }

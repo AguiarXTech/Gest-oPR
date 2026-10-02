@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { calcularAcerto, estimarComissao, verificarFechamento, type EntradaAcerto } from './acerto';
+import { calcularAcerto, despesaReembolsavel, estimarComissao, periodoSugerido, verificarFechamento, type EntradaAcerto } from './acerto';
 import type { RegraComissao } from './comissao';
 
 const regra150: RegraComissao = {
@@ -99,5 +99,34 @@ describe('estimarComissao (extrato do motorista)', () => {
 
   it('sem regra vigente', () => {
     expect(estimarComissao([v(10)], [])).toEqual({ totalCentavos: 0, dependeDoFrete: 0, semRegra: 1 });
+  });
+});
+
+describe('despesaReembolsavel (Q5)', () => {
+  it.each(['pedagio', 'borracharia', 'manutencao', 'estacionamento', 'lavagem', 'chapa'])('%s: despesa do caminhão, reembolsa', (t) => {
+    expect(despesaReembolsavel(t)).toBe(true);
+  });
+  it.each(['alimentacao', 'pernoite', 'outros'])('%s: não reembolsa', (t) => {
+    expect(despesaReembolsavel(t)).toBe(false);
+  });
+});
+
+describe('periodoSugerido (Q2)', () => {
+  // 01/10/2026 é uma quinta-feira
+  it('mensal: o mês anterior inteiro', () => {
+    expect(periodoSugerido('mensal', '2026-10-01')).toEqual({ inicio: '2026-09-01', fim: '2026-09-30' });
+    expect(periodoSugerido('mensal', '2026-01-10')).toEqual({ inicio: '2025-12-01', fim: '2025-12-31' });
+    expect(periodoSugerido('mensal', '2028-03-05')).toEqual({ inicio: '2028-02-01', fim: '2028-02-29' }); // bissexto
+  });
+
+  it('quinzenal: a última quinzena fechada', () => {
+    expect(periodoSugerido('quinzenal', '2026-10-01')).toEqual({ inicio: '2026-09-16', fim: '2026-09-30' });
+    expect(periodoSugerido('quinzenal', '2026-10-16')).toEqual({ inicio: '2026-10-01', fim: '2026-10-15' });
+  });
+
+  it('semanal: a semana anterior, de segunda a domingo', () => {
+    expect(periodoSugerido('semanal', '2026-10-01')).toEqual({ inicio: '2026-09-21', fim: '2026-09-27' });
+    // numa segunda, a semana anterior inteira
+    expect(periodoSugerido('semanal', '2026-10-05')).toEqual({ inicio: '2026-09-28', fim: '2026-10-04' });
   });
 });

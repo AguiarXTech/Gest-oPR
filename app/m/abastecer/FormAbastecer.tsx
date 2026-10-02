@@ -22,12 +22,7 @@ import { createClient } from '@/lib/supabase/client';
 import { repetirSeFalharRede, traduzirErroBanco } from '@/lib/supabase/erros';
 import { cn } from '@/lib/utils';
 import { gerarUuid, jaFoiSalvo } from '@/lib/uuid';
-import {
-  abastecimentoSchema,
-  FORMAS_PAGAMENTO,
-  type AbastecimentoDados,
-  type AbastecimentoForm,
-} from '@/lib/validations/abastecimento';
+import { abastecimentoSchema, type AbastecimentoDados, type AbastecimentoForm } from '@/lib/validations/abastecimento';
 
 type Caminhao = { id: string; placa: string; apelido: string | null; km_atual: number };
 type Posto = { id: string; nome: string; cnpj: string | null };
@@ -70,7 +65,7 @@ export function FormAbastecer({ funcionarioId, viagem, caminhoes, postos, config
     litros: '',
     valor_total: '',
     tanque_cheio: true,
-    forma_pagamento: 'motorista',
+    forma_pagamento: 'faturado', // Q11: o diesel é pago direto ao posto
     nfce_chave: null,
     nfce_url: null,
     foto_path: '',
@@ -81,7 +76,7 @@ export function FormAbastecer({ funcionarioId, viagem, caminhoes, postos, config
     return {
       id: r?.id ?? gerarUuid(),
       semQr: r?.semQr ?? false,
-      valores: { ...padrao, ...r?.valores, ...(viagem ? { caminhao_id: viagem.caminhao_id } : {}) },
+      valores: { ...padrao, ...r?.valores, forma_pagamento: 'faturado', ...(viagem ? { caminhao_id: viagem.caminhao_id } : {}) },
     };
   });
   const recuperado = Boolean(lerRascunhoSemErro());
@@ -342,21 +337,6 @@ export function FormAbastecer({ funcionarioId, viagem, caminhoes, postos, config
           </div>
         </fieldset>
 
-        <fieldset className="flex flex-col gap-2">
-          <legend className="mb-1 font-medium">Quem pagou?</legend>
-          {Object.entries(FORMAS_PAGAMENTO).map(([valor, rotulo]) => (
-            <label
-              key={valor}
-              className={cn(
-                'flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border p-3 text-base',
-                valores.forma_pagamento === valor && 'border-primary ring-2 ring-primary',
-              )}
-            >
-              <input type="radio" value={valor} {...register('forma_pagamento')} className="size-5 accent-[var(--primary)]" />
-              {rotulo}
-            </label>
-          ))}
-        </fieldset>
       </section>
 
       {salvar.isError && (
