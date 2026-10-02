@@ -49,7 +49,7 @@ export async function criarAcesso(_anterior: EstadoAcao, formData: FormData): Pr
     email_confirm: true,
   });
   if (erroAuth) {
-    if (erroAuth.code === 'email_exists') return { erro: 'Já existe um acesso com este CPF.' };
+    if (erroAuth.code === 'email_exists') return vincularAcessoExistente(admin, funcionario);
     if (erroAuth.code === 'weak_password') return { erro: 'Senha fraca. Use pelo menos 8 caracteres.' };
     return { erro: 'Não foi possível criar o acesso. Tente de novo.' };
   }
@@ -145,4 +145,33 @@ export async function alterarAtivoFuncionario(_anterior: EstadoAcao, formData: F
   revalidatePath('/g/funcionarios');
   revalidatePath(`/g/funcionarios/${funcionarioId}`);
   return { ok: ativo ? 'Funcionário reativado.' : 'Funcionário desativado. Ele não consegue mais entrar no app.' };
+}
+
+/**
+ * Dono/admin que também dirige (pedido de 2026-10-02): o login dele (CPF) já existe, sem
+ * funcionário ligado. Liga o cadastro de funcionário a esse login, mantendo o papel, para
+ * ele ter também a área do motorista. Login de motorista ou já ligado: recusa.
+ */
+async function vincularAcessoExistente(
+  admin: ReturnType<typeof criarClienteAdmin>,
+  funcionario: { id: string; cpf: string; nome: string },
+): Promise<EstadoAcao> {
+  const email = `${funcionario.cpf}@${DOMINIO_EMAIL_INTERNO}`;
+  // poucos usuários (família + motoristas): uma página basta
+  const { data } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+  const usuario = data?.users.find((u) => u.email === email);
+  if (!usuario) return { erro: 'Já existe um acesso com este CPF.' };
+
+  const { data: perfil } = await admin.from('profiles').select('papel, funcionario_id').eq('id', usuario.id).maybeSingle();
+  if (!perfil || perfil.papel === 'motorista' || perfil.funcionario_id) {
+    return { erro: 'Já existe um acesso com este CPF.' };
+  }
+
+  const { error } = await admin.from('profiles').update({ funcionario_id: funcionario.id }).eq('id', usuario.id);
+  if (error) return { erro: 'Não foi possível ligar ao acesso existente. Tente de novo.' };
+
+  revalidatePath('/g/funcionarios');
+  revalidatePath(`/g/funcionarios/${funcionario.id}`);
+  const papel = perfil.papel === 'dono' ? 'dono' : 'administração';
+  return { ok: `Ligado ao acesso de ${papel} que já existia (mesma senha). Agora ele também tem a área do motorista.` };
 }

@@ -49,6 +49,12 @@ export async function atualizarSessao(request: NextRequest) {
       return response;
     }
     const naAreaCerta = pathname === destino || pathname.startsWith(`${destino}/`);
+    // Dono/admin que também dirige (tem cadastro de funcionário) usa a área do motorista.
+    const naAreaMotorista = pathname === '/m' || pathname.startsWith('/m/');
+    if (!naAreaCerta && naAreaMotorista && destino === '/g') {
+      const { data: funcionario } = await supabase.rpc('funcionario_atual');
+      if (funcionario) return response;
+    }
     if (!naAreaCerta) return redirecionar(request, destino, response);
   }
 

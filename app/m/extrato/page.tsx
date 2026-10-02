@@ -9,6 +9,7 @@ import { formatarBRL } from '@/lib/domain/dinheiro';
 import { competencia } from '@/lib/domain/resultado';
 import { formatarData, formatarDataHora, formatarKm } from '@/lib/formatar';
 import { paraRegraDominio } from '@/lib/supabase/acerto';
+import { obterPerfilAtual } from '@/lib/supabase/perfil';
 import { createClient } from '@/lib/supabase/server';
 import { cn } from '@/lib/utils';
 
@@ -36,21 +37,25 @@ function Linha({ rotulo, valor, negativo, forte }: { rotulo: string; valor: numb
 
 export default async function Extrato() {
   const supabase = await createClient();
+  const fid = (await obterPerfilAtual())?.funcionario_id ?? '';
   const [{ data: viagens }, { data: regras }, { data: despesas }, { data: abastecimentos }, { data: adiantamentos }, { data: acertos }] =
     await Promise.all([
       supabase
         .from('viagens')
         .select('id, data_saida, km_saida, km_chegada, acerto_id, caminhoes(placa)')
         .eq('status', 'concluida')
+        .eq('motorista_id', fid)
         .order('data_saida', { ascending: false })
         .limit(60),
-      supabase.from('regras_comissao').select('*'),
-      supabase.from('despesas_viagem').select('valor_centavos').is('acerto_id', null).eq('reembolsavel', true),
-      supabase.from('abastecimentos').select('valor_total_centavos').is('acerto_id', null).eq('forma_pagamento', 'motorista'),
-      supabase.from('adiantamentos').select('valor_centavos, data').is('acerto_id', null),
+      supabase.from('regras_comissao').select('*').eq('funcionario_id', fid),
+      supabase.from('despesas_viagem').select('valor_centavos').eq('motorista_id', fid).is('acerto_id', null).eq('reembolsavel', true),
+      supabase.from('abastecimentos').select('valor_total_centavos').eq('motorista_id', fid).is('acerto_id', null).eq('forma_pagamento', 'motorista'),
+      supabase.from('adiantamentos').select('valor_centavos, data').eq('motorista_id', fid).is('acerto_id', null),
       supabase
         .from('acertos')
         .select('id, periodo_inicio, periodo_fim, status, total_comissao_centavos, total_reembolsos_centavos, total_adiantamentos_centavos, saldo_centavos, pago_em')
+        .eq('motorista_id', fid)
+        .in('status', ['fechado', 'pago'])
         .order('periodo_fim', { ascending: false })
         .limit(12),
     ]);

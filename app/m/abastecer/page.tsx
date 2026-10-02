@@ -8,10 +8,11 @@ export const metadata: Metadata = { title: 'Abastecer · Gestão Frota' };
 
 export default async function Abastecer() {
   const supabase = await createClient();
-  const [perfil, config, { data: viagem }, { data: caminhoes }, { data: postos }] = await Promise.all([
-    obterPerfilAtual(),
+  const perfil = await obterPerfilAtual();
+  const fid = perfil?.funcionario_id ?? '';
+  const [config, { data: viagem }, { data: caminhoes }, { data: postos }] = await Promise.all([
     obterConfiguracoes(),
-    supabase.from('viagens').select('id, caminhao_id').eq('status', 'em_andamento').maybeSingle(),
+    supabase.from('viagens').select('id, caminhao_id').eq('status', 'em_andamento').eq('motorista_id', fid).maybeSingle(),
     supabase.from('caminhoes').select('id, placa, apelido, km_atual').eq('ativo', true).order('placa'),
     // para reconhecer o posto pelo CNPJ que vem na chave da nota
     supabase.from('fornecedores').select('id, nome, cnpj').eq('ativo', true).not('cnpj', 'is', null),

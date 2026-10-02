@@ -7,10 +7,13 @@ export const metadata: Metadata = { title: 'Despesa · Gestão Frota' };
 
 export default async function Despesa() {
   const supabase = await createClient();
-  const [perfil, { data: viagem }] = await Promise.all([
-    obterPerfilAtual(),
-    supabase.from('viagens').select('id, caminhao_id').eq('status', 'em_andamento').maybeSingle(),
-  ]);
+  const perfil = await obterPerfilAtual();
+  const { data: viagem } = await supabase
+    .from('viagens')
+    .select('id, caminhao_id')
+    .eq('status', 'em_andamento')
+    .eq('motorista_id', perfil?.funcionario_id ?? '')
+    .maybeSingle();
 
   return (
     <>
