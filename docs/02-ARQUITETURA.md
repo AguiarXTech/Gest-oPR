@@ -121,9 +121,9 @@ flowchart LR
 | Ambiente | Front | Banco |
 |---|---|---|
 | Desenvolvimento | `npm run dev` na máquina do dev | Supabase Cloud, projeto **`gestao-frota-dev`**, plano Free (sem banco local; ver [ADR 0003](adr/0003-banco-somente-nuvem.md)) |
-| Produção | Vercel **Hobby** (branch `main`) | Supabase Cloud, plano **Pro** (o plano Free pausa por inatividade e não tem backup adequado) |
+| Produção | Vercel **Hobby** (branch `main`) | Supabase Cloud, plano **gratuito** (ADR 0004): backup noturno criptografado pelo GitHub Actions; sobe para o Pro quando os acertos reais dependerem só do app |
 
-**Hospedagem do front (decisão de 2026-09-26):** Vercel Hobby (US$ 0), pois o uso é interno e familiar. Custo total ≈ US$ 25/mês (RNF-04). Os termos da Vercel consideram "comercial" qualquer uso com ganho financeiro, então há risco baixo de o projeto ser questionado. Plano B: migrar para Netlify Free (permite uso comercial) ou Vercel Pro (US$ 20/mês). A troca é barata porque o backend inteiro está no Supabase.
+**Hospedagem do front (decisão de 2026-09-26):** Vercel Hobby (US$ 0), pois o uso é interno e familiar. Custo no piloto ≈ US$ 0 + domínio (RNF-04); ≈ US$ 25/mês quando a produção passar para o Supabase Pro (ADR 0004). Os termos da Vercel consideram "comercial" qualquer uso com ganho financeiro, então há risco baixo de o projeto ser questionado. Plano B: migrar para Netlify Free (permite uso comercial) ou Vercel Pro (US$ 20/mês). A troca é barata porque o backend inteiro está no Supabase.
 
 **Migrations:** primeiro no DEV (`npm run db:reset` + `npm run db:test`); depois, em produção, `supabase link` no projeto de produção + `npm run db:push` manual. Produção **nunca** recebe `db:reset` nem seed. No início não há CI aplicando migrations automaticamente.
 

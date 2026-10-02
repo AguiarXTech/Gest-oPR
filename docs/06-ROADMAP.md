@@ -86,7 +86,7 @@ Sprints de ~1 semana, com dedicação parcial. Cada tarefa tem ID (`S{sprint}-{n
 
 ## Piloto (4 semanas)
 
-- Produção: Supabase Pro + Vercel + domínio.
+- Produção: Supabase gratuito com backup noturno (ADR-0004) + Vercel + domínio. Passar para o Pro ao fim do piloto.
 - Treinamento presencial de 20 min por motorista (instalar o PWA e fazer um abastecimento de teste).
 - Primeiro mês com acerto **em paralelo** (app × método atual) para validar os cálculos.
 - Coletar feedback semanal com pai e mãe e ajustar.

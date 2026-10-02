@@ -112,7 +112,7 @@ Caminhão e viagem vêm pré-selecionados da viagem em andamento.
 | RNF-02 | Tolerância a sinal fraco: formulário não perde dados se o envio falhar (rascunho local + reenvio). Offline completo **não** é requisito do MVP |
 | RNF-03 | Upload de foto ≤ ~300 KB após compressão |
 | RNF-04 | Custo de infraestrutura ≤ US$ 25/mês + domínio |
-| RNF-05 | Backup diário (Supabase Pro) e exportação CSV mensal manual como segunda cópia |
+| RNF-05 | Backup diário (GitHub Actions, criptografado, 7 dias; ADR-0004) e exportação CSV mensal manual como segunda cópia |
 | RNF-06 | Toda regra de cálculo coberta por teste automatizado |
 
 ## 7. Perguntas em aberto (bloqueiam parte do MVP)

@@ -1,0 +1,55 @@
+# Backup noturno da PRODUÇÃO (ADR-0004): dump do esquema e dos dados, criptografado,
+# guardado como artifact por 7 dias. O dump tem dados pessoais (CPF, PIX, salários):
+# nunca sai deste repositório privado sem criptografia.
+name: Backup noturno
+
+on:
+  schedule:
+    - cron: '0 6 * * *' # 03:00 em Brasília
+  workflow_dispatch: # permite rodar na mão em Actions → Backup noturno → Run workflow
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Conferir segredos
+        env:
+          DB_URL: ${{ secrets.SUPABASE_PROD_DB_URL }}
+          SENHA: ${{ secrets.BACKUP_SENHA }}
+        run: |
+          if [ -z "$DB_URL" ] || [ -z "$SENHA" ]; then
+            echo "::error::Configure SUPABASE_PROD_DB_URL e BACKUP_SENHA em Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Dump do esquema e dos dados
+        env:
+          DB_URL: ${{ secrets.SUPABASE_PROD_DB_URL }}
+        run: |
+          mkdir backup
+          supabase db dump --db-url "$DB_URL" -f backup/esquema.sql
+          supabase db dump --db-url "$DB_URL" --data-only --schema public,auth -f backup/dados.sql
+          test -s backup/esquema.sql && test -s backup/dados.sql
+
+      - name: Compactar e criptografar
+        env:
+          SENHA: ${{ secrets.BACKUP_SENHA }}
+        run: |
+          tar czf backup.tar.gz backup
+          gpg --batch --yes --symmetric --cipher-algo AES256 --passphrase "$SENHA" -o backup.tar.gz.gpg backup.tar.gz
+          rm -rf backup backup.tar.gz
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: backup-${{ github.run_id }}
+          path: backup.tar.gz.gpg
+          retention-days: 7
+          if-no-files-found: error

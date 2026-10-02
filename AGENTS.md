@@ -42,7 +42,7 @@ Usuários **não técnicos**. Simplicidade vence completude.
 | Dados no cliente | `@supabase/ssr` + TanStack Query |
 | Formulários | React Hook Form + Zod |
 | Testes | Vitest (domínio), pgTAP via `supabase test db` (RLS), Playwright (fluxos críticos, fase posterior) |
-| Deploy | Vercel (front) + Supabase Cloud (plano Pro em produção) |
+| Deploy | Vercel (front) + Supabase Cloud (produção no plano gratuito com backup noturno próprio; ver `docs/adr/0004-producao-supabase-gratuito.md`) |
 
 ## 4. Regras invioláveis
 
