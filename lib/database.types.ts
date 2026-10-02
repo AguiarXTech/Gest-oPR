@@ -50,6 +50,7 @@ export type Database = {
           data_hora: string
           forma_pagamento: Database["public"]["Enums"]["forma_pagamento_abastecimento"]
           fornecedor_id: string | null
+          foto_painel_path: string | null
           foto_path: string | null
           id: string
           km: number
@@ -73,6 +74,7 @@ export type Database = {
           data_hora?: string
           forma_pagamento?: Database["public"]["Enums"]["forma_pagamento_abastecimento"]
           fornecedor_id?: string | null
+          foto_painel_path?: string | null
           foto_path?: string | null
           id?: string
           km: number
@@ -96,6 +98,7 @@ export type Database = {
           data_hora?: string
           forma_pagamento?: Database["public"]["Enums"]["forma_pagamento_abastecimento"]
           fornecedor_id?: string | null
+          foto_painel_path?: string | null
           foto_path?: string | null
           id?: string
           km?: number
@@ -732,6 +735,215 @@ export type Database = {
         }
         Relationships: []
       }
+      manutencao_itens: {
+        Row: {
+          manutencao_id: string
+          plano_id: string
+        }
+        Insert: {
+          manutencao_id: string
+          plano_id: string
+        }
+        Update: {
+          manutencao_id?: string
+          plano_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "manutencao_itens_manutencao_id_fkey"
+            columns: ["manutencao_id"]
+            isOneToOne: false
+            referencedRelation: "manutencoes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "manutencao_itens_plano_id_fkey"
+            columns: ["plano_id"]
+            isOneToOne: false
+            referencedRelation: "planos_manutencao"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      manutencoes: {
+        Row: {
+          arquivo_path: string | null
+          caminhao_id: string
+          created_at: string
+          data: string
+          descricao: string
+          fornecedor_id: string | null
+          id: string
+          km: number
+          tipo: Database["public"]["Enums"]["tipo_manutencao"]
+          updated_at: string
+          valor_centavos: number
+        }
+        Insert: {
+          arquivo_path?: string | null
+          caminhao_id: string
+          created_at?: string
+          data?: string
+          descricao: string
+          fornecedor_id?: string | null
+          id?: string
+          km: number
+          tipo?: Database["public"]["Enums"]["tipo_manutencao"]
+          updated_at?: string
+          valor_centavos?: number
+        }
+        Update: {
+          arquivo_path?: string | null
+          caminhao_id?: string
+          created_at?: string
+          data?: string
+          descricao?: string
+          fornecedor_id?: string | null
+          id?: string
+          km?: number
+          tipo?: Database["public"]["Enums"]["tipo_manutencao"]
+          updated_at?: string
+          valor_centavos?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "manutencoes_caminhao_id_fkey"
+            columns: ["caminhao_id"]
+            isOneToOne: false
+            referencedRelation: "caminhoes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "manutencoes_fornecedor_id_fkey"
+            columns: ["fornecedor_id"]
+            isOneToOne: false
+            referencedRelation: "fornecedores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      multas: {
+        Row: {
+          arquivo_path: string | null
+          auto_numero: string | null
+          caminhao_id: string
+          created_at: string
+          data_infracao: string
+          descricao: string | null
+          funcionario_id: string | null
+          id: string
+          indicado_em: string | null
+          local: string | null
+          notificada_em: string | null
+          observacoes: string | null
+          pago_em: string | null
+          prazo_indicacao: string | null
+          updated_at: string
+          valor_centavos: number
+        }
+        Insert: {
+          arquivo_path?: string | null
+          auto_numero?: string | null
+          caminhao_id: string
+          created_at?: string
+          data_infracao: string
+          descricao?: string | null
+          funcionario_id?: string | null
+          id?: string
+          indicado_em?: string | null
+          local?: string | null
+          notificada_em?: string | null
+          observacoes?: string | null
+          pago_em?: string | null
+          prazo_indicacao?: string | null
+          updated_at?: string
+          valor_centavos: number
+        }
+        Update: {
+          arquivo_path?: string | null
+          auto_numero?: string | null
+          caminhao_id?: string
+          created_at?: string
+          data_infracao?: string
+          descricao?: string | null
+          funcionario_id?: string | null
+          id?: string
+          indicado_em?: string | null
+          local?: string | null
+          notificada_em?: string | null
+          observacoes?: string | null
+          pago_em?: string | null
+          prazo_indicacao?: string | null
+          updated_at?: string
+          valor_centavos?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "multas_caminhao_id_fkey"
+            columns: ["caminhao_id"]
+            isOneToOne: false
+            referencedRelation: "caminhoes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "multas_funcionario_id_fkey"
+            columns: ["funcionario_id"]
+            isOneToOne: false
+            referencedRelation: "funcionarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      planos_manutencao: {
+        Row: {
+          ativo: boolean
+          caminhao_id: string
+          created_at: string
+          id: string
+          intervalo_dias: number | null
+          intervalo_km: number | null
+          item: string
+          observacoes: string | null
+          ultima_data: string | null
+          ultimo_km: number | null
+          updated_at: string
+        }
+        Insert: {
+          ativo?: boolean
+          caminhao_id: string
+          created_at?: string
+          id?: string
+          intervalo_dias?: number | null
+          intervalo_km?: number | null
+          item: string
+          observacoes?: string | null
+          ultima_data?: string | null
+          ultimo_km?: number | null
+          updated_at?: string
+        }
+        Update: {
+          ativo?: boolean
+          caminhao_id?: string
+          created_at?: string
+          id?: string
+          intervalo_dias?: number | null
+          intervalo_km?: number | null
+          item?: string
+          observacoes?: string | null
+          ultima_data?: string | null
+          ultimo_km?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "planos_manutencao_caminhao_id_fkey"
+            columns: ["caminhao_id"]
+            isOneToOne: false
+            referencedRelation: "caminhoes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           ativo: boolean
@@ -1077,6 +1289,7 @@ export type Database = {
         | "toxicologico"
         | "outro"
       tipo_fornecedor: "posto" | "oficina" | "recapadora" | "loja" | "outro"
+      tipo_manutencao: "preventiva" | "corretiva"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1247,6 +1460,7 @@ export const Constants = {
         "outro",
       ],
       tipo_fornecedor: ["posto", "oficina", "recapadora", "loja", "outro"],
+      tipo_manutencao: ["preventiva", "corretiva"],
     },
   },
 } as const

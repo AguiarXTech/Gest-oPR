@@ -11,6 +11,9 @@ export type Configuracoes = {
   precoToleranciaPct: number;
   intervaloMinKm: number;
   alertaDocumentosDias: number[];
+  manutencaoAvisoKm: number;
+  manutencaoAvisoDias: number;
+  multaPrazoIndicacaoDias: number;
 };
 
 export const CONFIG_PADRAO: Configuracoes = {
@@ -23,6 +26,9 @@ export const CONFIG_PADRAO: Configuracoes = {
   precoToleranciaPct: 15,
   intervaloMinKm: 150,
   alertaDocumentosDias: [30, 15, 7],
+  manutencaoAvisoKm: 1000,
+  manutencaoAvisoDias: 15,
+  multaPrazoIndicacaoDias: 30,
 };
 
 const CHAVES: Record<string, keyof Configuracoes> = {
@@ -35,6 +41,9 @@ const CHAVES: Record<string, keyof Configuracoes> = {
   preco_tolerancia_pct: 'precoToleranciaPct',
   intervalo_min_km: 'intervaloMinKm',
   alerta_documentos_dias: 'alertaDocumentosDias',
+  manutencao_aviso_km: 'manutencaoAvisoKm',
+  manutencao_aviso_dias: 'manutencaoAvisoDias',
+  multa_prazo_indicacao_dias: 'multaPrazoIndicacaoDias',
 };
 
 /** Converte as linhas {chave, valor} do banco; valor de tipo errado é ignorado (fica o padrão). */

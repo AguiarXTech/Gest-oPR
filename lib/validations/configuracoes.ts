@@ -27,6 +27,9 @@ export const configuracoesSchema = z
     consumo_janela: numero(3, 50, 'De 3 a 50 medições.'),
     preco_tolerancia_pct: numero(1, 100, 'De 1% a 100%.'),
     intervalo_min_km: numero(0, 2000, 'De 0 a 2.000 km.'),
+    manutencao_aviso_km: numero(0, 20000, 'De 0 a 20.000 km.'),
+    manutencao_aviso_dias: numero(0, 180, 'De 0 a 180 dias.'),
+    multa_prazo_indicacao_dias: numero(1, 90, 'De 1 a 90 dias.'),
     alerta_documentos_dias: z
       .string()
       .trim()

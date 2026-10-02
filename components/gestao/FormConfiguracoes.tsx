@@ -39,6 +39,14 @@ const grupos: { titulo: string; campos: { nome: keyof ConfiguracoesForm; rotulo:
     titulo: 'Documentos',
     campos: [{ nome: 'alerta_documentos_dias', rotulo: 'Avisar faltando (dias)', ajuda: 'Três faixas, ex.: 30, 15, 7' }],
   },
+  {
+    titulo: 'Manutenção e multas',
+    campos: [
+      { nome: 'manutencao_aviso_km', rotulo: 'Avisar manutenção faltando (km)', ajuda: 'Ex.: 1000' },
+      { nome: 'manutencao_aviso_dias', rotulo: 'Avisar manutenção faltando (dias)', ajuda: 'Ex.: 15' },
+      { nome: 'multa_prazo_indicacao_dias', rotulo: 'Prazo para indicar condutor (dias)', ajuda: 'Contado da notificação; hoje 30' },
+    ],
+  },
 ];
 
 export function FormConfiguracoes({ config }: { config: Configuracoes }) {
@@ -64,6 +72,9 @@ export function FormConfiguracoes({ config }: { config: Configuracoes }) {
       preco_tolerancia_pct: texto(config.precoToleranciaPct),
       intervalo_min_km: texto(config.intervaloMinKm),
       alerta_documentos_dias: config.alertaDocumentosDias.join(', '),
+      manutencao_aviso_km: texto(config.manutencaoAvisoKm),
+      manutencao_aviso_dias: texto(config.manutencaoAvisoDias),
+      multa_prazo_indicacao_dias: texto(config.multaPrazoIndicacaoDias),
     },
   });
 
