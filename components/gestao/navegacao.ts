@@ -45,5 +45,5 @@ export const menuGestao: GrupoMenu[] = [
       { href: '/g/documentos', rotulo: 'Documentos', icone: FileText, pronto: true },
     ],
   },
-  { itens: [{ href: '/g/configuracoes', rotulo: 'Configurações', icone: Settings, pronto: false }] },
+  { itens: [{ href: '/g/configuracoes', rotulo: 'Configurações', icone: Settings, pronto: true }] },
 ];
