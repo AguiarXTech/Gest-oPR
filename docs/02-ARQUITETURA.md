@@ -112,9 +112,10 @@ flowchart LR
 
 ## 6. PWA
 
-- Serwist (`@serwist/next`): manifest com nome, ícones e `display: standalone`.
-- Cache apenas de assets estáticos. **Não** faça cache de respostas da API com dado de negócio.
-- No iPhone, a instalação é feita pelo "Adicionar à Tela de Início". Documente esse passo a passo na tela de login.
+- **Decisão de 2026-10-01 (S2-7):** manifesto nativo do Next (`app/manifest.ts`) + ícones (`public/icones/`, `app/apple-icon.png`, gerados por `scripts/gerar-icones.mts`), **sem service worker por enquanto**.
+  - Motivos: o iPhone instala pelo Safari sem service worker; o Chrome do Android instala só com o manifesto; o MVP não precisa funcionar offline (RNF-02 é atendido pelo rascunho local + reenvio); e service worker com cache costuma prender uma versão antiga no celular.
+  - Se um dia precisar de offline ou notificação push: Serwist, com cache **só** de assets estáticos. **Nunca** cache de respostas da API com dado de negócio.
+- Passo a passo de instalação (iPhone pelo Safari → Compartilhar → Adicionar à Tela de Início; Android pelo Chrome → Instalar app) na página pública `/instalar`, com link na tela de login.
 
 ## 7. Ambientes e deploy
 
