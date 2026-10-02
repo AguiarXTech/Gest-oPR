@@ -3,7 +3,7 @@
 // Uso: npx tsx scripts/gerar-icones.mts (rodar de novo se o logo mudar)
 import sharp from 'sharp';
 
-const GRAFITE = '#1c2023';
+const GRAFITE = '#13171a';
 const LOGO = 'public/logo-rportugues.png';
 
 async function icone(lado: number, destino: string, larguraLogo = 0.72) {
