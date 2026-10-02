@@ -6,6 +6,7 @@ import estrada from '@/public/fundo-estrada.jpg';
 import fundo from '@/public/fundo-login.jpg';
 import { FormLogin } from './FormLogin';
 import { Marca } from '@/components/base/Marca';
+import { Assinatura } from '@/components/base/Assinatura';
 
 export const metadata: Metadata = { title: 'Entrar · Gestão RPortugues' };
 
@@ -52,6 +53,7 @@ export default function LoginPage() {
           </div>
           <FormLogin />
           <p className="text-center text-white/75">Esqueceu a senha? Fale com o escritório.</p>
+          <Assinatura className="pt-2" />
         </div>
       </div>
     </main>
