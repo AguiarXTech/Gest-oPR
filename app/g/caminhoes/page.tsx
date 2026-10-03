@@ -14,7 +14,9 @@ export default async function ListaCaminhoes() {
   const supabase = await createClient();
   const { data: caminhoes, error } = await supabase
     .from('caminhoes')
-    .select('id, placa, apelido, marca, modelo, ano, configuracao_eixos, capacidade_tanque_l, km_atual, ativo, foto_path')
+    .select(
+      'id, placa, apelido, tipo, marca, modelo, ano, configuracao_eixos, capacidade_tanque_l, km_atual, ativo, foto_path',
+    )
     .order('ativo', { ascending: false })
     .order('placa');
 
@@ -33,10 +35,16 @@ export default async function ListaCaminhoes() {
         </Link>
       </div>
 
-      {error && <p className="text-destructive">Não foi possível carregar os caminhões. Recarregue a página.</p>}
+      {error && (
+        <p className="text-destructive">
+          Não foi possível carregar os caminhões. Recarregue a página.
+        </p>
+      )}
 
       {caminhoes?.length === 0 && (
-        <p className="rounded-xl border border-dashed p-6 text-center text-muted-foreground">Nenhum caminhão cadastrado.</p>
+        <p className="rounded-xl border border-dashed p-6 text-center text-muted-foreground">
+          Nenhum caminhão cadastrado.
+        </p>
       )}
 
       <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
@@ -44,23 +52,39 @@ export default async function ListaCaminhoes() {
           <li key={c.id}>
             <Link
               href={`/g/caminhoes/${c.id}`}
-              className={cn('flex flex-col gap-1 overflow-hidden rounded-xl border bg-card p-4 shadow-xs hover:border-primary/40', !c.ativo && 'opacity-60')}
+              className={cn(
+                'flex flex-col gap-1 overflow-hidden rounded-xl border bg-card p-4 shadow-xs hover:border-primary/40',
+                !c.ativo && 'opacity-60',
+              )}
             >
               {fotos.get(c.id) && (
                 // eslint-disable-next-line @next/next/no-img-element -- URL assinada temporária do Storage
-                <img src={fotos.get(c.id)} alt="" className="-mx-4 -mt-4 mb-2 aspect-[16/9] w-[calc(100%+2rem)] max-w-none object-cover" />
+                <img
+                  src={fotos.get(c.id)}
+                  alt=""
+                  className="-mx-4 -mt-4 mb-2 aspect-[16/9] w-[calc(100%+2rem)] max-w-none object-cover"
+                />
               )}
               <div className="flex items-center justify-between gap-2">
                 <span className="font-mono text-lg font-semibold">{formatarPlaca(c.placa)}</span>
-                {!c.ativo && <span className="rounded-full bg-muted px-2 py-0.5 text-xs">desativado</span>}
+                <span className="flex gap-1">
+                  {c.tipo === 'cavalo' && (
+                    <span className="rounded-full bg-muted px-2 py-0.5 text-xs">cavalo</span>
+                  )}
+                  {!c.ativo && (
+                    <span className="rounded-full bg-muted px-2 py-0.5 text-xs">desativado</span>
+                  )}
+                </span>
               </div>
               {c.apelido && <span className="font-medium">{c.apelido}</span>}
               <span className="text-sm text-muted-foreground">
-                {[c.marca, c.modelo, c.ano, c.configuracao_eixos].filter(Boolean).join(' · ') || 'Sem detalhes'}
+                {[c.marca, c.modelo, c.ano, c.configuracao_eixos].filter(Boolean).join(' · ') ||
+                  'Sem detalhes'}
               </span>
               <span className="text-sm text-muted-foreground">
                 {numero.format(c.km_atual)} km
-                {c.capacidade_tanque_l !== null && ` · tanque ${numero.format(c.capacidade_tanque_l)} L`}
+                {c.capacidade_tanque_l !== null &&
+                  ` · tanque ${numero.format(c.capacidade_tanque_l)} L`}
               </span>
             </Link>
           </li>

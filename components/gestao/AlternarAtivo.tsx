@@ -8,7 +8,7 @@ import { createClient } from '@/lib/supabase/client';
 import { traduzirErroBanco } from '@/lib/supabase/erros';
 
 type Props = {
-  tabela: 'caminhoes' | 'clientes' | 'fornecedores';
+  tabela: 'caminhoes' | 'carretas' | 'clientes' | 'fornecedores';
   id: string;
   ativo: boolean;
   /** Ex.: "caminhão", "cliente". */

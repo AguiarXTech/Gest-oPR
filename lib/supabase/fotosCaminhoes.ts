@@ -3,7 +3,7 @@ import type { createClient } from '@/lib/supabase/server';
 
 type Cliente = Awaited<ReturnType<typeof createClient>>;
 
-/** URLs assinadas (10 min) das fotos dos caminhões, por id do caminhão. Uma chamada só. */
+/** URLs assinadas (10 min) das fotos dos caminhões (e carretas), por id do caminhão. Uma chamada só. */
 export async function urlsFotosCaminhoes(supabase: Cliente, caminhoes: readonly { id: string; foto_path: string | null }[]) {
   const comFoto = caminhoes.filter((c): c is { id: string; foto_path: string } => Boolean(c.foto_path));
   const urls = new Map<string, string>();

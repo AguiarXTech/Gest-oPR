@@ -1,18 +1,20 @@
 import { z } from 'zod';
 import { lerDecimal, lerInteiro } from '@/lib/domain/numeros';
-import { normalizarPlaca, validarPlaca } from '@/lib/domain/placa';
-import { inteiroOpcional, textoOpcional } from './comum';
+import {
+  conferirSuspensos,
+  eixosSuspensos,
+  inteiroOpcional,
+  placaObrigatoria,
+  textoOpcional,
+} from './comum';
 
 // Os campos chegam do formulário como texto; o schema converte para o formato do banco.
 
 export const caminhaoSchema = z
   .object({
-    placa: z
-      .string()
-      .trim()
-      .min(1, 'Digite a placa.')
-      .refine(validarPlaca, 'Placa inválida. Use o formato ABC1234 ou ABC1D23.')
-      .transform(normalizarPlaca),
+    placa: placaObrigatoria,
+    /** truck = caminhão inteiro; cavalo = puxa carreta (cadastrada à parte, escolhida na viagem). */
+    tipo: z.enum(['truck', 'cavalo']),
     apelido: textoOpcional,
     marca: textoOpcional,
     modelo: textoOpcional,
@@ -44,29 +46,9 @@ export const caminhaoSchema = z
         return n;
       }),
     observacoes: textoOpcional,
-    /** Quantos eixos sobem quando vazio (pedágio: eixo suspenso vazio não paga). */
-    eixos_suspensos: z
-      .string()
-      .trim()
-      .transform((v, ctx) => {
-        if (!v) return 0;
-        const n = Number(v);
-        if (!Number.isInteger(n) || n < 0 || n > 8) {
-          ctx.addIssue({ code: 'custom', message: 'De 0 a 8.' });
-          return z.NEVER;
-        }
-        return n;
-      }),
+    eixos_suspensos: eixosSuspensos,
   })
-  .superRefine((c, ctx) => {
-    if (c.eixos_suspensos > 0 && (c.eixos === null || c.eixos_suspensos >= c.eixos)) {
-      ctx.addIssue({
-        code: 'custom',
-        path: ['eixos_suspensos'],
-        message: 'Precisa ser menor que o total de eixos.',
-      });
-    }
-  });
+  .superRefine(conferirSuspensos);
 
 export type CaminhaoForm = z.input<typeof caminhaoSchema>;
 export type CaminhaoDados = z.output<typeof caminhaoSchema>;

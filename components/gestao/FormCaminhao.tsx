@@ -4,11 +4,12 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import type { Tables } from '@/lib/database.types';
 import { formatarPlaca } from '@/lib/domain/placa';
+import { CONFIGURACOES_CAMINHAO, eixosSugeridos, TIPOS_VEICULO } from '@/lib/domain/veiculos';
 import { createClient } from '@/lib/supabase/client';
 import { traduzirErroBanco } from '@/lib/supabase/erros';
 import { caminhaoSchema, type CaminhaoDados, type CaminhaoForm } from '@/lib/validations/caminhao';
@@ -21,6 +22,7 @@ const paraTexto = (v: number | string | null) => (v === null ? '' : String(v));
 function valoresIniciais(c?: Caminhao): CaminhaoForm {
   return {
     placa: c ? formatarPlaca(c.placa) : '',
+    tipo: c?.tipo ?? 'truck',
     apelido: c?.apelido ?? '',
     marca: c?.marca ?? '',
     modelo: c?.modelo ?? '',
@@ -42,6 +44,9 @@ export function FormCaminhao({ caminhao }: { caminhao?: Caminhao }) {
   const {
     register,
     handleSubmit,
+    control,
+    setValue,
+    getValues,
     formState: { errors },
   } = useForm<CaminhaoForm, unknown, CaminhaoDados>({
     resolver: zodResolver(caminhaoSchema),
@@ -73,9 +78,19 @@ export function FormCaminhao({ caminhao }: { caminhao?: Caminhao }) {
   });
 
   const e = (campo: keyof CaminhaoForm) => errors[campo]?.message;
+  const [tipo, configuracao] = useWatch({ control, name: ['tipo', 'configuracao_eixos'] });
+  const ehCavalo = tipo === 'cavalo';
+  const opcoes = CONFIGURACOES_CAMINHAO[tipo === 'cavalo' ? 'cavalo' : 'truck'];
+  // valor antigo digitado à mão continua aparecendo até ser trocado
+  const valorAntigo =
+    configuracao && !opcoes.some((o) => o.valor === configuracao) ? configuracao : null;
 
   return (
-    <form onSubmit={handleSubmit((dados) => salvar.mutate(dados))} noValidate className="flex flex-col gap-6">
+    <form
+      onSubmit={handleSubmit((dados) => salvar.mutate(dados))}
+      noValidate
+      className="flex flex-col gap-6"
+    >
       <div className="grid gap-4 sm:grid-cols-2">
         <Campo id="placa" rotulo="Placa *" erro={e('placa')} ajuda="ABC1234 ou ABC1D23">
           <Input
@@ -86,7 +101,57 @@ export function FormCaminhao({ caminhao }: { caminhao?: Caminhao }) {
             className="h-11 text-base uppercase"
           />
         </Campo>
-        <Campo id="apelido" rotulo="Apelido" erro={e('apelido')} ajuda="Como a família chama o caminhão">
+        <Campo
+          id="tipo"
+          rotulo="Tipo *"
+          ajuda={
+            ehCavalo
+              ? 'A carreta tem cadastro próprio e é escolhida em cada viagem.'
+              : 'Caminhão inteiro, uma placa só.'
+          }
+        >
+          <select
+            {...register('tipo', { onChange: () => setValue('configuracao_eixos', '') })}
+            {...ariaCampo('tipo', undefined, 'ajuda')}
+            className="h-11 w-full rounded-lg border border-input bg-transparent px-2.5 text-base"
+          >
+            <option value="truck">{TIPOS_VEICULO.truck}</option>
+            <option value="cavalo">{TIPOS_VEICULO.cavalo}</option>
+          </select>
+        </Campo>
+        <Campo
+          id="configuracao_eixos"
+          rotulo="Configuração"
+          erro={e('configuracao_eixos')}
+          ajuda="Preenche os eixos sozinho; dá para corrigir"
+        >
+          <select
+            {...register('configuracao_eixos', {
+              onChange: (ev: React.ChangeEvent<HTMLSelectElement>) => {
+                const eixos = eixosSugeridos(ev.target.value);
+                if (eixos !== null) setValue('eixos', String(eixos));
+                if (eixos !== null && Number(getValues('eixos_suspensos')) >= eixos)
+                  setValue('eixos_suspensos', '0');
+              },
+            })}
+            {...ariaCampo('configuracao_eixos', e('configuracao_eixos'), 'ajuda')}
+            className="h-11 w-full rounded-lg border border-input bg-transparent px-2.5 text-base"
+          >
+            <option value="">Escolha…</option>
+            {opcoes.map((o) => (
+              <option key={o.valor} value={o.valor}>
+                {o.rotulo}
+              </option>
+            ))}
+            {valorAntigo && <option value={valorAntigo}>{valorAntigo}</option>}
+          </select>
+        </Campo>
+        <Campo
+          id="apelido"
+          rotulo="Apelido"
+          erro={e('apelido')}
+          ajuda="Como a família chama o caminhão"
+        >
           <Input
             {...register('apelido')}
             {...ariaCampo('apelido', e('apelido'), 'Como a família chama o caminhão')}
@@ -94,33 +159,62 @@ export function FormCaminhao({ caminhao }: { caminhao?: Caminhao }) {
           />
         </Campo>
         <Campo id="marca" rotulo="Marca" erro={e('marca')}>
-          <Input {...register('marca')} {...ariaCampo('marca', e('marca'))} className="h-11 text-base" />
+          <Input
+            {...register('marca')}
+            {...ariaCampo('marca', e('marca'))}
+            className="h-11 text-base"
+          />
         </Campo>
         <Campo id="modelo" rotulo="Modelo" erro={e('modelo')}>
-          <Input {...register('modelo')} {...ariaCampo('modelo', e('modelo'))} className="h-11 text-base" />
+          <Input
+            {...register('modelo')}
+            {...ariaCampo('modelo', e('modelo'))}
+            className="h-11 text-base"
+          />
         </Campo>
         <Campo id="ano" rotulo="Ano" erro={e('ano')}>
-          <Input {...register('ano')} {...ariaCampo('ano', e('ano'))} inputMode="numeric" className="h-11 text-base" />
-        </Campo>
-        <Campo id="eixos" rotulo="Eixos" erro={e('eixos')}>
-          <Input {...register('eixos')} {...ariaCampo('eixos', e('eixos'))} inputMode="numeric" className="h-11 text-base" />
-        </Campo>
-        <Campo id="eixos_suspensos" rotulo="Eixos que sobem (vazio)" erro={e('eixos_suspensos')} ajuda="Para calcular o pedágio da ida vazia">
           <Input
-            {...register('eixos_suspensos')}
-            {...ariaCampo('eixos_suspensos', e('eixos_suspensos'), 'Para calcular o pedágio da ida vazia')}
+            {...register('ano')}
+            {...ariaCampo('ano', e('ano'))}
             inputMode="numeric"
             className="h-11 text-base"
           />
         </Campo>
-        <Campo id="configuracao_eixos" rotulo="Configuração" erro={e('configuracao_eixos')} ajuda="Ex.: toco, truck, cavalo 6x2">
+        <Campo
+          id="eixos"
+          rotulo={ehCavalo ? 'Eixos do cavalo' : 'Eixos'}
+          erro={e('eixos')}
+          ajuda={ehCavalo ? 'Só os do cavalo; os da carreta ficam no cadastro dela' : undefined}
+        >
           <Input
-            {...register('configuracao_eixos')}
-            {...ariaCampo('configuracao_eixos', e('configuracao_eixos'), 'Ex.: toco, truck, cavalo 6x2')}
+            {...register('eixos')}
+            {...ariaCampo('eixos', e('eixos'), ehCavalo ? 'ajuda' : undefined)}
+            inputMode="numeric"
             className="h-11 text-base"
           />
         </Campo>
-        <Campo id="capacidade_tanque_l" rotulo="Capacidade do tanque (litros) *" erro={e('capacidade_tanque_l')}>
+        <Campo
+          id="eixos_suspensos"
+          rotulo="Eixos que sobem (vazio)"
+          erro={e('eixos_suspensos')}
+          ajuda="Para calcular o pedágio da ida vazia"
+        >
+          <Input
+            {...register('eixos_suspensos')}
+            {...ariaCampo(
+              'eixos_suspensos',
+              e('eixos_suspensos'),
+              'Para calcular o pedágio da ida vazia',
+            )}
+            inputMode="numeric"
+            className="h-11 text-base"
+          />
+        </Campo>
+        <Campo
+          id="capacidade_tanque_l"
+          rotulo="Capacidade do tanque (litros) *"
+          erro={e('capacidade_tanque_l')}
+        >
           <Input
             {...register('capacidade_tanque_l')}
             {...ariaCampo('capacidade_tanque_l', e('capacidade_tanque_l'))}
@@ -129,10 +223,18 @@ export function FormCaminhao({ caminhao }: { caminhao?: Caminhao }) {
           />
         </Campo>
         {editando ? (
-          <Campo id="km_atual" rotulo="Km atual" ajuda="Atualizado sozinho pelas viagens e abastecimentos.">
+          <Campo
+            id="km_atual"
+            rotulo="Km atual"
+            ajuda="Atualizado sozinho pelas viagens e abastecimentos."
+          >
             <Input
               {...register('km_atual')}
-              {...ariaCampo('km_atual', undefined, 'Atualizado sozinho pelas viagens e abastecimentos.')}
+              {...ariaCampo(
+                'km_atual',
+                undefined,
+                'Atualizado sozinho pelas viagens e abastecimentos.',
+              )}
               readOnly
               className="h-11 bg-muted text-base"
             />
@@ -159,14 +261,24 @@ export function FormCaminhao({ caminhao }: { caminhao?: Caminhao }) {
       </Campo>
 
       <p aria-live="polite" className="text-sm font-medium text-destructive empty:hidden">
-        {salvar.isError && traduzirErroBanco(salvar.error, { '23505': 'Já existe um caminhão com essa placa.' })}
+        {salvar.isError &&
+          traduzirErroBanco(salvar.error, { '23505': 'Já existe um caminhão com essa placa.' })}
       </p>
 
       <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-        <Button type="button" variant="outline" className="h-11 text-base" onClick={() => router.push('/g/caminhoes')}>
+        <Button
+          type="button"
+          variant="outline"
+          className="h-11 text-base"
+          onClick={() => router.push('/g/caminhoes')}
+        >
           Cancelar
         </Button>
-        <Button type="submit" disabled={salvar.isPending || salvar.isSuccess} className="h-11 text-base">
+        <Button
+          type="submit"
+          disabled={salvar.isPending || salvar.isSuccess}
+          className="h-11 text-base"
+        >
           {salvar.isPending ? 'Salvando…' : editando ? 'Salvar alterações' : 'Cadastrar caminhão'}
         </Button>
       </div>

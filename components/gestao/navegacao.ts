@@ -1,5 +1,6 @@
 import {
   Building2,
+  Container,
   Calculator,
   FileText,
   Fuel,
@@ -45,6 +46,7 @@ export const menuGestao: GrupoMenu[] = [
     titulo: 'Cadastros',
     itens: [
       { href: '/g/caminhoes', rotulo: 'Caminhões', icone: Truck, pronto: true },
+      { href: '/g/carretas', rotulo: 'Carretas', icone: Container, pronto: true },
       { href: '/g/funcionarios', rotulo: 'Funcionários', icone: Users, pronto: true },
       { href: '/g/clientes', rotulo: 'Clientes', icone: Building2, pronto: true },
       { href: '/g/fornecedores', rotulo: 'Fornecedores', icone: Store, pronto: true },

@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { normalizarCnpj, validarCnpj } from '@/lib/domain/cnpj';
 import { reaisParaCentavos } from '@/lib/domain/dinheiro';
 import { lerInteiro } from '@/lib/domain/numeros';
+import { normalizarPlaca, validarPlaca } from '@/lib/domain/placa';
 
 // Campos de formulário reaproveitados: chegam como texto e saem no formato do banco.
 
@@ -53,3 +54,39 @@ export const cnpjOpcional = z
   .trim()
   .refine((v) => v === '' || validarCnpj(v), 'CNPJ inválido. Confira os caracteres.')
   .transform((v) => (v ? normalizarCnpj(v) : null));
+
+/** Placa antiga ou Mercosul; sai sem hífen e em maiúsculas. */
+export const placaObrigatoria = z
+  .string()
+  .trim()
+  .min(1, 'Digite a placa.')
+  .refine(validarPlaca, 'Placa inválida. Use o formato ABC1234 ou ABC1D23.')
+  .transform(normalizarPlaca);
+
+/** Quantos eixos sobem quando vazio (pedágio: eixo suspenso vazio não paga). Vazio = 0. */
+export const eixosSuspensos = z
+  .string()
+  .trim()
+  .transform((v, ctx) => {
+    if (!v) return 0;
+    const n = Number(v);
+    if (!Number.isInteger(n) || n < 0 || n > 8) {
+      ctx.addIssue({ code: 'custom', message: 'De 0 a 8.' });
+      return z.NEVER;
+    }
+    return n;
+  });
+
+/** Eixos suspensos precisam ser menos que o total de eixos. */
+export function conferirSuspensos(
+  c: { eixos: number | null; eixos_suspensos: number },
+  ctx: z.RefinementCtx,
+) {
+  if (c.eixos_suspensos > 0 && (c.eixos === null || c.eixos_suspensos >= c.eixos)) {
+    ctx.addIssue({
+      code: 'custom',
+      path: ['eixos_suspensos'],
+      message: 'Precisa ser menor que o total de eixos.',
+    });
+  }
+}
