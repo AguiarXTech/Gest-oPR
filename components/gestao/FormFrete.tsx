@@ -22,14 +22,19 @@ type Props = {
   clientes: { id: string; razao_social: string }[];
   /** Viagem em acerto fechado: só leitura (o banco também bloqueia). */
   bloqueado: boolean;
+  /** Preço combinado com o cliente na data da viagem: preenche o frete ainda não lançado. */
+  sugestao?: { clienteId: string; valorCentavos: number } | null;
 };
 
-const reais = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const reais = new Intl.NumberFormat('pt-BR', {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
 
-export function FormFrete({ viagemId, sentido, frete, clientes, bloqueado }: Props) {
+export function FormFrete({ viagemId, sentido, frete, clientes, bloqueado, sugestao }: Props) {
   const router = useRouter();
   const [supabase] = useState(createClient);
-  const [aberto, setAberto] = useState(Boolean(frete) || sentido === 'volta');
+  const [aberto, setAberto] = useState(Boolean(frete) || Boolean(sugestao) || sentido === 'volta');
   const [confirmandoExclusao, setConfirmandoExclusao] = useState(false);
   const p = `${sentido}-`; // ids únicos: dois formulários na mesma página
 
@@ -40,8 +45,13 @@ export function FormFrete({ viagemId, sentido, frete, clientes, bloqueado }: Pro
   } = useForm<FreteForm, unknown, FreteDados>({
     resolver: zodResolver(freteSchema),
     defaultValues: {
-      cliente_id: frete?.cliente_id ?? (clientes.length === 1 ? clientes[0].id : ''),
-      valor: frete ? reais.format(frete.valor_frete_centavos / 100) : '',
+      cliente_id:
+        frete?.cliente_id ?? sugestao?.clienteId ?? (clientes.length === 1 ? clientes[0].id : ''),
+      valor: frete
+        ? reais.format(frete.valor_frete_centavos / 100)
+        : sugestao
+          ? reais.format(sugestao.valorCentavos / 100)
+          : '',
       peso_kg: frete?.peso_kg != null ? String(frete.peso_kg).replace('.', ',') : '',
       cte_chave: frete?.cte_chave ?? '',
       mdfe_chave: frete?.mdfe_chave ?? '',
@@ -78,9 +88,17 @@ export function FormFrete({ viagemId, sentido, frete, clientes, bloqueado }: Pro
     return (
       <section className="flex flex-col gap-2 rounded-2xl border border-dashed p-4">
         <h2 className="text-lg font-semibold">{titulo}</h2>
-        <p className="text-muted-foreground">A ida normalmente vai vazia. Lance só se levou carga.</p>
+        <p className="text-muted-foreground">
+          A ida normalmente vai vazia. Lance só se levou carga.
+        </p>
         {!bloqueado && (
-          <Button type="button" variant="outline" size="lg" onClick={() => setAberto(true)} className="self-start">
+          <Button
+            type="button"
+            variant="outline"
+            size="lg"
+            onClick={() => setAberto(true)}
+            className="self-start"
+          >
             Lançar frete da ida
           </Button>
         )}
@@ -114,23 +132,54 @@ export function FormFrete({ viagemId, sentido, frete, clientes, bloqueado }: Pro
           </select>
         </Campo>
         <Campo id={`${p}valor`} rotulo="Valor do frete (R$) *" erro={e('valor')}>
-          <Input {...register('valor')} {...ariaCampo(`${p}valor`, e('valor'))} inputMode="decimal" className="tabular-nums" />
+          <Input
+            {...register('valor')}
+            {...ariaCampo(`${p}valor`, e('valor'))}
+            inputMode="decimal"
+            className="tabular-nums"
+          />
         </Campo>
         <Campo id={`${p}cte_chave`} rotulo="Chave do CT-e" erro={e('cte_chave')}>
-          <Input {...register('cte_chave')} {...ariaCampo(`${p}cte_chave`, e('cte_chave'))} inputMode="numeric" autoComplete="off" className="font-mono text-sm" />
+          <Input
+            {...register('cte_chave')}
+            {...ariaCampo(`${p}cte_chave`, e('cte_chave'))}
+            inputMode="numeric"
+            autoComplete="off"
+            className="font-mono text-sm"
+          />
         </Campo>
         <Campo id={`${p}mdfe_chave`} rotulo="Chave do MDF-e" erro={e('mdfe_chave')}>
-          <Input {...register('mdfe_chave')} {...ariaCampo(`${p}mdfe_chave`, e('mdfe_chave'))} inputMode="numeric" autoComplete="off" className="font-mono text-sm" />
+          <Input
+            {...register('mdfe_chave')}
+            {...ariaCampo(`${p}mdfe_chave`, e('mdfe_chave'))}
+            inputMode="numeric"
+            autoComplete="off"
+            className="font-mono text-sm"
+          />
         </Campo>
         <Campo id={`${p}peso_kg`} rotulo="Peso (kg)" erro={e('peso_kg')}>
-          <Input {...register('peso_kg')} {...ariaCampo(`${p}peso_kg`, e('peso_kg'))} inputMode="decimal" className="tabular-nums" />
+          <Input
+            {...register('peso_kg')}
+            {...ariaCampo(`${p}peso_kg`, e('peso_kg'))}
+            inputMode="decimal"
+            className="tabular-nums"
+          />
         </Campo>
         <Campo id={`${p}observacoes`} rotulo="Observação" erro={e('observacoes')}>
           <Input {...register('observacoes')} {...ariaCampo(`${p}observacoes`, e('observacoes'))} />
         </Campo>
       </fieldset>
 
-      {bloqueado && <p className="text-sm text-muted-foreground">Viagem em acerto fechado: para alterar, o dono reabre o acerto.</p>}
+      {!frete && sugestao && (
+        <p className="text-sm text-muted-foreground">
+          Preenchido com o preço combinado com o cliente. Confira e toque em Lançar frete.
+        </p>
+      )}
+      {bloqueado && (
+        <p className="text-sm text-muted-foreground">
+          Viagem em acerto fechado: para alterar, o dono reabre o acerto.
+        </p>
+      )}
       {erroGeral && (
         <p role="alert" className="font-medium text-destructive">
           {traduzirErroBanco(erroGeral, { '23505': 'Esta viagem já tem esse frete.' })}
@@ -143,15 +192,29 @@ export function FormFrete({ viagemId, sentido, frete, clientes, bloqueado }: Pro
           {frete ? (
             confirmandoExclusao ? (
               <div className="flex gap-2">
-                <Button type="button" variant="outline" onClick={() => setConfirmandoExclusao(false)}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setConfirmandoExclusao(false)}
+                >
                   Cancelar
                 </Button>
-                <Button type="button" variant="destructive" disabled={excluir.isPending} onClick={() => excluir.mutate()}>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  disabled={excluir.isPending}
+                  onClick={() => excluir.mutate()}
+                >
                   Sim, apagar frete
                 </Button>
               </div>
             ) : (
-              <Button type="button" variant="ghost" onClick={() => setConfirmandoExclusao(true)} className="text-destructive">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setConfirmandoExclusao(true)}
+                className="text-destructive"
+              >
                 <Trash2 aria-hidden /> Apagar frete
               </Button>
             )

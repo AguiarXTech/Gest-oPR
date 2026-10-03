@@ -443,6 +443,7 @@ export type Database = {
           cnpj: string | null
           contato: string | null
           created_at: string
+          frete_automatico: boolean
           id: string
           prazo_pagamento_dias: number | null
           razao_social: string
@@ -453,6 +454,7 @@ export type Database = {
           cnpj?: string | null
           contato?: string | null
           created_at?: string
+          frete_automatico?: boolean
           id?: string
           prazo_pagamento_dias?: number | null
           razao_social: string
@@ -463,6 +465,7 @@ export type Database = {
           cnpj?: string | null
           contato?: string | null
           created_at?: string
+          frete_automatico?: boolean
           id?: string
           prazo_pagamento_dias?: number | null
           razao_social?: string
@@ -904,6 +907,44 @@ export type Database = {
         }
         Relationships: []
       }
+      locais_carga: {
+        Row: {
+          ativo: boolean
+          cliente_id: string
+          created_at: string
+          endereco: string | null
+          id: string
+          nome: string
+          updated_at: string
+        }
+        Insert: {
+          ativo?: boolean
+          cliente_id: string
+          created_at?: string
+          endereco?: string | null
+          id?: string
+          nome: string
+          updated_at?: string
+        }
+        Update: {
+          ativo?: boolean
+          cliente_id?: string
+          created_at?: string
+          endereco?: string | null
+          id?: string
+          nome?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "locais_carga_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       manutencao_itens: {
         Row: {
           manutencao_id: string
@@ -1140,6 +1181,41 @@ export type Database = {
         }
         Relationships: []
       }
+      precos_frete: {
+        Row: {
+          cliente_id: string
+          created_at: string
+          id: string
+          sentido: Database["public"]["Enums"]["sentido_frete"]
+          valor_centavos: number
+          vigencia_inicio: string
+        }
+        Insert: {
+          cliente_id: string
+          created_at?: string
+          id?: string
+          sentido: Database["public"]["Enums"]["sentido_frete"]
+          valor_centavos: number
+          vigencia_inicio: string
+        }
+        Update: {
+          cliente_id?: string
+          created_at?: string
+          id?: string
+          sentido?: Database["public"]["Enums"]["sentido_frete"]
+          valor_centavos?: number
+          vigencia_inicio?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "precos_frete_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           ativo: boolean
@@ -1280,6 +1356,7 @@ export type Database = {
           id: string
           km_chegada: number | null
           km_saida: number
+          local_carga_id: string | null
           motorista_id: string
           observacoes: string | null
           origem: string
@@ -1299,6 +1376,7 @@ export type Database = {
           id?: string
           km_chegada?: number | null
           km_saida: number
+          local_carga_id?: string | null
           motorista_id: string
           observacoes?: string | null
           origem: string
@@ -1318,6 +1396,7 @@ export type Database = {
           id?: string
           km_chegada?: number | null
           km_saida?: number
+          local_carga_id?: string | null
           motorista_id?: string
           observacoes?: string | null
           origem?: string
@@ -1344,6 +1423,13 @@ export type Database = {
             columns: ["carreta_id"]
             isOneToOne: false
             referencedRelation: "carretas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "viagens_local_carga_id_fkey"
+            columns: ["local_carga_id"]
+            isOneToOne: false
+            referencedRelation: "locais_carga"
             referencedColumns: ["id"]
           },
           {
