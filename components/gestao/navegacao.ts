@@ -8,6 +8,7 @@ import {
   Route,
   Settings,
   Siren,
+  Ticket,
   Store,
   Truck,
   Users,
@@ -37,6 +38,7 @@ export const menuGestao: GrupoMenu[] = [
       { href: '/g/acertos', rotulo: 'Acertos', icone: Calculator, pronto: true },
       { href: '/g/manutencao', rotulo: 'Manutenção', icone: Wrench, pronto: true },
       { href: '/g/multas', rotulo: 'Multas', icone: Siren, pronto: true },
+      { href: '/g/pedagio', rotulo: 'Pedágio', icone: Ticket, pronto: true },
     ],
   },
   {
