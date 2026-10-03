@@ -58,6 +58,7 @@ export default async function PainelGestao({ searchParams }: PageProps<'/g'>) {
     { data: pendentes },
     manutencao,
     { data: multas },
+    { data: pedagioContestar },
   ] = await Promise.all([
     obterPerfilAtual(),
     carregarMes(supabase, mes),
@@ -79,6 +80,7 @@ export default async function PainelGestao({ searchParams }: PageProps<'/g'>) {
       .select('prazo_indicacao, indicado_em, pago_em')
       .is('indicado_em', null)
       .not('prazo_indicacao', 'is', null),
+    supabase.from('cobrancas_pedagio').select('id').eq('situacao', 'contestar'),
   ]);
 
   const graves = (pendentes ?? []).filter((a) =>
@@ -126,6 +128,15 @@ export default async function PainelGestao({ searchParams }: PageProps<'/g'>) {
             texto: `${multasIndicar.length} multa(s) para indicar o condutor${multasIndicar.includes('indicar_atrasado') ? ' (prazo vencido)' : ''}`,
             href: '/g/multas',
             grave: multasIndicar.includes('indicar_atrasado'),
+          },
+        ]
+      : []),
+    ...((pedagioContestar ?? []).length > 0
+      ? [
+          {
+            texto: `${(pedagioContestar ?? []).length} cobrança(s) de pedágio para contestar`,
+            href: '/g/pedagio',
+            grave: true,
           },
         ]
       : []),
@@ -192,7 +203,6 @@ export default async function PainelGestao({ searchParams }: PageProps<'/g'>) {
           </p>
         </section>
 
-
         <section className="flex flex-col gap-2 rounded-xl border bg-card p-5 shadow-xs sm:col-span-2 xl:col-span-2">
           <h2 className="text-sm font-semibold text-muted-foreground">Alertas</h2>
           {alertas.length === 0 ? (
@@ -219,13 +229,23 @@ export default async function PainelGestao({ searchParams }: PageProps<'/g'>) {
 
       <section className="flex flex-col gap-3">
         <h2 className="text-xl font-semibold">Resumo do mês</h2>
-        <DemonstrativoResultado titulo="Total da frota" subtitulo={`${caminhoes.length} caminhões`} r={frota} destaque />
+        <DemonstrativoResultado
+          titulo="Total da frota"
+          subtitulo={`${caminhoes.length} caminhões`}
+          r={frota}
+          destaque
+        />
         <div className="flex flex-col gap-2">
           {caminhoes.map((c) => (
             <DemonstrativoResultado
               key={c.id}
               titulo={formatarPlaca(c.placa)}
-              subtitulo={[c.apelido, `${c.viagens.length} viage${c.viagens.length === 1 ? 'm' : 'ns'}`].filter(Boolean).join(' · ')}
+              subtitulo={[
+                c.apelido,
+                `${c.viagens.length} viage${c.viagens.length === 1 ? 'm' : 'ns'}`,
+              ]
+                .filter(Boolean)
+                .join(' · ')}
               r={c.resultado}
               href={`/g/caminhoes/${c.id}?mes=${mes}`}
               recolhido

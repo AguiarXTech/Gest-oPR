@@ -11,7 +11,12 @@ type Cliente = Awaited<ReturnType<typeof createClient>>;
 export function limitesDoMes(mes: string) {
   const [ano, m] = mes.split('-').map(Number);
   const proximo = m === 12 ? `${ano + 1}-01` : `${ano}-${String(m + 1).padStart(2, '0')}`;
-  return { inicio: `${mes}-01T00:00:00-03:00`, fim: `${proximo}-01T00:00:00-03:00`, inicioData: `${mes}-01`, fimData: `${proximo}-01` };
+  return {
+    inicio: `${mes}-01T00:00:00-03:00`,
+    fim: `${proximo}-01T00:00:00-03:00`,
+    inicioData: `${mes}-01`,
+    fimData: `${proximo}-01`,
+  };
 }
 
 export type ViagemDoMes = {
@@ -28,26 +33,60 @@ export type ViagemDoMes = {
   resultadoCentavos: number;
 };
 
-export type CaminhaoDoMes = { id: string; placa: string; apelido: string | null; resultado: Resultado; viagens: ViagemDoMes[] };
+export type CaminhaoDoMes = {
+  id: string;
+  placa: string;
+  apelido: string | null;
+  resultado: Resultado;
+  viagens: ViagemDoMes[];
+};
 
-export async function carregarMes(supabase: Cliente, mes: string): Promise<{ caminhoes: CaminhaoDoMes[]; frota: Resultado }> {
+export async function carregarMes(
+  supabase: Cliente,
+  mes: string,
+): Promise<{ caminhoes: CaminhaoDoMes[]; frota: Resultado }> {
   const { inicio, fim, inicioData, fimData } = limitesDoMes(mes);
-  const [{ data: caminhoes }, { data: viagens }, { data: abastecimentos }, { data: despesas }, { data: regras }, { data: manutencoes }] = await Promise.all([
+  const [
+    { data: caminhoes },
+    { data: viagens },
+    { data: abastecimentos },
+    { data: despesas },
+    { data: regras },
+    { data: manutencoes },
+  ] = await Promise.all([
     supabase.from('caminhoes').select('id, placa, apelido, ativo').order('placa'),
     supabase
       .from('viagens')
-      .select('id, caminhao_id, motorista_id, data_saida, km_saida, km_chegada, funcionarios(nome), fretes(valor_frete_centavos)')
+      .select(
+        'id, caminhao_id, motorista_id, data_saida, km_saida, km_chegada, funcionarios(nome), fretes(valor_frete_centavos), cobrancas_pedagio(valor_cobrado_centavos)',
+      )
       .eq('status', 'concluida')
       .gte('data_saida', inicio)
       .lt('data_saida', fim),
-    supabase.from('abastecimentos').select('caminhao_id, litros, valor_total_centavos').gte('data_hora', inicio).lt('data_hora', fim),
-    supabase.from('despesas_viagem').select('caminhao_id, viagem_id, tipo, valor_centavos').gte('data', inicioData).lt('data', fimData),
+    supabase
+      .from('abastecimentos')
+      .select('caminhao_id, litros, valor_total_centavos')
+      .gte('data_hora', inicio)
+      .lt('data_hora', fim),
+    supabase
+      .from('despesas_viagem')
+      .select('caminhao_id, viagem_id, tipo, valor_centavos')
+      .gte('data', inicioData)
+      .lt('data', fimData),
     supabase.from('regras_comissao').select('*'),
-    supabase.from('manutencoes').select('caminhao_id, valor_centavos').gte('data', inicioData).lt('data', fimData),
+    supabase
+      .from('manutencoes')
+      .select('caminhao_id, valor_centavos')
+      .gte('data', inicioData)
+      .lt('data', fimData),
   ]);
 
   const regrasPorMotorista = new Map<string, ReturnType<typeof paraRegraDominio>[]>();
-  for (const r of regras ?? []) regrasPorMotorista.set(r.funcionario_id, [...(regrasPorMotorista.get(r.funcionario_id) ?? []), paraRegraDominio(r)]);
+  for (const r of regras ?? [])
+    regrasPorMotorista.set(r.funcionario_id, [
+      ...(regrasPorMotorista.get(r.funcionario_id) ?? []),
+      paraRegraDominio(r),
+    ]);
 
   const porCaminhao = (caminhoes ?? []).map((c) => {
     const vs = (viagens ?? []).filter((v) => v.caminhao_id === c.id);
@@ -61,12 +100,27 @@ export async function carregarMes(supabase: Cliente, mes: string): Promise<{ cam
       const km = (v.km_chegada ?? v.km_saida) - v.km_saida;
       const freteCentavos = v.fretes.reduce((t, f) => t + f.valor_frete_centavos, 0);
       const despesasDaViagem = ds.filter((d) => d.viagem_id === v.id);
-      const pedagioCentavos = despesasDaViagem.filter((d) => d.tipo === 'pedagio').reduce((t, d) => t + d.valor_centavos, 0);
-      const despesasCentavos = despesasDaViagem.filter((d) => d.tipo !== 'pedagio').reduce((t, d) => t + d.valor_centavos, 0);
+      // pedágio = lançado como despesa + cobrado pelo app de pedágio (controle de pedágio)
+      const pedagioCentavos =
+        despesasDaViagem
+          .filter((d) => d.tipo === 'pedagio')
+          .reduce((t, d) => t + d.valor_centavos, 0) +
+        v.cobrancas_pedagio.reduce((t, c) => t + c.valor_cobrado_centavos, 0);
+      const despesasCentavos = despesasDaViagem
+        .filter((d) => d.tipo !== 'pedagio')
+        .reduce((t, d) => t + d.valor_centavos, 0);
       const dieselRateadoCentavos = ratearDiesel(diesel, km, kmMes);
       const regra = regraVigente(regrasPorMotorista.get(v.motorista_id) ?? [], v.data_saida);
       const comissaoCentavos = regra
-        ? calcularComissaoViagem({ freteCentavos, kmRodado: km, pedagiosCentavos: pedagioCentavos, dieselRateadoCentavos }, regra)
+        ? calcularComissaoViagem(
+            {
+              freteCentavos,
+              kmRodado: km,
+              pedagiosCentavos: pedagioCentavos,
+              dieselRateadoCentavos,
+            },
+            regra,
+          )
         : 0;
       return {
         id: v.id,
@@ -79,26 +133,61 @@ export async function carregarMes(supabase: Cliente, mes: string): Promise<{ cam
         dieselRateadoCentavos,
         pedagioCentavos,
         despesasCentavos,
-        resultadoCentavos: freteCentavos - dieselRateadoCentavos - pedagioCentavos - despesasCentavos - comissaoCentavos,
+        resultadoCentavos:
+          freteCentavos -
+          dieselRateadoCentavos -
+          pedagioCentavos -
+          despesasCentavos -
+          comissaoCentavos,
       };
     });
 
     const resultado = calcularResultado({
-      viagens: viagensDoMes.map((v) => ({ freteCentavos: v.freteCentavos, kmRodado: v.km, comissaoCentavos: v.comissaoCentavos })),
+      viagens: viagensDoMes.map((v) => ({
+        freteCentavos: v.freteCentavos,
+        kmRodado: v.km,
+        comissaoCentavos: v.comissaoCentavos,
+      })),
       dieselCentavos: diesel,
       litros,
-      pedagioCentavos: ds.filter((d) => d.tipo === 'pedagio').reduce((t, d) => t + d.valor_centavos, 0),
-      despesasCentavos: ds.filter((d) => d.tipo !== 'pedagio').reduce((t, d) => t + d.valor_centavos, 0),
-      manutencaoCentavos: (manutencoes ?? []).filter((m) => m.caminhao_id === c.id).reduce((t, m) => t + m.valor_centavos, 0),
+      pedagioCentavos:
+        ds.filter((d) => d.tipo === 'pedagio').reduce((t, d) => t + d.valor_centavos, 0) +
+        vs.reduce(
+          (t, v) => t + v.cobrancas_pedagio.reduce((s, c) => s + c.valor_cobrado_centavos, 0),
+          0,
+        ),
+      despesasCentavos: ds
+        .filter((d) => d.tipo !== 'pedagio')
+        .reduce((t, d) => t + d.valor_centavos, 0),
+      manutencaoCentavos: (manutencoes ?? [])
+        .filter((m) => m.caminhao_id === c.id)
+        .reduce((t, m) => t + m.valor_centavos, 0),
     });
-    return { id: c.id, placa: c.placa, apelido: c.apelido, ativo: c.ativo, resultado, viagens: viagensDoMes };
+    return {
+      id: c.id,
+      placa: c.placa,
+      apelido: c.apelido,
+      ativo: c.ativo,
+      resultado,
+      viagens: viagensDoMes,
+    };
   });
 
   // caminhão desativado só aparece se teve movimento no mês
-  const comMovimento = porCaminhao.filter((c) => c.ativo || c.resultado.km > 0 || c.resultado.dieselCentavos > 0);
-  const soma = (campo: 'dieselCentavos' | 'pedagioCentavos' | 'despesasCentavos' | 'manutencaoCentavos') => comMovimento.reduce((t, c) => t + c.resultado[campo], 0);
+  const comMovimento = porCaminhao.filter(
+    (c) => c.ativo || c.resultado.km > 0 || c.resultado.dieselCentavos > 0,
+  );
+  const soma = (
+    campo: 'dieselCentavos' | 'pedagioCentavos' | 'despesasCentavos' | 'manutencaoCentavos',
+  ) => comMovimento.reduce((t, c) => t + c.resultado[campo], 0);
   const frota = calcularResultado({
-    viagens: comMovimento.flatMap((c) => c.viagens.map((v) => ({ freteCentavos: v.freteCentavos, kmRodado: v.km, comissaoCentavos: v.comissaoCentavos }))),
+    viagens: comMovimento.flatMap((c) =>
+      c.viagens.map((v) => ({
+        freteCentavos: v.freteCentavos,
+        kmRodado: v.km,
+        comissaoCentavos: v.comissaoCentavos,
+      })),
+    ),
     dieselCentavos: soma('dieselCentavos'),
     litros: (abastecimentos ?? []).reduce((t, a) => t + Number(a.litros), 0),
     pedagioCentavos: soma('pedagioCentavos'),
@@ -107,7 +196,13 @@ export async function carregarMes(supabase: Cliente, mes: string): Promise<{ cam
   });
 
   return {
-    caminhoes: comMovimento.map((c) => ({ id: c.id, placa: c.placa, apelido: c.apelido, resultado: c.resultado, viagens: c.viagens })),
+    caminhoes: comMovimento.map((c) => ({
+      id: c.id,
+      placa: c.placa,
+      apelido: c.apelido,
+      resultado: c.resultado,
+      viagens: c.viagens,
+    })),
     frota,
   };
 }
