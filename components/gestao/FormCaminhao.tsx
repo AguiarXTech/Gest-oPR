@@ -172,7 +172,7 @@ export function FormCaminhao({ caminhao }: { caminhao?: Caminhao }) {
         </Campo>
         <Campo
           id="eixos_suspensos"
-          rotulo="Eixos que sobem (vazio)"
+          rotulo="Eixos erguidos (vazio)"
           erro={e('eixos_suspensos')}
           ajuda="Para calcular o pedágio da ida vazia"
         >

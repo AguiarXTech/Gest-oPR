@@ -86,7 +86,7 @@ export default async function ListaCarretas() {
                   c.composicao,
                   c.carroceria,
                   c.eixos !== null &&
-                    `${c.eixos} eixos${c.eixos_suspensos ? ` (${c.eixos_suspensos} sobe)` : ''}`,
+                    `${c.eixos} eixos${c.eixos_suspensos ? ` (${c.eixos_suspensos} erguido${c.eixos_suspensos > 1 ? 's' : ''})` : ''}`,
                 ]
                   .filter(Boolean)
                   .join(' · ') || 'Sem detalhes'}

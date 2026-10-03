@@ -113,7 +113,7 @@ export function FormCarreta({ carreta }: { carreta?: Carreta }) {
         </Campo>
         <Campo
           id="eixos_suspensos"
-          rotulo="Eixos que sobem (vazio)"
+          rotulo="Eixos erguidos (vazio)"
           erro={e('eixos_suspensos')}
           ajuda="Para calcular o pedágio da ida vazia"
         >

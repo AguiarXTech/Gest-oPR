@@ -63,7 +63,7 @@ export const placaObrigatoria = z
   .refine(validarPlaca, 'Placa inválida. Use o formato ABC1234 ou ABC1D23.')
   .transform(normalizarPlaca);
 
-/** Quantos eixos sobem quando vazio (pedágio: eixo suspenso vazio não paga). Vazio = 0. */
+/** Eixos erguidos quando vazio (pedágio: eixo suspenso vazio não paga). Vazio = 0. */
 export const eixosSuspensos = z
   .string()
   .trim()
