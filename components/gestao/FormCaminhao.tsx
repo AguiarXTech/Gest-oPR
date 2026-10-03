@@ -108,7 +108,7 @@ export function FormCaminhao({ caminhao }: { caminhao?: Caminhao }) {
             className="h-11 w-full rounded-lg border border-input bg-transparent px-2.5 text-base"
           >
             <option value="truck">Caminhão inteiro (peça única)</option>
-            <option value="cavalo">Cavalo (puxa carreta)</option>
+            <option value="cavalo">Cavalo trator</option>
           </select>
         </Campo>
         <Campo
