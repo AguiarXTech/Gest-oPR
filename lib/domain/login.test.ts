@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { paraEmailDeLogin } from './login';
+import { cpfDoLogin, paraEmailDeLogin } from './login';
 
 describe('paraEmailDeLogin (ADR-0001, Q8)', () => {
   it.each([
@@ -24,4 +24,12 @@ describe('paraEmailDeLogin (ADR-0001, Q8)', () => {
       expect(paraEmailDeLogin(entrada)).toBeNull();
     },
   );
+});
+
+describe('cpfDoLogin (dono que também dirige)', () => {
+  it('login pelo CPF devolve o CPF', () =>
+    expect(cpfDoLogin('12345678901@frota.local')).toBe('12345678901'));
+  it('e-mail comum não tem CPF', () => expect(cpfDoLogin('dono@frota.local')).toBeNull());
+  it('outro domínio não conta', () => expect(cpfDoLogin('12345678901@gmail.com')).toBeNull());
+  it('sem e-mail', () => expect(cpfDoLogin(undefined)).toBeNull());
 });

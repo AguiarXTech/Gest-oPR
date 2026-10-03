@@ -15,3 +15,9 @@ export function paraEmailDeLogin(entrada: string): string | null {
   const digitos = texto.replace(/[\s.-]/g, '');
   return /^\d{11}$/.test(digitos) ? `${digitos}@${DOMINIO_EMAIL_INTERNO}` : null;
 }
+
+/** CPF de quem entra pelo CPF (e-mail interno); null para e-mail comum. */
+export function cpfDoLogin(email: string | undefined | null): string | null {
+  const m = /^(\d{11})@(.+)$/.exec(email ?? '');
+  return m && m[2] === DOMINIO_EMAIL_INTERNO ? m[1] : null;
+}

@@ -4,10 +4,14 @@
 // no servidor, que quem chamou é gestor: a tela escondida não é proteção.
 
 import { revalidatePath } from 'next/cache';
-import { DOMINIO_EMAIL_INTERNO } from '@/lib/domain/login';
+import { cpfDoLogin, DOMINIO_EMAIL_INTERNO } from '@/lib/domain/login';
 import { criarClienteAdmin } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
-import { alterarAtivoSchema, criarAcessoSchema, redefinirSenhaSchema } from '@/lib/validations/acesso';
+import {
+  alterarAtivoSchema,
+  criarAcessoSchema,
+  redefinirSenhaSchema,
+} from '@/lib/validations/acesso';
 
 export type EstadoAcao = { erro?: string; ok?: string };
 
@@ -50,7 +54,8 @@ export async function criarAcesso(_anterior: EstadoAcao, formData: FormData): Pr
   });
   if (erroAuth) {
     if (erroAuth.code === 'email_exists') return vincularAcessoExistente(admin, funcionario);
-    if (erroAuth.code === 'weak_password') return { erro: 'Senha fraca. Use pelo menos 8 caracteres.' };
+    if (erroAuth.code === 'weak_password')
+      return { erro: 'Senha fraca. Use pelo menos 8 caracteres.' };
     return { erro: 'Não foi possível criar o acesso. Tente de novo.' };
   }
 
@@ -71,7 +76,10 @@ export async function criarAcesso(_anterior: EstadoAcao, formData: FormData): Pr
   return { ok: 'Acesso criado. Passe o CPF e a senha para o funcionário.' };
 }
 
-export async function redefinirSenha(_anterior: EstadoAcao, formData: FormData): Promise<EstadoAcao> {
+export async function redefinirSenha(
+  _anterior: EstadoAcao,
+  formData: FormData,
+): Promise<EstadoAcao> {
   const supabase = await clienteDoGestor();
   if (!supabase) return { erro: 'Você não tem permissão para redefinir senhas.' };
 
@@ -89,7 +97,8 @@ export async function redefinirSenha(_anterior: EstadoAcao, formData: FormData):
     password: dados.data.senha,
   });
   if (error) {
-    if (error.code === 'weak_password') return { erro: 'Senha fraca. Use pelo menos 8 caracteres.' };
+    if (error.code === 'weak_password')
+      return { erro: 'Senha fraca. Use pelo menos 8 caracteres.' };
     return { erro: 'Não foi possível redefinir a senha. Tente de novo.' };
   }
 
@@ -104,7 +113,10 @@ const BAN_DESATIVADO = '876000h';
  * para o perfil, e a RLS passa a negar todas as leituras. Aqui também se
  * bloqueia o login no Auth, para a sessão não ser renovada.
  */
-export async function alterarAtivoFuncionario(_anterior: EstadoAcao, formData: FormData): Promise<EstadoAcao> {
+export async function alterarAtivoFuncionario(
+  _anterior: EstadoAcao,
+  formData: FormData,
+): Promise<EstadoAcao> {
   const supabase = await clienteDoGestor();
   if (!supabase) return { erro: 'Você não tem permissão para alterar funcionários.' };
 
@@ -125,7 +137,9 @@ export async function alterarAtivoFuncionario(_anterior: EstadoAcao, formData: F
   const admin = criarClienteAdmin();
   const banir = (bloquear: boolean) =>
     perfil
-      ? admin.auth.admin.updateUserById(perfil.id, { ban_duration: bloquear ? BAN_DESATIVADO : 'none' })
+      ? admin.auth.admin.updateUserById(perfil.id, {
+          ban_duration: bloquear ? BAN_DESATIVADO : 'none',
+        })
       : Promise.resolve({ error: null });
 
   const { error: erroAuth } = await banir(!ativo);
@@ -144,7 +158,11 @@ export async function alterarAtivoFuncionario(_anterior: EstadoAcao, formData: F
 
   revalidatePath('/g/funcionarios');
   revalidatePath(`/g/funcionarios/${funcionarioId}`);
-  return { ok: ativo ? 'Funcionário reativado.' : 'Funcionário desativado. Ele não consegue mais entrar no app.' };
+  return {
+    ok: ativo
+      ? 'Funcionário reativado.'
+      : 'Funcionário desativado. Ele não consegue mais entrar no app.',
+  };
 }
 
 /**
@@ -162,16 +180,89 @@ async function vincularAcessoExistente(
   const usuario = data?.users.find((u) => u.email === email);
   if (!usuario) return { erro: 'Já existe um acesso com este CPF.' };
 
-  const { data: perfil } = await admin.from('profiles').select('papel, funcionario_id').eq('id', usuario.id).maybeSingle();
+  const { data: perfil } = await admin
+    .from('profiles')
+    .select('papel, funcionario_id')
+    .eq('id', usuario.id)
+    .maybeSingle();
   if (!perfil || perfil.papel === 'motorista' || perfil.funcionario_id) {
     return { erro: 'Já existe um acesso com este CPF.' };
   }
 
-  const { error } = await admin.from('profiles').update({ funcionario_id: funcionario.id }).eq('id', usuario.id);
+  const { error } = await admin
+    .from('profiles')
+    .update({ funcionario_id: funcionario.id })
+    .eq('id', usuario.id);
   if (error) return { erro: 'Não foi possível ligar ao acesso existente. Tente de novo.' };
 
   revalidatePath('/g/funcionarios');
   revalidatePath(`/g/funcionarios/${funcionario.id}`);
   const papel = perfil.papel === 'dono' ? 'dono' : 'administração';
-  return { ok: `Ligado ao acesso de ${papel} que já existia (mesma senha). Agora ele também tem a área do motorista.` };
+  return {
+    ok: `Ligado ao acesso de ${papel} que já existia (mesma senha). Agora ele também tem a área do motorista.`,
+  };
+}
+
+/**
+ * Dono/admin que também dirige (pedido de 2026-10-03): um toque no painel cria a ficha de
+ * motorista dele (nome do perfil, CPF do login) e liga ao próprio login. Mesmo login e
+ * mesma senha; o papel continua dono/admin e ele ganha a área do motorista.
+ */
+export async function ativarMinhaAreaMotorista(): Promise<EstadoAcao> {
+  const supabase = await clienteDoGestor();
+  if (!supabase) return { erro: 'Só dono ou administração pode ativar.' };
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { erro: 'Entre de novo no app.' };
+  const { data: perfil } = await supabase
+    .from('profiles')
+    .select('nome, funcionario_id')
+    .eq('id', user.id)
+    .maybeSingle();
+  if (!perfil) return { erro: 'Perfil não encontrado.' };
+  if (perfil.funcionario_id) return { ok: 'Sua área de motorista já está ativa.' };
+
+  const cpf = cpfDoLogin(user.email);
+  if (!cpf)
+    return {
+      erro: 'Seu login não é pelo CPF. Cadastre você em Funcionários e use "Criar acesso ao app".',
+    };
+
+  // Ficha com o mesmo CPF já cadastrada (ex.: feita em Funcionários): reaproveita, se estiver livre.
+  const { data: existente } = await supabase
+    .from('funcionarios')
+    .select('id, ativo')
+    .eq('cpf', cpf)
+    .maybeSingle();
+  let funcionarioId = existente?.id;
+  if (existente) {
+    if (!existente.ativo)
+      return { erro: 'Sua ficha de funcionário está desativada. Reative em Funcionários.' };
+    const { data: ocupado } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('funcionario_id', existente.id)
+      .maybeSingle();
+    if (ocupado) return { erro: 'Esse CPF já está ligado a outro acesso.' };
+  } else {
+    const { data: novo, error } = await supabase
+      .from('funcionarios')
+      .insert({ nome: perfil.nome, cpf, cargo: 'motorista' })
+      .select('id')
+      .single();
+    if (error) return { erro: 'Não foi possível criar sua ficha de motorista. Tente de novo.' };
+    funcionarioId = novo.id;
+  }
+
+  const admin = criarClienteAdmin();
+  const { error } = await admin
+    .from('profiles')
+    .update({ funcionario_id: funcionarioId })
+    .eq('id', user.id);
+  if (error) return { erro: 'Não foi possível ativar. Tente de novo.' };
+
+  revalidatePath('/', 'layout');
+  return { ok: 'Pronto! Sua área de motorista está ativa, no mesmo login.' };
 }

@@ -14,6 +14,7 @@ import { carregarSituacaoManutencao } from '@/lib/supabase/manutencao';
 import { situacaoMulta } from '@/lib/domain/multas';
 import { hojeIso } from '@/lib/formatar';
 import { carregarMes } from '@/lib/supabase/painel';
+import { AreaMotoristaPainel } from '@/components/gestao/AreaMotoristaPainel';
 import { DemonstrativoResultado } from '@/components/gestao/DemonstrativoResultado';
 import { obterPerfilAtual } from '@/lib/supabase/perfil';
 import { createClient } from '@/lib/supabase/server';
@@ -152,12 +153,25 @@ export default async function PainelGestao({ searchParams }: PageProps<'/g'>) {
   ];
 
   const primeiroNome = perfil?.nome.split(' ')[0];
+  // dono/admin que também dirige: atalho para a área do motorista (mesmo login)
+  const { data: minhaViagem } = perfil?.funcionario_id
+    ? await supabase
+        .from('viagens')
+        .select('id')
+        .eq('status', 'em_andamento')
+        .eq('motorista_id', perfil.funcionario_id)
+        .maybeSingle()
+    : { data: null };
   const temMovimento = frota.km > 0 || frota.dieselCentavos > 0;
 
   return (
     <>
       <div className="flex flex-col gap-3">
         <h1 className="text-3xl">Olá, {primeiroNome}</h1>
+        <AreaMotoristaPainel
+          ativa={Boolean(perfil?.funcionario_id)}
+          emViagem={Boolean(minhaViagem)}
+        />
         <nav
           aria-label="Mês"
           className="flex items-center justify-between gap-2 rounded-xl border bg-card p-1 shadow-xs"
