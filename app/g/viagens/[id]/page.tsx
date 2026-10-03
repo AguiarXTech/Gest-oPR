@@ -3,7 +3,9 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { FormFrete } from '@/components/gestao/FormFrete';
 import { TrocarCarreta } from '@/components/gestao/TrocarCarreta';
+import { dataBrasilia } from '@/lib/domain/comissao';
 import { formatarBRL } from '@/lib/domain/dinheiro';
+import { precoVigente } from '@/lib/domain/precoFrete';
 import { formatarPlaca } from '@/lib/domain/placa';
 import { TIPOS_DESPESA } from '@/lib/validations/despesa';
 import { formatarData, formatarDataHora, formatarKm, formatarLitros } from '@/lib/formatar';
@@ -21,21 +23,39 @@ const status = {
 export default async function DetalheViagem({ params }: PageProps<'/g/viagens/[id]'>) {
   const { id } = await params;
   const supabase = await createClient();
-  const [{ data: v }, { data: clientes }, { data: carretas }] = await Promise.all([
-    supabase
-      .from('viagens')
-      .select(
-        '*, caminhoes(placa, apelido, tipo), carretas(placa), funcionarios(nome), acertos(status), fretes(*), abastecimentos(id, data_hora, km, litros, valor_total_centavos, conferido), despesas_viagem(id, data, tipo, valor_centavos, conferido)',
-      )
-      .eq('id', id)
-      .maybeSingle(),
-    supabase.from('clientes').select('id, razao_social').eq('ativo', true).order('razao_social'),
-    supabase.from('carretas').select('id, placa, apelido, ativo').order('placa'),
-  ]);
+  const [{ data: v }, { data: clientes }, { data: carretas }, { data: automatico }] =
+    await Promise.all([
+      supabase
+        .from('viagens')
+        .select(
+          '*, caminhoes(placa, apelido, tipo), carretas(placa), locais_carga(nome, endereco), funcionarios(nome), acertos(status), fretes(*), abastecimentos(id, data_hora, km, litros, valor_total_centavos, conferido), despesas_viagem(id, data, tipo, valor_centavos, conferido)',
+        )
+        .eq('id', id)
+        .maybeSingle(),
+      supabase.from('clientes').select('id, razao_social').eq('ativo', true).order('razao_social'),
+      supabase.from('carretas').select('id, placa, apelido, ativo').order('placa'),
+      supabase
+        .from('clientes')
+        .select('id, precos_frete(sentido, vigencia_inicio, valor_centavos)')
+        .eq('frete_automatico', true)
+        .eq('ativo', true)
+        .maybeSingle(),
+    ]);
   if (!v) notFound();
 
   const bloqueado = v.acertos?.status === 'fechado' || v.acertos?.status === 'pago';
   const freteDe = (sentido: 'ida' | 'volta') => v.fretes.find((f) => f.sentido === sentido) ?? null;
+  // frete ainda não lançado: sugere o preço combinado com o cliente no dia da saída
+  const sugestaoDe = (sentido: 'ida' | 'volta') => {
+    if (!automatico) return null;
+    const precos = automatico.precos_frete.map((p) => ({
+      sentido: p.sentido,
+      vigenciaInicio: p.vigencia_inicio,
+      valorCentavos: p.valor_centavos,
+    }));
+    const valorCentavos = precoVigente(precos, sentido, dataBrasilia(v.data_saida));
+    return valorCentavos === null ? null : { clienteId: automatico.id, valorCentavos };
+  };
   const receita = v.fretes.reduce((t, f) => t + f.valor_frete_centavos, 0);
   const diesel = v.abastecimentos.reduce((t, a) => t + a.valor_total_centavos, 0);
   const despesas = v.despesas_viagem.reduce((t, d) => t + d.valor_centavos, 0);
@@ -60,6 +80,17 @@ export default async function DetalheViagem({ params }: PageProps<'/g/viagens/[i
             v.data_chegada &&
             ` · voltou ${formatarDataHora(v.data_chegada)} · ${formatarKm(v.km_chegada - v.km_saida)} rodados`}
         </p>
+        {v.locais_carga && (
+          <p className="font-medium">
+            Carrega em: {v.locais_carga.nome}
+            {v.locais_carga.endereco && (
+              <span className="font-normal text-muted-foreground">
+                {' '}
+                · {v.locais_carga.endereco}
+              </span>
+            )}
+          </p>
+        )}
       </div>
 
       {(v.caminhoes?.tipo === 'cavalo' || v.carreta_id) && v.status !== 'cancelada' && (
@@ -109,6 +140,7 @@ export default async function DetalheViagem({ params }: PageProps<'/g/viagens/[i
             frete={freteDe('volta')}
             clientes={clientes ?? []}
             bloqueado={bloqueado}
+            sugestao={sugestaoDe('volta')}
           />
           <FormFrete
             key={`ida-${freteDe('ida')?.updated_at}`}
@@ -117,6 +149,7 @@ export default async function DetalheViagem({ params }: PageProps<'/g/viagens/[i
             frete={freteDe('ida')}
             clientes={clientes ?? []}
             bloqueado={bloqueado}
+            sugestao={sugestaoDe('ida')}
           />
         </>
       )}

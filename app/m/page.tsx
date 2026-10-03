@@ -23,7 +23,9 @@ export default async function HomeMotorista() {
   // Filtro explícito: para o dono/admin que também dirige, a RLS mostra todas as viagens.
   const { data: viagem } = await supabase
     .from('viagens')
-    .select('id, origem, destino, data_saida, km_saida, caminhoes(placa), carretas(placa)')
+    .select(
+      'id, origem, destino, data_saida, km_saida, caminhoes(placa), carretas(placa), locais_carga(nome)',
+    )
     .eq('status', 'em_andamento')
     .eq('motorista_id', perfil?.funcionario_id ?? '')
     .maybeSingle();
@@ -42,6 +44,9 @@ export default async function HomeMotorista() {
             {viagem.carretas && ` + ${viagem.carretas.placa}`} · saiu{' '}
             {dataHora.format(new Date(viagem.data_saida))} · {km.format(viagem.km_saida)} km
           </p>
+          {viagem.locais_carga && (
+            <p className="font-semibold">Carrega em: {viagem.locais_carga.nome}</p>
+          )}
         </section>
       ) : (
         <section className="rounded-2xl border bg-card p-5 shadow-xs">

@@ -25,7 +25,7 @@ export default async function ListaViagens({ searchParams }: PageProps<'/g/viage
   let consulta = supabase
     .from('viagens')
     .select(
-      'id, status, data_saida, data_chegada, km_saida, km_chegada, caminhoes(placa), carretas(placa), funcionarios(nome), fretes(sentido, valor_frete_centavos)',
+      'id, status, data_saida, data_chegada, km_saida, km_chegada, caminhoes(placa), carretas(placa), locais_carga(nome), funcionarios(nome), fretes(sentido, valor_frete_centavos)',
     )
     .neq('status', 'cancelada')
     .order('data_saida', { ascending: false })
@@ -95,6 +95,7 @@ export default async function ListaViagens({ searchParams }: PageProps<'/g/viage
                     saiu {formatarDataHora(v.data_saida)}
                     {v.data_chegada && ` · voltou ${formatarDataHora(v.data_chegada)}`}
                     {v.km_chegada !== null && ` · ${formatarKm(v.km_chegada - v.km_saida)}`}
+                    {v.locais_carga && ` · carrega em ${v.locais_carga.nome}`}
                   </span>
                 </span>
                 <span className="flex items-center gap-2 sm:flex-col sm:items-end">

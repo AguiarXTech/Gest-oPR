@@ -1,7 +1,9 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { MapPin } from 'lucide-react';
 import { formatarPlaca } from '@/lib/domain/placa';
+import { linkMapa } from '@/lib/mapa';
 import { obterConfiguracoes } from '@/lib/supabase/configuracoes';
 import { createClient } from '@/lib/supabase/server';
 import { FormFinalizarViagem } from './FormFinalizarViagem';
@@ -26,7 +28,7 @@ export default async function Viagem({ params }: PageProps<'/m/viagem/[id]'>) {
     supabase
       .from('viagens')
       .select(
-        'id, origem, destino, data_saida, data_chegada, km_saida, km_chegada, status, caminhoes(placa, apelido), carretas(placa)',
+        'id, origem, destino, data_saida, data_chegada, km_saida, km_chegada, status, caminhoes(placa, apelido), carretas(placa), locais_carga(nome, endereco)',
       )
       .eq('id', id)
       .maybeSingle(),
@@ -51,6 +53,24 @@ export default async function Viagem({ params }: PageProps<'/m/viagem/[id]'>) {
         {dataHora.format(new Date(viagem.data_saida))} com{' '}
         <span className="tabular-nums">{km.format(viagem.km_saida)} km</span>
       </p>
+      {viagem.locais_carga && (
+        <a
+          href={linkMapa(viagem.locais_carga)}
+          target="_blank"
+          rel="noreferrer"
+          className="flex min-h-11 items-center gap-2 font-semibold underline-offset-2 hover:underline"
+        >
+          <MapPin className="size-5 shrink-0" aria-hidden />
+          <span>
+            Carrega em: {viagem.locais_carga.nome}
+            {viagem.locais_carga.endereco && (
+              <span className="block text-sm font-normal text-white/70">
+                {viagem.locais_carga.endereco} · abrir no mapa
+              </span>
+            )}
+          </span>
+        </a>
+      )}
       {viagem.km_chegada !== null && viagem.data_chegada && (
         <p className="text-white/70">
           chegou {dataHora.format(new Date(viagem.data_chegada))} ·{' '}
