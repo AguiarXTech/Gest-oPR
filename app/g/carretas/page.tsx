@@ -84,10 +84,7 @@ export default async function ListaCarretas() {
               {c.apelido && <span className="font-medium">{c.apelido}</span>}
               <span className="text-sm text-muted-foreground">
                 {[
-                  COMPOSICOES_CARRETA.find((o) => o.valor === c.composicao)?.rotulo.replace(
-                    ' (semirreboque)',
-                    '',
-                  ),
+                  COMPOSICOES_CARRETA.find((o) => o.valor === c.composicao)?.nome,
                   c.carroceria,
                   c.eixos !== null &&
                     `${c.eixos} eixos${c.eixos_suspensos ? ` (${c.eixos_suspensos} sobe)` : ''}`,

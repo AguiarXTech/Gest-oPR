@@ -25,11 +25,29 @@ export const CONFIGURACOES_CAMINHAO: Record<TipoVeiculo, Opcao[]> = {
   ],
 };
 
-/** Eixos só da parte rebocada (sem o cavalo). */
-export const COMPOSICOES_CARRETA: Opcao[] = [
-  { valor: 'carreta', rotulo: 'Carreta (semirreboque)', eixos: 3 },
-  { valor: 'bitrem', rotulo: 'Bitrem', eixos: 4 },
-  { valor: 'rodotrem', rotulo: 'Rodotrem', eixos: 6 },
+/**
+ * Eixos só da parte rebocada (sem o cavalo): o pedágio soma com os do cavalo da viagem.
+ * O rótulo mostra também o total com um cavalo de 3 eixos, que é como se fala na estrada.
+ */
+export const COMPOSICOES_CARRETA: (Opcao & { nome: string })[] = [
+  {
+    valor: 'carreta',
+    nome: 'Carreta',
+    rotulo: 'Carreta: 3 eixos na carreta (6 com o cavalo)',
+    eixos: 3,
+  },
+  {
+    valor: 'bitrem',
+    nome: 'Bitrem',
+    rotulo: 'Bitrem: 4 eixos nos reboques (7 com o cavalo)',
+    eixos: 4,
+  },
+  {
+    valor: 'rodotrem',
+    nome: 'Rodotrem',
+    rotulo: 'Rodotrem: 6 eixos nos reboques (9 com o cavalo)',
+    eixos: 6,
+  },
 ];
 
 export const CARROCERIAS = [

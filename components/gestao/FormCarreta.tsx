@@ -128,7 +128,7 @@ export function FormCarreta({ carreta }: { carreta?: Carreta }) {
             {carroceriaAntiga && <option value={carroceriaAntiga}>{carroceriaAntiga}</option>}
           </select>
         </Campo>
-        <Campo id="eixos" rotulo="Eixos da carreta" erro={e('eixos')}>
+        <Campo id="eixos" rotulo="Eixos da carreta (sem o cavalo)" erro={e('eixos')}>
           <Input
             {...register('eixos')}
             {...ariaCampo('eixos', e('eixos'))}
