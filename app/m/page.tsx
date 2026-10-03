@@ -1,6 +1,15 @@
 // Home do motorista: viagem em andamento + botões grandes (PRD 5.1, RNF-01).
 // Ao entregar cada tela, troque `pronto` do botão correspondente para true.
-import { Flag, Fuel, LayoutDashboard, PiggyBank, Receipt, Truck, Wallet } from 'lucide-react';
+import {
+  FileText,
+  Flag,
+  Fuel,
+  LayoutDashboard,
+  PiggyBank,
+  Receipt,
+  Truck,
+  Wallet,
+} from 'lucide-react';
 import Link from 'next/link';
 import { BotaoSair } from '@/components/BotaoSair';
 import { BotaoGrande } from '@/components/motorista/BotaoGrande';
@@ -70,6 +79,13 @@ export default async function HomeMotorista() {
         )}
         <BotaoGrande href="/m/despesa" rotulo="Despesa" icone={Receipt} pronto />
         <BotaoGrande href="/m/extrato" rotulo="Meu extrato" icone={Wallet} pronto />
+        <BotaoGrande
+          href="/m/documentos"
+          rotulo="Documentos (CNH, CRLV)"
+          icone={FileText}
+          pronto
+          largo
+        />
         <BotaoGrande
           href="/m/pessoal"
           rotulo="Minhas despesas (pessoal)"

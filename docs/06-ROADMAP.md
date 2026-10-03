@@ -102,6 +102,7 @@ Sprints de ~1 semana, com dedicação parcial. Cada tarefa tem ID (`S{sprint}-{n
 | A-10 | Preço do frete no cliente com reajuste e lançamento automático (RF-44) | Feito |
 | A-11 | Locais de carga do cliente escolhidos pelo motorista (RF-45) | Feito |
 | A-12 | Remover viagem com motivo (RF-46) | Feito |
+| A-14 | Documentos do veículo da viagem e CNH na área do motorista (RF-47) | Feito |
 | A-13 | Gestão de pneus (RF-30): estoque, montados em cavalos/trucks e carretas, recapagem, descarte e km | Feito |
 
 Migrations `20261001000007`, `20261002000000`, `20261003000000` e `20261004000000`–`02`. Próximas candidatas (pesquisa de 2026-10-01): pneus com estoque e CPK, custos fixos e contas a receber, checklist pré-viagem, avisos no celular.

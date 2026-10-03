@@ -25,7 +25,7 @@ Legenda: **T** = total · **L** = leitura · **P** = só os próprios registros 
 | Adiantamentos | T | T | L (P) |
 | Regras de comissão | T | T | L (P) |
 | Acertos | T (**reabrir: só dono**) | T (exceto reabrir) | L (P, só fechados/pagos) |
-| Documentos | T | T | L (P) |
+| Documentos | T | T | L: só a própria CNH e os documentos do cavalo e da carreta da viagem em andamento (com o anexo) |
 | Configurações | T | T | L |
 | Auditoria | L | L | — |
 | Comprovantes (Storage) | T | T | P (pasta `{funcionario_id}/`) |
