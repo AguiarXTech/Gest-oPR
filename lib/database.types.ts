@@ -335,6 +335,7 @@ export type Database = {
           configuracao_eixos: string | null
           created_at: string
           eixos: number | null
+          eixos_suspensos: number
           foto_path: string | null
           id: string
           km_atual: number
@@ -352,6 +353,7 @@ export type Database = {
           configuracao_eixos?: string | null
           created_at?: string
           eixos?: number | null
+          eixos_suspensos?: number
           foto_path?: string | null
           id?: string
           km_atual?: number
@@ -369,6 +371,7 @@ export type Database = {
           configuracao_eixos?: string | null
           created_at?: string
           eixos?: number | null
+          eixos_suspensos?: number
           foto_path?: string | null
           id?: string
           km_atual?: number
@@ -412,6 +415,64 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      cobrancas_pedagio: {
+        Row: {
+          created_at: string
+          id: string
+          observacao: string | null
+          praca_id: string
+          sentido: Database["public"]["Enums"]["sentido_frete"]
+          situacao: Database["public"]["Enums"]["situacao_cobranca_pedagio"]
+          updated_at: string
+          valor_cobrado_centavos: number
+          viagem_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          observacao?: string | null
+          praca_id: string
+          sentido: Database["public"]["Enums"]["sentido_frete"]
+          situacao?: Database["public"]["Enums"]["situacao_cobranca_pedagio"]
+          updated_at?: string
+          valor_cobrado_centavos: number
+          viagem_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          observacao?: string | null
+          praca_id?: string
+          sentido?: Database["public"]["Enums"]["sentido_frete"]
+          situacao?: Database["public"]["Enums"]["situacao_cobranca_pedagio"]
+          updated_at?: string
+          valor_cobrado_centavos?: number
+          viagem_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cobrancas_pedagio_praca_id_fkey"
+            columns: ["praca_id"]
+            isOneToOne: false
+            referencedRelation: "pracas_pedagio"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cobrancas_pedagio_viagem_id_fkey"
+            columns: ["viagem_id"]
+            isOneToOne: false
+            referencedRelation: "viagens"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cobrancas_pedagio_viagem_id_fkey"
+            columns: ["viagem_id"]
+            isOneToOne: false
+            referencedRelation: "vw_viagens_resumo"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       configuracoes: {
         Row: {
@@ -988,6 +1049,33 @@ export type Database = {
           },
         ]
       }
+      pracas_pedagio: {
+        Row: {
+          ativa: boolean
+          created_at: string
+          id: string
+          nome: string
+          rodovia: string | null
+          updated_at: string
+        }
+        Insert: {
+          ativa?: boolean
+          created_at?: string
+          id?: string
+          nome: string
+          rodovia?: string | null
+          updated_at?: string
+        }
+        Update: {
+          ativa?: boolean
+          created_at?: string
+          id?: string
+          nome?: string
+          rodovia?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           ativo: boolean
@@ -1082,6 +1170,38 @@ export type Database = {
           },
         ]
       }
+      tarifas_pedagio: {
+        Row: {
+          created_at: string
+          id: string
+          praca_id: string
+          tarifa_eixo_centavos: number
+          vigencia_inicio: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          praca_id: string
+          tarifa_eixo_centavos: number
+          vigencia_inicio: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          praca_id?: string
+          tarifa_eixo_centavos?: number
+          vigencia_inicio?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tarifas_pedagio_praca_id_fkey"
+            columns: ["praca_id"]
+            isOneToOne: false
+            referencedRelation: "pracas_pedagio"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       viagens: {
         Row: {
           acerto_id: string | null
@@ -1090,6 +1210,8 @@ export type Database = {
           data_chegada: string | null
           data_saida: string
           destino: string
+          eixos_ida: number | null
+          eixos_volta: number | null
           id: string
           km_chegada: number | null
           km_saida: number
@@ -1106,6 +1228,8 @@ export type Database = {
           data_chegada?: string | null
           data_saida?: string
           destino: string
+          eixos_ida?: number | null
+          eixos_volta?: number | null
           id?: string
           km_chegada?: number | null
           km_saida: number
@@ -1122,6 +1246,8 @@ export type Database = {
           data_chegada?: string | null
           data_saida?: string
           destino?: string
+          eixos_ida?: number | null
+          eixos_volta?: number | null
           id?: string
           km_chegada?: number | null
           km_saida?: number
@@ -1304,6 +1430,11 @@ export type Database = {
       forma_pagamento_abastecimento: "motorista" | "cartao_empresa" | "faturado"
       papel_usuario: "dono" | "admin" | "motorista"
       sentido_frete: "ida" | "volta"
+      situacao_cobranca_pedagio:
+        | "conferido"
+        | "contestar"
+        | "contestado"
+        | "ressarcido"
       status_acerto: "rascunho" | "fechado" | "pago"
       status_viagem: "planejada" | "em_andamento" | "concluida" | "cancelada"
       tipo_comissao:
@@ -1472,6 +1603,12 @@ export const Constants = {
       ],
       papel_usuario: ["dono", "admin", "motorista"],
       sentido_frete: ["ida", "volta"],
+      situacao_cobranca_pedagio: [
+        "conferido",
+        "contestar",
+        "contestado",
+        "ressarcido",
+      ],
       status_acerto: ["rascunho", "fechado", "pago"],
       status_viagem: ["planejada", "em_andamento", "concluida", "cancelada"],
       tipo_comissao: [
