@@ -23,7 +23,7 @@ export default async function HomeMotorista() {
   // Filtro explícito: para o dono/admin que também dirige, a RLS mostra todas as viagens.
   const { data: viagem } = await supabase
     .from('viagens')
-    .select('id, origem, destino, data_saida, km_saida, caminhoes(placa)')
+    .select('id, origem, destino, data_saida, km_saida, caminhoes(placa), carretas(placa)')
     .eq('status', 'em_andamento')
     .eq('motorista_id', perfil?.funcionario_id ?? '')
     .maybeSingle();
@@ -38,7 +38,9 @@ export default async function HomeMotorista() {
             {viagem.origem} → {viagem.destino}
           </p>
           <p className="text-white/70">
-            {viagem.caminhoes?.placa} · saiu {dataHora.format(new Date(viagem.data_saida))} · {km.format(viagem.km_saida)} km
+            {viagem.caminhoes?.placa}
+            {viagem.carretas && ` + ${viagem.carretas.placa}`} · saiu{' '}
+            {dataHora.format(new Date(viagem.data_saida))} · {km.format(viagem.km_saida)} km
           </p>
         </section>
       ) : (
@@ -51,13 +53,25 @@ export default async function HomeMotorista() {
       <div className="grid grid-cols-2 gap-3">
         <BotaoGrande href="/m/abastecer" rotulo="Abastecer" icone={Fuel} pronto destaque largo />
         {viagem ? (
-          <BotaoGrande href={`/m/viagem/${viagem.id}`} rotulo="Finalizar viagem" icone={Flag} pronto largo />
+          <BotaoGrande
+            href={`/m/viagem/${viagem.id}`}
+            rotulo="Finalizar viagem"
+            icone={Flag}
+            pronto
+            largo
+          />
         ) : (
           <BotaoGrande href="/m/viagem/nova" rotulo="Iniciar viagem" icone={Truck} pronto largo />
         )}
         <BotaoGrande href="/m/despesa" rotulo="Despesa" icone={Receipt} pronto />
         <BotaoGrande href="/m/extrato" rotulo="Meu extrato" icone={Wallet} pronto />
-        <BotaoGrande href="/m/pessoal" rotulo="Minhas despesas (pessoal)" icone={PiggyBank} pronto largo />
+        <BotaoGrande
+          href="/m/pessoal"
+          rotulo="Minhas despesas (pessoal)"
+          icone={PiggyBank}
+          pronto
+          largo
+        />
       </div>
 
       {ehGestao && (

@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { FormFrete } from '@/components/gestao/FormFrete';
+import { TrocarCarreta } from '@/components/gestao/TrocarCarreta';
 import { formatarBRL } from '@/lib/domain/dinheiro';
 import { formatarPlaca } from '@/lib/domain/placa';
 import { TIPOS_DESPESA } from '@/lib/validations/despesa';
@@ -10,20 +11,26 @@ import { createClient } from '@/lib/supabase/server';
 
 export const metadata: Metadata = { title: 'Viagem · Gestão RPortugues' };
 
-const status = { em_andamento: 'Em andamento', concluida: 'Concluída', cancelada: 'Cancelada', planejada: 'Planejada' } as const;
+const status = {
+  em_andamento: 'Em andamento',
+  concluida: 'Concluída',
+  cancelada: 'Cancelada',
+  planejada: 'Planejada',
+} as const;
 
 export default async function DetalheViagem({ params }: PageProps<'/g/viagens/[id]'>) {
   const { id } = await params;
   const supabase = await createClient();
-  const [{ data: v }, { data: clientes }] = await Promise.all([
+  const [{ data: v }, { data: clientes }, { data: carretas }] = await Promise.all([
     supabase
       .from('viagens')
       .select(
-        '*, caminhoes(placa, apelido), funcionarios(nome), acertos(status), fretes(*), abastecimentos(id, data_hora, km, litros, valor_total_centavos, conferido), despesas_viagem(id, data, tipo, valor_centavos, conferido)',
+        '*, caminhoes(placa, apelido, tipo), carretas(placa), funcionarios(nome), acertos(status), fretes(*), abastecimentos(id, data_hora, km, litros, valor_total_centavos, conferido), despesas_viagem(id, data, tipo, valor_centavos, conferido)',
       )
       .eq('id', id)
       .maybeSingle(),
     supabase.from('clientes').select('id, razao_social').eq('ativo', true).order('razao_social'),
+    supabase.from('carretas').select('id, placa, apelido, ativo').order('placa'),
   ]);
   if (!v) notFound();
 
@@ -40,13 +47,29 @@ export default async function DetalheViagem({ params }: PageProps<'/g/viagens/[i
           ← Viagens
         </Link>
         <h1 className="text-3xl">
-          <span className="font-mono">{v.caminhoes ? formatarPlaca(v.caminhoes.placa) : ''}</span> · {v.funcionarios?.nome}
+          <span className="font-mono">
+            {v.caminhoes ? formatarPlaca(v.caminhoes.placa) : ''}
+            {v.carretas && ` + ${formatarPlaca(v.carretas.placa)}`}
+          </span>{' '}
+          · {v.funcionarios?.nome}
         </h1>
         <p className="text-muted-foreground tabular-nums">
-          {status[v.status]} · {v.origem} → {v.destino} → volta · saiu {formatarDataHora(v.data_saida)} com {formatarKm(v.km_saida)}
-          {v.km_chegada !== null && v.data_chegada && ` · voltou ${formatarDataHora(v.data_chegada)} · ${formatarKm(v.km_chegada - v.km_saida)} rodados`}
+          {status[v.status]} · {v.origem} → {v.destino} → volta · saiu{' '}
+          {formatarDataHora(v.data_saida)} com {formatarKm(v.km_saida)}
+          {v.km_chegada !== null &&
+            v.data_chegada &&
+            ` · voltou ${formatarDataHora(v.data_chegada)} · ${formatarKm(v.km_chegada - v.km_saida)} rodados`}
         </p>
       </div>
+
+      {(v.caminhoes?.tipo === 'cavalo' || v.carreta_id) && v.status !== 'cancelada' && (
+        <TrocarCarreta
+          viagemId={v.id}
+          carretaId={v.carreta_id}
+          carretas={(carretas ?? []).filter((c) => c.ativo || c.id === v.carreta_id)}
+          bloqueado={bloqueado}
+        />
+      )}
 
       <section className="grid grid-cols-3 gap-3">
         {[
@@ -61,20 +84,40 @@ export default async function DetalheViagem({ params }: PageProps<'/g/viagens/[i
         ))}
       </section>
       <p className="-mt-3 text-sm text-muted-foreground">
-        Diesel e despesas ligados a esta viagem. O resultado exato (com rateio do diesel) fica no painel do mês.
+        Diesel e despesas ligados a esta viagem. O resultado exato (com rateio do diesel) fica no
+        painel do mês.
       </p>
 
       {v.status === 'cancelada' ? (
-        <p className="rounded-xl border p-4">Viagem cancelada pelo motorista: não entra em acerto nem no resultado.</p>
+        <p className="rounded-xl border p-4">
+          Viagem cancelada pelo motorista: não entra em acerto nem no resultado.
+        </p>
       ) : (
         <>
           {v.status === 'concluida' && v.fretes.length === 0 && (
-            <p role="alert" className="rounded-xl border border-alerta bg-alerta/10 p-4 font-medium">
+            <p
+              role="alert"
+              className="rounded-xl border border-alerta bg-alerta/10 p-4 font-medium"
+            >
               Viagem concluída sem frete lançado. Ela impede o fechamento do acerto do motorista.
             </p>
           )}
-          <FormFrete key={`volta-${freteDe('volta')?.updated_at}`} viagemId={v.id} sentido="volta" frete={freteDe('volta')} clientes={clientes ?? []} bloqueado={bloqueado} />
-          <FormFrete key={`ida-${freteDe('ida')?.updated_at}`} viagemId={v.id} sentido="ida" frete={freteDe('ida')} clientes={clientes ?? []} bloqueado={bloqueado} />
+          <FormFrete
+            key={`volta-${freteDe('volta')?.updated_at}`}
+            viagemId={v.id}
+            sentido="volta"
+            frete={freteDe('volta')}
+            clientes={clientes ?? []}
+            bloqueado={bloqueado}
+          />
+          <FormFrete
+            key={`ida-${freteDe('ida')?.updated_at}`}
+            viagemId={v.id}
+            sentido="ida"
+            frete={freteDe('ida')}
+            clientes={clientes ?? []}
+            bloqueado={bloqueado}
+          />
         </>
       )}
 
@@ -87,7 +130,8 @@ export default async function DetalheViagem({ params }: PageProps<'/g/viagens/[i
             {v.abastecimentos.map((a) => (
               <li key={a.id} className="flex justify-between gap-2 p-3 tabular-nums">
                 <span>
-                  {formatarDataHora(a.data_hora)} · {formatarKm(a.km)} · {formatarLitros(Number(a.litros))}
+                  {formatarDataHora(a.data_hora)} · {formatarKm(a.km)} ·{' '}
+                  {formatarLitros(Number(a.litros))}
                 </span>
                 <span className="font-semibold">
                   {formatarBRL(a.valor_total_centavos)} {a.conferido ? '✓' : ''}

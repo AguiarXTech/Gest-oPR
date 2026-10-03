@@ -18,19 +18,21 @@ type Filtro = keyof typeof filtros;
 
 export default async function ListaViagens({ searchParams }: PageProps<'/g/viagens'>) {
   const { filtro: bruto } = await searchParams;
-  const filtro: Filtro = typeof bruto === 'string' && bruto in filtros ? (bruto as Filtro) : 'todas';
+  const filtro: Filtro =
+    typeof bruto === 'string' && bruto in filtros ? (bruto as Filtro) : 'todas';
 
   const supabase = await createClient();
   let consulta = supabase
     .from('viagens')
     .select(
-      'id, status, data_saida, data_chegada, km_saida, km_chegada, caminhoes(placa), funcionarios(nome), fretes(sentido, valor_frete_centavos)',
+      'id, status, data_saida, data_chegada, km_saida, km_chegada, caminhoes(placa), carretas(placa), funcionarios(nome), fretes(sentido, valor_frete_centavos)',
     )
     .neq('status', 'cancelada')
     .order('data_saida', { ascending: false })
     .limit(100);
   if (filtro === 'em_andamento') consulta = consulta.eq('status', 'em_andamento');
-  if (filtro === 'concluida' || filtro === 'sem_frete') consulta = consulta.eq('status', 'concluida');
+  if (filtro === 'concluida' || filtro === 'sem_frete')
+    consulta = consulta.eq('status', 'concluida');
   const { data, error } = await consulta;
 
   const viagens = (data ?? []).filter((v) => filtro !== 'sem_frete' || v.fretes.length === 0);
@@ -47,7 +49,9 @@ export default async function ListaViagens({ searchParams }: PageProps<'/g/viage
             aria-current={filtro === valor ? 'page' : undefined}
             className={cn(
               'inline-flex h-11 items-center rounded-full border px-4 font-medium',
-              filtro === valor ? 'border-primary bg-primary text-primary-foreground' : 'bg-card hover:bg-muted',
+              filtro === valor
+                ? 'border-primary bg-primary text-primary-foreground'
+                : 'bg-card hover:bg-muted',
             )}
           >
             {rotulo}
@@ -55,9 +59,15 @@ export default async function ListaViagens({ searchParams }: PageProps<'/g/viage
         ))}
       </nav>
 
-      {error && <p className="text-destructive">Não foi possível carregar as viagens. Recarregue a página.</p>}
+      {error && (
+        <p className="text-destructive">
+          Não foi possível carregar as viagens. Recarregue a página.
+        </p>
+      )}
       {!error && viagens.length === 0 && (
-        <p className="rounded-xl border border-dashed p-6 text-center text-muted-foreground">Nenhuma viagem aqui.</p>
+        <p className="rounded-xl border border-dashed p-6 text-center text-muted-foreground">
+          Nenhuma viagem aqui.
+        </p>
       )}
 
       <ul className="flex flex-col gap-3">
@@ -75,7 +85,11 @@ export default async function ListaViagens({ searchParams }: PageProps<'/g/viage
               >
                 <span className="flex flex-col">
                   <span className="text-lg font-semibold">
-                    <span className="font-mono">{v.caminhoes ? formatarPlaca(v.caminhoes.placa) : '—'}</span> · {v.funcionarios?.nome}
+                    <span className="font-mono">
+                      {v.caminhoes ? formatarPlaca(v.caminhoes.placa) : '—'}
+                      {v.carretas && ` + ${formatarPlaca(v.carretas.placa)}`}
+                    </span>{' '}
+                    · {v.funcionarios?.nome}
                   </span>
                   <span className="text-sm text-muted-foreground tabular-nums">
                     saiu {formatarDataHora(v.data_saida)}
@@ -85,15 +99,23 @@ export default async function ListaViagens({ searchParams }: PageProps<'/g/viage
                 </span>
                 <span className="flex items-center gap-2 sm:flex-col sm:items-end">
                   {v.status === 'em_andamento' ? (
-                    <span className="rounded-full bg-muted px-3 py-1 text-sm font-medium">Em andamento</span>
+                    <span className="rounded-full bg-muted px-3 py-1 text-sm font-medium">
+                      Em andamento
+                    </span>
                   ) : semFrete ? (
-                    <span className="rounded-full bg-alerta/15 px-3 py-1 text-sm font-semibold">Sem frete lançado</span>
+                    <span className="rounded-full bg-alerta/15 px-3 py-1 text-sm font-semibold">
+                      Sem frete lançado
+                    </span>
                   ) : (
                     <span className="font-semibold tabular-nums">{formatarBRL(total)}</span>
                   )}
                   {v.fretes.length > 0 && (
                     <span className="text-sm text-muted-foreground">
-                      {v.fretes.length === 2 ? 'ida + volta' : v.fretes[0].sentido === 'volta' ? 'só volta' : 'só ida'}
+                      {v.fretes.length === 2
+                        ? 'ida + volta'
+                        : v.fretes[0].sentido === 'volta'
+                          ? 'só volta'
+                          : 'só ida'}
                     </span>
                   )}
                 </span>

@@ -25,7 +25,9 @@ export default async function Viagem({ params }: PageProps<'/m/viagem/[id]'>) {
     obterConfiguracoes(),
     supabase
       .from('viagens')
-      .select('id, origem, destino, data_saida, data_chegada, km_saida, km_chegada, status, caminhoes(placa, apelido)')
+      .select(
+        'id, origem, destino, data_saida, data_chegada, km_saida, km_chegada, status, caminhoes(placa, apelido), carretas(placa)',
+      )
       .eq('id', id)
       .maybeSingle(),
   ]);
@@ -34,19 +36,27 @@ export default async function Viagem({ params }: PageProps<'/m/viagem/[id]'>) {
   const resumo = (
     <section className="flex flex-col gap-1 rounded-2xl bg-grafite p-5 text-white shadow-xs">
       <p className="text-sm font-medium text-white/70">
-        {viagem.status === 'em_andamento' ? 'Viagem em andamento' : viagem.status === 'concluida' ? 'Viagem finalizada' : 'Viagem cancelada'}
+        {viagem.status === 'em_andamento'
+          ? 'Viagem em andamento'
+          : viagem.status === 'concluida'
+            ? 'Viagem finalizada'
+            : 'Viagem cancelada'}
       </p>
       <p className="text-2xl font-bold">
         {viagem.origem} → {viagem.destino} → volta
       </p>
       <p className="text-white/70">
-        {viagem.caminhoes ? formatarPlaca(viagem.caminhoes.placa) : ''} · saiu {dataHora.format(new Date(viagem.data_saida))} com{' '}
+        {viagem.caminhoes ? formatarPlaca(viagem.caminhoes.placa) : ''}
+        {viagem.carretas && ` + carreta ${formatarPlaca(viagem.carretas.placa)}`} · saiu{' '}
+        {dataHora.format(new Date(viagem.data_saida))} com{' '}
         <span className="tabular-nums">{km.format(viagem.km_saida)} km</span>
       </p>
       {viagem.km_chegada !== null && viagem.data_chegada && (
         <p className="text-white/70">
           chegou {dataHora.format(new Date(viagem.data_chegada))} ·{' '}
-          <span className="tabular-nums">{km.format(viagem.km_chegada - viagem.km_saida)} km rodados</span>
+          <span className="tabular-nums">
+            {km.format(viagem.km_chegada - viagem.km_saida)} km rodados
+          </span>
         </p>
       )}
     </section>
@@ -54,7 +64,9 @@ export default async function Viagem({ params }: PageProps<'/m/viagem/[id]'>) {
 
   return (
     <>
-      <h1 className="text-3xl">{viagem.status === 'em_andamento' ? 'Finalizar viagem' : 'Viagem'}</h1>
+      <h1 className="text-3xl">
+        {viagem.status === 'em_andamento' ? 'Finalizar viagem' : 'Viagem'}
+      </h1>
       {resumo}
       {viagem.status === 'em_andamento' ? (
         <FormFinalizarViagem viagemId={viagem.id} kmSaida={viagem.km_saida} config={config} />

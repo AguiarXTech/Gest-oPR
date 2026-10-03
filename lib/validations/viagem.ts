@@ -9,7 +9,10 @@ const kmObrigatorio = (mensagem: string) =>
     .transform((v, ctx) => {
       const n = lerInteiro(v);
       if (n === null || n <= 0 || n > 9_999_999) {
-        ctx.addIssue({ code: 'custom', message: 'Km inválido. Use só números, como está no painel.' });
+        ctx.addIssue({
+          code: 'custom',
+          message: 'Km inválido. Use só números, como está no painel.',
+        });
         return z.NEVER;
       }
       return n;
@@ -17,6 +20,10 @@ const kmObrigatorio = (mensagem: string) =>
 
 export const iniciarViagemSchema = z.object({
   caminhao_id: z.guid('Escolha o caminhão.'),
+  /** Carreta puxada pelo cavalo: id, 'sem' (cavalo sozinho) ou '' (truck / ainda não escolheu). */
+  carreta_id: z
+    .union([z.literal(''), z.literal('sem'), z.guid()])
+    .transform((v) => (v === '' || v === 'sem' ? null : v)),
   origem: z.string().trim().min(2, 'Digite a origem.'),
   destino: z.string().trim().min(2, 'Digite o destino.'),
   km_saida: kmObrigatorio('Digite o km do painel na saída.'),
