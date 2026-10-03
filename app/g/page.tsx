@@ -143,7 +143,7 @@ export default async function PainelGestao({ searchParams }: PageProps<'/g'>) {
     ...documentos.situacao
       .filter((d) => d.status !== 'ok' && d.status !== 'aviso')
       .map((d) => ({
-        texto: `${TIPOS_DOCUMENTO[d.tipo].rotulo}${d.caminhoes ? ` ${formatarPlaca(d.caminhoes.placa)}` : d.funcionarios ? ` de ${d.funcionarios.nome}` : ''}: ${
+        texto: `${TIPOS_DOCUMENTO[d.tipo].rotulo}${d.caminhoes ? ` ${formatarPlaca(d.caminhoes.placa)}` : d.carretas ? ` carreta ${formatarPlaca(d.carretas.placa)}` : d.funcionarios ? ` de ${d.funcionarios.nome}` : ''}: ${
           d.dias < 0 ? 'vencido' : `vence em ${d.dias} dia(s)`
         }`,
         href: '/g/documentos',

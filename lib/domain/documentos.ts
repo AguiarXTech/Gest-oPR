@@ -13,19 +13,23 @@ export type TipoDocumento =
   | 'cnh'
   | 'toxicologico'
   | 'outro';
-export type EntidadeDocumento = 'empresa' | 'caminhao' | 'funcionario';
+export type EntidadeDocumento = 'empresa' | 'caminhao' | 'carreta' | 'funcionario';
 
-export const TIPOS_DOCUMENTO: Record<TipoDocumento, { rotulo: string; entidades: EntidadeDocumento[] }> = {
-  crlv: { rotulo: 'CRLV', entidades: ['caminhao'] },
-  licenciamento: { rotulo: 'Licenciamento', entidades: ['caminhao'] },
-  ipva: { rotulo: 'IPVA', entidades: ['caminhao'] },
-  seguro: { rotulo: 'Seguro', entidades: ['caminhao'] },
-  rntrc: { rotulo: 'RNTRC (ANTT)', entidades: ['empresa', 'caminhao'] },
+export const TIPOS_DOCUMENTO: Record<
+  TipoDocumento,
+  { rotulo: string; entidades: EntidadeDocumento[] }
+> = {
+  // a carreta tem placa e documentação próprias (pedido de 2026-10-03)
+  crlv: { rotulo: 'CRLV', entidades: ['caminhao', 'carreta'] },
+  licenciamento: { rotulo: 'Licenciamento', entidades: ['caminhao', 'carreta'] },
+  ipva: { rotulo: 'IPVA', entidades: ['caminhao', 'carreta'] },
+  seguro: { rotulo: 'Seguro', entidades: ['caminhao', 'carreta'] },
+  rntrc: { rotulo: 'RNTRC (ANTT)', entidades: ['empresa', 'caminhao', 'carreta'] },
   cronotacografo: { rotulo: 'Cronotacógrafo', entidades: ['caminhao'] },
   certificado_digital: { rotulo: 'Certificado digital', entidades: ['empresa'] },
   cnh: { rotulo: 'CNH', entidades: ['funcionario'] },
   toxicologico: { rotulo: 'Exame toxicológico', entidades: ['funcionario'] },
-  outro: { rotulo: 'Outro', entidades: ['empresa', 'caminhao', 'funcionario'] },
+  outro: { rotulo: 'Outro', entidades: ['empresa', 'caminhao', 'carreta', 'funcionario'] },
 };
 
 /**
@@ -38,11 +42,17 @@ export function aceitaAnexo(tipo: TipoDocumento): boolean {
 
 /** Dias entre hoje e o vencimento (datas aaaa-mm-dd, sem fuso). Negativo = vencido. */
 export function diasParaVencer(vencimento: string, hoje: string): number {
-  return Math.round((Date.parse(`${vencimento}T00:00:00Z`) - Date.parse(`${hoje}T00:00:00Z`)) / 86_400_000);
+  return Math.round(
+    (Date.parse(`${vencimento}T00:00:00Z`) - Date.parse(`${hoje}T00:00:00Z`)) / 86_400_000,
+  );
 }
 
 /** Faixas [30, 15, 7] (config `alerta_documentos_dias`), em qualquer ordem. */
-export function statusDocumento(vencimento: string, hoje: string, faixas: readonly number[] = [30, 15, 7]): StatusDocumento {
+export function statusDocumento(
+  vencimento: string,
+  hoje: string,
+  faixas: readonly number[] = [30, 15, 7],
+): StatusDocumento {
   const dias = diasParaVencer(vencimento, hoje);
   const [critico, atencao, aviso] = [...faixas].sort((a, b) => a - b);
   if (dias < 0) return 'vencido';
@@ -52,4 +62,10 @@ export function statusDocumento(vencimento: string, hoje: string, faixas: readon
   return 'ok';
 }
 
-export const ORDEM_STATUS: Record<StatusDocumento, number> = { vencido: 0, critico: 1, atencao: 2, aviso: 3, ok: 4 };
+export const ORDEM_STATUS: Record<StatusDocumento, number> = {
+  vencido: 0,
+  critico: 1,
+  atencao: 2,
+  aviso: 3,
+  ok: 4,
+};

@@ -15,23 +15,35 @@ import { comprimir } from '@/lib/imagem';
 import { createClient } from '@/lib/supabase/client';
 import { traduzirErroBanco } from '@/lib/supabase/erros';
 import { gerarUuid } from '@/lib/uuid';
-import { documentoSchema, type DocumentoDados, type DocumentoForm } from '@/lib/validations/documento';
+import {
+  documentoSchema,
+  type DocumentoDados,
+  type DocumentoForm,
+} from '@/lib/validations/documento';
 import { ariaCampo, Campo } from './Campo';
 
 type Props = {
   caminhoes: { id: string; placa: string }[];
+  carretas: { id: string; placa: string }[];
   funcionarios: { id: string; nome: string }[];
   /** Renovação: começa com o mesmo tipo e dono do documento anterior. */
-  inicial?: Partial<Pick<DocumentoForm, 'tipo' | 'entidade' | 'caminhao_id' | 'funcionario_id'>>;
+  inicial?: Partial<
+    Pick<DocumentoForm, 'tipo' | 'entidade' | 'caminhao_id' | 'carreta_id' | 'funcionario_id'>
+  >;
   aoSalvar?: () => void;
 };
 
-const NOMES_ENTIDADE = { empresa: 'Empresa', caminhao: 'Caminhão', funcionario: 'Funcionário' } as const;
+const NOMES_ENTIDADE = {
+  empresa: 'Empresa',
+  caminhao: 'Caminhão / cavalo',
+  carreta: 'Carreta',
+  funcionario: 'Funcionário',
+} as const;
 const LIMITE_PDF = 2 * 1024 * 1024; // limite do bucket
 
 const classeSelect = 'h-11 w-full rounded-lg border border-input bg-transparent px-2.5 text-base';
 
-export function FormDocumento({ caminhoes, funcionarios, inicial, aoSalvar }: Props) {
+export function FormDocumento({ caminhoes, carretas, funcionarios, inicial, aoSalvar }: Props) {
   const router = useRouter();
   const [supabase] = useState(createClient);
   const [enviando, setEnviando] = useState(false);
@@ -50,6 +62,7 @@ export function FormDocumento({ caminhoes, funcionarios, inicial, aoSalvar }: Pr
       tipo: 'crlv',
       entidade: 'caminhao',
       caminhao_id: '',
+      carreta_id: '',
       funcionario_id: '',
       numero: '',
       emissao: '',
@@ -59,7 +72,10 @@ export function FormDocumento({ caminhoes, funcionarios, inicial, aoSalvar }: Pr
       ...inicial,
     },
   });
-  const [tipo, entidade, arquivo] = useWatch({ control, name: ['tipo', 'entidade', 'arquivo_path'] });
+  const [tipo, entidade, arquivo] = useWatch({
+    control,
+    name: ['tipo', 'entidade', 'arquivo_path'],
+  });
   const entidadesPossiveis = TIPOS_DOCUMENTO[tipo].entidades;
 
   async function anexar(f: File | undefined) {
@@ -101,13 +117,18 @@ export function FormDocumento({ caminhoes, funcionarios, inicial, aoSalvar }: Pr
   const e = (c: keyof DocumentoForm) => errors[c]?.message;
 
   return (
-    <form onSubmit={handleSubmit((d) => salvar.mutate(d))} noValidate className="flex flex-col gap-4">
+    <form
+      onSubmit={handleSubmit((d) => salvar.mutate(d))}
+      noValidate
+      className="flex flex-col gap-4"
+    >
       <div className="grid gap-4 sm:grid-cols-2">
         <Campo id="tipo" rotulo="Documento *" erro={e('tipo')}>
           <select
             {...register('tipo', {
               onChange: (ev) => {
-                const novos = TIPOS_DOCUMENTO[ev.target.value as keyof typeof TIPOS_DOCUMENTO].entidades;
+                const novos =
+                  TIPOS_DOCUMENTO[ev.target.value as keyof typeof TIPOS_DOCUMENTO].entidades;
                 if (!novos.includes(entidade)) setValue('entidade', novos[0]);
               },
             })}
@@ -124,7 +145,11 @@ export function FormDocumento({ caminhoes, funcionarios, inicial, aoSalvar }: Pr
 
         {entidadesPossiveis.length > 1 && (
           <Campo id="entidade" rotulo="De quem é" erro={e('entidade')}>
-            <select {...register('entidade')} {...ariaCampo('entidade', e('entidade'))} className={classeSelect}>
+            <select
+              {...register('entidade')}
+              {...ariaCampo('entidade', e('entidade'))}
+              className={classeSelect}
+            >
               {entidadesPossiveis.map((en) => (
                 <option key={en} value={en}>
                   {NOMES_ENTIDADE[en]}
@@ -135,7 +160,11 @@ export function FormDocumento({ caminhoes, funcionarios, inicial, aoSalvar }: Pr
         )}
         {entidade === 'caminhao' && (
           <Campo id="caminhao_id" rotulo="Caminhão *" erro={e('caminhao_id')}>
-            <select {...register('caminhao_id')} {...ariaCampo('caminhao_id', e('caminhao_id'))} className={classeSelect}>
+            <select
+              {...register('caminhao_id')}
+              {...ariaCampo('caminhao_id', e('caminhao_id'))}
+              className={classeSelect}
+            >
               <option value="">Escolha…</option>
               {caminhoes.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -145,9 +174,29 @@ export function FormDocumento({ caminhoes, funcionarios, inicial, aoSalvar }: Pr
             </select>
           </Campo>
         )}
+        {entidade === 'carreta' && (
+          <Campo id="carreta_id" rotulo="Carreta *" erro={e('carreta_id')}>
+            <select
+              {...register('carreta_id')}
+              {...ariaCampo('carreta_id', e('carreta_id'))}
+              className={classeSelect}
+            >
+              <option value="">Escolha…</option>
+              {carretas.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.placa}
+                </option>
+              ))}
+            </select>
+          </Campo>
+        )}
         {entidade === 'funcionario' && (
           <Campo id="funcionario_id" rotulo="Funcionário *" erro={e('funcionario_id')}>
-            <select {...register('funcionario_id')} {...ariaCampo('funcionario_id', e('funcionario_id'))} className={classeSelect}>
+            <select
+              {...register('funcionario_id')}
+              {...ariaCampo('funcionario_id', e('funcionario_id'))}
+              className={classeSelect}
+            >
               <option value="">Escolha…</option>
               {funcionarios.map((f) => (
                 <option key={f.id} value={f.id}>
@@ -159,9 +208,17 @@ export function FormDocumento({ caminhoes, funcionarios, inicial, aoSalvar }: Pr
         )}
 
         <Campo id="vencimento" rotulo="Vencimento *" erro={e('vencimento')}>
-          <Input {...register('vencimento')} {...ariaCampo('vencimento', e('vencimento'))} type="date" />
+          <Input
+            {...register('vencimento')}
+            {...ariaCampo('vencimento', e('vencimento'))}
+            type="date"
+          />
         </Campo>
-        <Campo id="emissao" rotulo={tipo === 'toxicologico' ? 'Data do exame' : 'Emissão'} erro={e('emissao')}>
+        <Campo
+          id="emissao"
+          rotulo={tipo === 'toxicologico' ? 'Data do exame' : 'Emissão'}
+          erro={e('emissao')}
+        >
           <Input {...register('emissao')} {...ariaCampo('emissao', e('emissao'))} type="date" />
         </Campo>
         <Campo id="numero" rotulo="Número" erro={e('numero')}>
@@ -175,7 +232,11 @@ export function FormDocumento({ caminhoes, funcionarios, inicial, aoSalvar }: Pr
       {aceitaAnexo(tipo) ? (
         <div className="flex flex-col gap-1.5">
           <label className="inline-flex h-12 cursor-pointer items-center justify-center gap-2 rounded-lg border bg-card font-medium hover:bg-muted sm:self-start sm:px-5">
-            {enviando ? <LoaderCircle className="size-5 animate-spin" aria-hidden /> : <FileUp className="size-5" aria-hidden />}
+            {enviando ? (
+              <LoaderCircle className="size-5 animate-spin" aria-hidden />
+            ) : (
+              <FileUp className="size-5" aria-hidden />
+            )}
             {arquivo ? 'Trocar anexo' : 'Anexar foto ou PDF (opcional)'}
             <input
               type="file"
@@ -191,7 +252,9 @@ export function FormDocumento({ caminhoes, funcionarios, inicial, aoSalvar }: Pr
           {erroAnexo && <p className="font-medium text-destructive">{erroAnexo}</p>}
         </div>
       ) : (
-        <p className="text-sm text-muted-foreground">Exame toxicológico: guarde só as datas. O resultado e o laudo não ficam no app (LGPD).</p>
+        <p className="text-sm text-muted-foreground">
+          Exame toxicológico: guarde só as datas. O resultado e o laudo não ficam no app (LGPD).
+        </p>
       )}
 
       {salvar.isError && (
@@ -199,7 +262,12 @@ export function FormDocumento({ caminhoes, funcionarios, inicial, aoSalvar }: Pr
           {traduzirErroBanco(salvar.error)}
         </p>
       )}
-      <Button type="submit" size="lg" disabled={salvar.isPending || enviando} className="sm:self-end">
+      <Button
+        type="submit"
+        size="lg"
+        disabled={salvar.isPending || enviando}
+        className="sm:self-end"
+      >
         {salvar.isPending ? 'Salvando…' : 'Salvar documento'}
       </Button>
     </form>

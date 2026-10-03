@@ -14,7 +14,9 @@ export async function carregarSituacaoDocumentos(supabase: Cliente) {
     obterConfiguracoes(),
     supabase
       .from('documentos')
-      .select('id, tipo, entidade, caminhao_id, funcionario_id, numero, emissao, vencimento, arquivo_path, observacoes, caminhoes(placa), funcionarios(nome)')
+      .select(
+        'id, tipo, entidade, caminhao_id, carreta_id, funcionario_id, numero, emissao, vencimento, arquivo_path, observacoes, caminhoes(placa), carretas(placa), funcionarios(nome)',
+      )
       .order('vencimento', { ascending: false }),
   ]);
 
@@ -22,7 +24,7 @@ export async function carregarSituacaoDocumentos(supabase: Cliente) {
   const atuais = new Map<string, NonNullable<typeof data>[number]>();
   const historico: NonNullable<typeof data> = [];
   for (const d of data ?? []) {
-    const chave = `${d.entidade}|${d.tipo}|${d.caminhao_id ?? d.funcionario_id ?? ''}`;
+    const chave = `${d.entidade}|${d.tipo}|${d.caminhao_id ?? d.carreta_id ?? d.funcionario_id ?? ''}`;
     if (atuais.has(chave)) historico.push(d);
     else atuais.set(chave, d);
   }

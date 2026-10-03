@@ -8,12 +8,15 @@ import { FormDocumento } from './FormDocumento';
 
 type Props = {
   caminhoes: { id: string; placa: string }[];
+  carretas: { id: string; placa: string }[];
   funcionarios: { id: string; nome: string }[];
   /** Vindo de "Renovar": abre já preenchido com o tipo e o dono. */
-  renovacao?: Partial<Pick<DocumentoForm, 'tipo' | 'entidade' | 'caminhao_id' | 'funcionario_id'>>;
+  renovacao?: Partial<
+    Pick<DocumentoForm, 'tipo' | 'entidade' | 'caminhao_id' | 'carreta_id' | 'funcionario_id'>
+  >;
 };
 
-export function NovoDocumento({ caminhoes, funcionarios, renovacao }: Props) {
+export function NovoDocumento({ caminhoes, carretas, funcionarios, renovacao }: Props) {
   const [aberto, setAberto] = useState(Boolean(renovacao));
 
   if (!aberto) {
@@ -26,13 +29,25 @@ export function NovoDocumento({ caminhoes, funcionarios, renovacao }: Props) {
   return (
     <section className="flex flex-col gap-3 rounded-2xl border bg-card p-4 shadow-xs sm:p-6">
       <div className="flex items-center justify-between gap-2">
-        <h2 className="text-lg font-semibold">{renovacao ? 'Renovar documento' : 'Novo documento'}</h2>
+        <h2 className="text-lg font-semibold">
+          {renovacao ? 'Renovar documento' : 'Novo documento'}
+        </h2>
         <Button type="button" variant="ghost" onClick={() => setAberto(false)}>
           Fechar
         </Button>
       </div>
-      {renovacao && <p className="text-sm text-muted-foreground">O documento antigo fica no histórico. Informe o novo vencimento.</p>}
-      <FormDocumento caminhoes={caminhoes} funcionarios={funcionarios} inicial={renovacao} aoSalvar={() => setAberto(false)} />
+      {renovacao && (
+        <p className="text-sm text-muted-foreground">
+          O documento antigo fica no histórico. Informe o novo vencimento.
+        </p>
+      )}
+      <FormDocumento
+        caminhoes={caminhoes}
+        carretas={carretas}
+        funcionarios={funcionarios}
+        inicial={renovacao}
+        aoSalvar={() => setAberto(false)}
+      />
     </section>
   );
 }
