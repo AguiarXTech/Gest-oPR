@@ -24,14 +24,12 @@ export function LocaisCarga({ clienteId, locais }: { clienteId: string; locais: 
 
   const salvar = useMutation({
     mutationFn: async () => {
-      if (f.nome.trim().length < 2) throw new Error('Digite o nome do local. Ex.: Cimento Liz');
-      const { error } = await supabase
-        .from('locais_carga')
-        .insert({
-          cliente_id: clienteId,
-          nome: f.nome.trim(),
-          endereco: f.endereco.trim() || null,
-        });
+      if (f.nome.trim().length < 2) throw new Error('Digite o produto. Ex.: Cimento Liz');
+      const { error } = await supabase.from('locais_carga').insert({
+        cliente_id: clienteId,
+        nome: f.nome.trim(),
+        endereco: f.endereco.trim() || null,
+      });
       if (error) throw error;
     },
     onSuccess: () => {
@@ -62,14 +60,14 @@ export function LocaisCarga({ clienteId, locais }: { clienteId: string; locais: 
   return (
     <section className="flex flex-col gap-4 rounded-2xl border bg-card p-4 shadow-xs">
       <div>
-        <h2 className="text-lg font-semibold">Locais de carga</h2>
+        <h2 className="text-lg font-semibold">O que carrega e onde</h2>
         <p className="text-sm text-muted-foreground">
-          Onde o caminhão busca a carga. O motorista escolhe um deles ao iniciar a viagem.
+          Produto e local onde o caminhão carrega. O motorista escolhe ao iniciar a viagem.
         </p>
       </div>
 
       {ordenados.length === 0 ? (
-        <p className="text-muted-foreground">Nenhum local cadastrado.</p>
+        <p className="text-muted-foreground">Nada cadastrado ainda.</p>
       ) : (
         <ul className="flex flex-col divide-y">
           {ordenados.map((l) => (
@@ -118,9 +116,9 @@ export function LocaisCarga({ clienteId, locais }: { clienteId: string; locais: 
         }}
         className="flex flex-col gap-3 border-t pt-4"
       >
-        <h3 className="font-medium">Novo local</h3>
+        <h3 className="font-medium">Adicionar produto e local</h3>
         <div className="grid gap-3 sm:grid-cols-2">
-          <Campo id="local-nome" rotulo="Nome *" ajuda="Como o motorista conhece. Ex.: Cimento Liz">
+          <Campo id="local-nome" rotulo="Produto *" ajuda="Ex.: Cimento Liz">
             <Input
               id="local-nome"
               value={f.nome}
@@ -131,8 +129,8 @@ export function LocaisCarga({ clienteId, locais }: { clienteId: string; locais: 
           </Campo>
           <Campo
             id="local-endereco"
-            rotulo="Endereço"
-            ajuda="Rua, rodovia ou cidade, para abrir no mapa"
+            rotulo="Local (cidade)"
+            ajuda="Ex.: Vespasiano - MG. Abre no mapa do celular"
           >
             <Input
               id="local-endereco"
@@ -149,7 +147,7 @@ export function LocaisCarga({ clienteId, locais }: { clienteId: string; locais: 
           </p>
         )}
         <Button type="submit" size="lg" disabled={salvar.isPending} className="self-start">
-          {salvar.isPending ? 'Salvando…' : 'Adicionar local'}
+          {salvar.isPending ? 'Salvando…' : 'Adicionar'}
         </Button>
       </form>
     </section>

@@ -135,7 +135,7 @@ export function FormIniciarViagem({
       return;
     }
     if (locais.length > 0 && !localId) {
-      setError('local_carga_id', { message: 'Escolha onde vai carregar (ou "Outro lugar").' });
+      setError('local_carga_id', { message: 'Escolha o que vai carregar (ou "Outra carga").' });
       return;
     }
     if (caminhao && dados.km_saida < caminhao.km_atual && !avisoKm) {
@@ -229,8 +229,8 @@ export function FormIniciarViagem({
 
       {locais.length > 0 && (
         <fieldset className="flex flex-col gap-2">
-          <legend className="mb-2 text-lg font-semibold">Onde vai carregar?</legend>
-          {[...locais, { id: 'outro', nome: 'Outro lugar', endereco: null }].map((l) => (
+          <legend className="mb-2 text-lg font-semibold">O que vai carregar?</legend>
+          {[...locais, { id: 'outro', nome: 'Outra carga', endereco: null }].map((l) => (
             <label
               key={l.id}
               className={cn(

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { caminhaoSchema } from './caminhao';
 import { carretaSchema } from './carreta';
-import { clienteSchema } from './cliente';
+import { cadastroClienteSchema, clienteSchema } from './cliente';
 import { fornecedorSchema } from './fornecedor';
 
 describe('clienteSchema', () => {
@@ -113,4 +113,45 @@ describe('carretaSchema', () => {
     expect(carretaSchema.safeParse({ ...base, ano: '1800' }).success).toBe(false));
   it('recusa placa inválida', () =>
     expect(carretaSchema.safeParse({ ...base, placa: '123' }).success).toBe(false));
+});
+
+describe('cadastroClienteSchema (frete e carga no cadastro)', () => {
+  const base = {
+    razao_social: 'Japa Cimentos',
+    cnpj: '',
+    contato: '',
+    prazo_pagamento_dias: '',
+    produto: 'Cimento Liz',
+    local: 'Vespasiano - MG',
+    valor_frete: '5.080,00',
+    sentido: 'volta' as const,
+    vigencia_inicio: '2026-10-01',
+    frete_automatico: true,
+  };
+  it('converte o frete para centavos e guarda produto e local', () => {
+    const r = cadastroClienteSchema.parse(base);
+    expect(r).toMatchObject({
+      produto: 'Cimento Liz',
+      local: 'Vespasiano - MG',
+      valor_frete: 508000,
+      sentido: 'volta',
+      frete_automatico: true,
+    });
+  });
+  it('tudo opcional: só a razão social', () => {
+    const r = cadastroClienteSchema.parse({
+      ...base,
+      produto: '',
+      local: '',
+      valor_frete: '',
+      frete_automatico: false,
+    });
+    expect(r).toMatchObject({ produto: null, local: null, valor_frete: null });
+  });
+  it('local sem produto não', () =>
+    expect(cadastroClienteSchema.safeParse({ ...base, produto: '' }).success).toBe(false));
+  it('lançar sozinho exige o valor', () =>
+    expect(cadastroClienteSchema.safeParse({ ...base, valor_frete: '' }).success).toBe(false));
+  it('valor exige a data de início', () =>
+    expect(cadastroClienteSchema.safeParse({ ...base, vigencia_inicio: '' }).success).toBe(false));
 });
