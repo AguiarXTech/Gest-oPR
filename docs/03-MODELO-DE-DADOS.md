@@ -49,6 +49,8 @@ erDiagram
 | `manutencoes` | Manutenção feita (preventiva/corretiva) | Custo e oficina; o `km` atualiza `caminhoes.km_atual` (mesmo trigger de viagens/abastecimentos); entra no resultado |
 | `manutencao_itens` | Itens do plano cumpridos numa manutenção | PK (manutencao_id, plano_id) |
 | `despesas_pessoais` | Controle pessoal do motorista (opcional) | Só o próprio lê/escreve (RLS sem policy de gestor); `funcionario_id` forçado por trigger. Fora do acerto e do resultado |
+| `pracas_pedagio`, `tarifas_pedagio` | Praças da rota e tarifa por eixo com histórico | Reajuste = nova linha (`vigencia_inicio`); só gestão |
+| `cobrancas_pedagio` | O que o app de pedágio cobrou por passagem | Única por (viagem, praça, sentido); `situacao` conferido/contestar/contestado/ressarcido; só gestão. `caminhoes.eixos_suspensos` e `viagens.eixos_ida/volta` (exceção; motorista não altera) alimentam o previsto |
 | `multas` | Infrações | `funcionario_id` sugerido pela viagem em curso; `prazo_indicacao` = notificação + `multa_prazo_indicacao_dias`. Só gestor (motorista sem acesso) |
 | `auditoria` | Log | Gravada por trigger `security definer`; ninguém escreve direto |
 

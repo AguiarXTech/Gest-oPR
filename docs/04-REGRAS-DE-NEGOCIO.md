@@ -284,7 +284,24 @@ O km atual vem dos abastecimentos, viagens e manutenções (trigger). Cumprir um
 - `prazo_indicacao = notificada_em + multa_prazo_indicacao_dias` (padrão 30). Sem indicar no prazo vem a multa NIC (mesmo valor) e os pontos ficam com a empresa.
 - Situação: `indicar_atrasado` (prazo passou sem indicar) · `indicar` · `pagar` · `resolvida`.
 
-## 12. Pneus (fase 2 — especificação antecipada)
+## 12. Pedágio (`pedagio.ts`) — RF-42
+
+Rota atual: uma praça (Roças Novas, BR-381), passando na ida e na volta. Cobrança por câmera/placa num app de pagamento.
+
+```
+eixos cobrados = exceção da viagem (gestão)            se informada
+               = eixos do caminhão                     se carregado
+               = eixos − eixos_suspensos               se vazio
+carregado: volta sempre (Q3); ida só com frete de ida
+previsto   = tarifa por eixo vigente na data × eixos cobrados
+diferença  = cobrado − previsto  (> 0: cobrou a mais → "contestar")
+```
+
+- **Eixo suspenso vazio não paga** (Lei 13.103 art. 17; Lei 13.711/2018). A praça identifica "vazio" pela placa sem **MDF-e aberto**: se ficar MDF-e aberto, o app cobra o eixo suspenso.
+- Reajuste = nova tarifa com data de início; a passagem usa a tarifa da data dela.
+- O pedágio cobrado entra no resultado (§8) junto com o pedágio lançado como despesa.
+
+## 13. Pneus (fase 2 — especificação antecipada)
 
 **Identificação.** `marca_fogo` (número gravado no pneu, único) + DOT.
 

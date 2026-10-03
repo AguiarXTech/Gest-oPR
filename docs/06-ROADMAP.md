@@ -97,7 +97,9 @@ Sprints de ~1 semana, com dedicação parcial. Cada tarefa tem ID (`S{sprint}-{n
 | A-6 | Dono/admin também motorista (RF-39) | Feito |
 | A-7 | Foto do caminhão (RF-40), voltar ao início e resumo por caminhão no painel (RF-41) | Feito |
 
-Migrations `20261001000007` e `20261002000000`. Próximas candidatas (pesquisa de 2026-10-01): pneus com estoque e CPK, custos fixos e contas a receber, checklist pré-viagem, avisos no celular.
+| A-8 | Controle de pedágio (RF-42): previsto × cobrado por passagem, contestação | Feito |
+
+Migrations `20261001000007`, `20261002000000` e `20261003000000`. Próximas candidatas (pesquisa de 2026-10-01): pneus com estoque e CPK, custos fixos e contas a receber, checklist pré-viagem, avisos no celular.
 
 ## Piloto (4 semanas)
 
