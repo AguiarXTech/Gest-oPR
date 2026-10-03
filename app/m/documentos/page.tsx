@@ -18,6 +18,7 @@ type Doc = {
   id: string;
   tipo: TipoDocumento;
   entidade: string;
+  funcionario_id: string | null;
   caminhao_id: string | null;
   carreta_id: string | null;
   vencimento: string;
@@ -39,14 +40,25 @@ export default async function DocumentosMotorista() {
     // documento mais recente de cada tipo (renovação = novo registro)
     supabase
       .from('vw_documentos_status')
-      .select('id, tipo, entidade, caminhao_id, carreta_id, vencimento, numero, arquivo_path')
+      .select(
+        'id, tipo, entidade, funcionario_id, caminhao_id, carreta_id, vencimento, numero, arquivo_path',
+      )
       .order('tipo'),
   ]);
 
   const hoje = hojeIso();
   const docs = (documentos ?? []) as Doc[];
   const grupos = [
-    { titulo: 'Minha CNH', itens: docs.filter((d) => d.entidade === 'funcionario') },
+    // filtro explícito: dono/admin que também dirige enxerga todos os documentos pela RLS
+    {
+      titulo: 'Minha CNH',
+      itens: docs.filter(
+        (d) =>
+          d.entidade === 'funcionario' &&
+          d.tipo === 'cnh' &&
+          d.funcionario_id === perfil?.funcionario_id,
+      ),
+    },
     ...(viagem
       ? [
           {
