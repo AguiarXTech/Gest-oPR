@@ -16,16 +16,33 @@ import { cn } from '@/lib/utils';
 export const metadata: Metadata = { title: 'Meu extrato · Gestão RPortugues' };
 
 const nomeMes = (aaaaMm: string) =>
-  new Intl.DateTimeFormat('pt-BR', { month: 'long', timeZone: 'UTC' }).format(new Date(`${aaaaMm}-15T12:00:00Z`));
+  new Intl.DateTimeFormat('pt-BR', { month: 'long', timeZone: 'UTC' }).format(
+    new Date(`${aaaaMm}-15T12:00:00Z`),
+  );
 
 /** Competência (aaaa-mm) de agora, no horário de Brasília. */
 function mesAtual() {
   return competencia(new Date().toISOString());
 }
 
-function Linha({ rotulo, valor, negativo, forte }: { rotulo: string; valor: number; negativo?: boolean; forte?: boolean }) {
+function Linha({
+  rotulo,
+  valor,
+  negativo,
+  forte,
+}: {
+  rotulo: string;
+  valor: number;
+  negativo?: boolean;
+  forte?: boolean;
+}) {
   return (
-    <div className={cn('flex justify-between gap-3 py-1', forte && 'mt-1 border-t pt-2 text-xl font-bold')}>
+    <div
+      className={cn(
+        'flex justify-between gap-3 py-1',
+        forte && 'mt-1 border-t pt-2 text-xl font-bold',
+      )}
+    >
       <span>{rotulo}</span>
       <span className="tabular-nums">
         {negativo ? '− ' : ''}
@@ -38,35 +55,63 @@ function Linha({ rotulo, valor, negativo, forte }: { rotulo: string; valor: numb
 export default async function Extrato() {
   const supabase = await createClient();
   const fid = (await obterPerfilAtual())?.funcionario_id ?? '';
-  const [{ data: viagens }, { data: regras }, { data: despesas }, { data: abastecimentos }, { data: adiantamentos }, { data: acertos }] =
-    await Promise.all([
-      supabase
-        .from('viagens')
-        .select('id, data_saida, km_saida, km_chegada, acerto_id, caminhoes(placa)')
-        .eq('status', 'concluida')
-        .eq('motorista_id', fid)
-        .order('data_saida', { ascending: false })
-        .limit(60),
-      supabase.from('regras_comissao').select('*').eq('funcionario_id', fid),
-      supabase.from('despesas_viagem').select('valor_centavos').eq('motorista_id', fid).is('acerto_id', null).eq('reembolsavel', true),
-      supabase.from('abastecimentos').select('valor_total_centavos').eq('motorista_id', fid).is('acerto_id', null).eq('forma_pagamento', 'motorista'),
-      supabase.from('adiantamentos').select('valor_centavos, data').eq('motorista_id', fid).is('acerto_id', null),
-      supabase
-        .from('acertos')
-        .select('id, periodo_inicio, periodo_fim, status, total_comissao_centavos, total_reembolsos_centavos, total_adiantamentos_centavos, saldo_centavos, pago_em')
-        .eq('motorista_id', fid)
-        .in('status', ['fechado', 'pago'])
-        .order('periodo_fim', { ascending: false })
-        .limit(12),
-    ]);
+  const [
+    { data: viagens },
+    { data: regras },
+    { data: despesas },
+    { data: abastecimentos },
+    { data: adiantamentos },
+    { data: acertos },
+  ] = await Promise.all([
+    supabase
+      .from('viagens')
+      .select(
+        'id, data_saida, data_chegada, km_saida, km_chegada, acerto_id, caminhoes(placa), carretas(placa)',
+      )
+      .eq('status', 'concluida')
+      .eq('motorista_id', fid)
+      .order('data_saida', { ascending: false })
+      .limit(60),
+    supabase.from('regras_comissao').select('*').eq('funcionario_id', fid),
+    supabase
+      .from('despesas_viagem')
+      .select('valor_centavos')
+      .eq('motorista_id', fid)
+      .is('acerto_id', null)
+      .eq('reembolsavel', true),
+    supabase
+      .from('abastecimentos')
+      .select('valor_total_centavos')
+      .eq('motorista_id', fid)
+      .is('acerto_id', null)
+      .eq('forma_pagamento', 'motorista'),
+    supabase
+      .from('adiantamentos')
+      .select('valor_centavos, data')
+      .eq('motorista_id', fid)
+      .is('acerto_id', null),
+    supabase
+      .from('acertos')
+      .select(
+        'id, periodo_inicio, periodo_fim, status, total_comissao_centavos, total_reembolsos_centavos, total_adiantamentos_centavos, saldo_centavos, pago_em',
+      )
+      .eq('motorista_id', fid)
+      .in('status', ['fechado', 'pago'])
+      .order('periodo_fim', { ascending: false })
+      .limit(12),
+  ]);
 
   const pendentes = (viagens ?? []).filter((v) => v.acerto_id === null);
   const estimativa = estimarComissao(
-    pendentes.map((v) => ({ dataSaida: v.data_saida, kmRodado: (v.km_chegada ?? v.km_saida) - v.km_saida })),
+    pendentes.map((v) => ({
+      dataSaida: v.data_saida,
+      kmRodado: (v.km_chegada ?? v.km_saida) - v.km_saida,
+    })),
     (regras ?? []).map(paraRegraDominio),
   );
   const reembolsos =
-    (despesas ?? []).reduce((t, d) => t + d.valor_centavos, 0) + (abastecimentos ?? []).reduce((t, a) => t + a.valor_total_centavos, 0);
+    (despesas ?? []).reduce((t, d) => t + d.valor_centavos, 0) +
+    (abastecimentos ?? []).reduce((t, a) => t + a.valor_total_centavos, 0);
   const adiant = (adiantamentos ?? []).reduce((t, a) => t + a.valor_centavos, 0);
   const saldo = estimativa.totalCentavos + reembolsos - adiant;
 
@@ -88,14 +133,23 @@ export default async function Extrato() {
 
       <section className="rounded-2xl border bg-card p-5 shadow-xs">
         <h2 className="mb-2 text-lg font-semibold">A receber no próximo acerto</h2>
-        <Linha rotulo={`Comissão (${pendentes.length} viage${pendentes.length === 1 ? 'm' : 'ns'})`} valor={estimativa.totalCentavos} />
+        <Linha
+          rotulo={`Comissão (${pendentes.length} viage${pendentes.length === 1 ? 'm' : 'ns'})`}
+          valor={estimativa.totalCentavos}
+        />
         <Linha rotulo="Reembolsos (despesas do caminhão que você pagou)" valor={reembolsos} />
         <Linha rotulo="Adiantamentos recebidos" valor={adiant} negativo />
-        <Linha rotulo={saldo >= 0 ? 'Saldo estimado' : 'Você deve (estimado)'} valor={Math.abs(saldo)} forte />
+        <Linha
+          rotulo={saldo >= 0 ? 'Saldo estimado' : 'Você deve (estimado)'}
+          valor={Math.abs(saldo)}
+          forte
+        />
         <p className="mt-2 text-sm text-muted-foreground">
           Estimativa. O valor oficial sai quando o escritório fechar o acerto.
-          {estimativa.dependeDoFrete > 0 && ` ${estimativa.dependeDoFrete} viagem(ns) dependem do frete e entram só no acerto.`}
-          {estimativa.semRegra > 0 && ` ${estimativa.semRegra} viagem(ns) sem comissão cadastrada: fale com o escritório.`}
+          {estimativa.dependeDoFrete > 0 &&
+            ` ${estimativa.dependeDoFrete} viagem(ns) dependem do frete e entram só no acerto.`}
+          {estimativa.semRegra > 0 &&
+            ` ${estimativa.semRegra} viagem(ns) sem comissão cadastrada: fale com o escritório.`}
         </p>
       </section>
 
@@ -111,14 +165,25 @@ export default async function Extrato() {
                   <span className="font-semibold">
                     {formatarData(a.periodo_inicio)} a {formatarData(a.periodo_fim)}
                   </span>
-                  <span className={cn('rounded-full px-2 py-0.5 text-sm font-medium', STATUS_ACERTO[a.status].classe)}>
-                    {a.status === 'pago' && a.pago_em ? `Pago em ${formatarData(a.pago_em)}` : STATUS_ACERTO[a.status].rotulo}
+                  <span
+                    className={cn(
+                      'rounded-full px-2 py-0.5 text-sm font-medium',
+                      STATUS_ACERTO[a.status].classe,
+                    )}
+                  >
+                    {a.status === 'pago' && a.pago_em
+                      ? `Pago em ${formatarData(a.pago_em)}`
+                      : STATUS_ACERTO[a.status].rotulo}
                   </span>
                 </div>
                 <Linha rotulo="Comissão" valor={a.total_comissao_centavos} />
                 <Linha rotulo="Reembolsos" valor={a.total_reembolsos_centavos} />
                 <Linha rotulo="Adiantamentos" valor={a.total_adiantamentos_centavos} negativo />
-                <Linha rotulo={a.saldo_centavos >= 0 ? 'Saldo' : 'Você ficou devendo'} valor={Math.abs(a.saldo_centavos)} forte />
+                <Linha
+                  rotulo={a.saldo_centavos >= 0 ? 'Saldo' : 'Você ficou devendo'}
+                  valor={Math.abs(a.saldo_centavos)}
+                  forte
+                />
               </li>
             ))}
           </ul>
@@ -130,15 +195,39 @@ export default async function Extrato() {
         <ul className="flex flex-col divide-y rounded-2xl border bg-card shadow-xs">
           {(viagens ?? []).slice(0, 10).map((v) => (
             <li key={v.id}>
-              <Link href={`/m/viagem/${v.id}`} className="flex justify-between gap-3 p-3 tabular-nums">
-                <span>{formatarDataHora(v.data_saida)}</span>
-                <span className="text-muted-foreground">
-                  {v.km_chegada !== null && formatarKm(v.km_chegada - v.km_saida)} {v.acerto_id ? '· acertada' : ''}
+              {/* início e fim sempre à mostra: o dono confere a viagem pelo celular do motorista */}
+              <Link href={`/m/viagem/${v.id}`} className="flex flex-col gap-1 p-3 tabular-nums">
+                <span className="flex justify-between gap-3 font-semibold">
+                  <span>
+                    {v.caminhoes?.placa}
+                    {v.carretas && ` + ${v.carretas.placa}`}
+                  </span>
+                  <span>
+                    {v.km_chegada !== null && formatarKm(v.km_chegada - v.km_saida)}
+                    {v.acerto_id && (
+                      <span className="font-normal text-muted-foreground"> · acertada</span>
+                    )}
+                  </span>
+                </span>
+                <span className="flex justify-between gap-3 text-sm">
+                  <span className="text-muted-foreground">Início</span>
+                  <span>
+                    {formatarDataHora(v.data_saida)} · {formatarKm(v.km_saida)}
+                  </span>
+                </span>
+                <span className="flex justify-between gap-3 text-sm">
+                  <span className="text-muted-foreground">Fim</span>
+                  <span>
+                    {v.data_chegada ? formatarDataHora(v.data_chegada) : '—'}
+                    {v.km_chegada !== null && ` · ${formatarKm(v.km_chegada)}`}
+                  </span>
                 </span>
               </Link>
             </li>
           ))}
-          {(viagens ?? []).length === 0 && <li className="p-3 text-muted-foreground">Nenhuma viagem concluída.</li>}
+          {(viagens ?? []).length === 0 && (
+            <li className="p-3 text-muted-foreground">Nenhuma viagem concluída.</li>
+          )}
         </ul>
       </section>
     </>
