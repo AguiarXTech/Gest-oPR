@@ -8,6 +8,7 @@ import { useForm } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
 import type { Tables } from '@/lib/database.types';
 import { formatarCnpj } from '@/lib/domain/cnpj';
+import { REGIAO_DO_TRECHO } from '@/lib/domain/precoFrete';
 import { hojeIso } from '@/lib/formatar';
 import { createClient } from '@/lib/supabase/client';
 import { traduzirErroBanco } from '@/lib/supabase/erros';
@@ -74,20 +75,22 @@ export function FormCliente({ cliente }: { cliente?: Cliente }) {
         .select('id')
         .single();
       if (error) throw error;
-      if (d.valor_frete !== null) {
-        const { error: e2 } = await supabase.from('precos_frete').insert({
-          cliente_id: novo.id,
-          sentido: d.sentido,
-          vigencia_inicio: d.vigencia_inicio,
-          valor_centavos: d.valor_frete,
-        });
-        if (e2) throw e2;
-      }
       if (d.produto) {
-        const { error: e3 } = await supabase
+        // o trecho vem do lugar do produto; o preço é do produto
+        const { data: local, error: e2 } = await supabase
           .from('locais_carga')
-          .insert({ cliente_id: novo.id, nome: d.produto, endereco: d.local });
-        if (e3) throw e3;
+          .insert({ cliente_id: novo.id, nome: d.produto, endereco: d.local, sentido: d.sentido })
+          .select('id')
+          .single();
+        if (e2) throw e2;
+        if (d.valor_frete !== null) {
+          const { error: e3 } = await supabase.from('precos_frete').insert({
+            local_carga_id: local.id,
+            vigencia_inicio: d.vigencia_inicio,
+            valor_centavos: d.valor_frete,
+          });
+          if (e3) throw e3;
+        }
       }
       return novo.id;
     },
@@ -185,15 +188,25 @@ export function FormCliente({ cliente }: { cliente?: Cliente }) {
                   className="h-11 text-base"
                 />
               </Campo>
+              <Campo id="sentido" rotulo="Onde fica" ajuda="Define o trecho carregado">
+                <select
+                  {...register('sentido')}
+                  {...ariaCampo('sentido', undefined, 'ajuda')}
+                  className={classeSelect}
+                >
+                  <option value="volta">{REGIAO_DO_TRECHO.volta}</option>
+                  <option value="ida">{REGIAO_DO_TRECHO.ida}</option>
+                </select>
+              </Campo>
             </div>
           </fieldset>
 
           <fieldset className="flex flex-col gap-4 rounded-2xl border p-4">
-            <legend className="px-1 text-lg font-semibold">Valor do frete combinado</legend>
+            <legend className="px-1 text-lg font-semibold">Frete do produto</legend>
             <p className="-mt-2 text-sm text-muted-foreground">
-              Reajuste depois: na tela do cliente, lance o novo valor com a data em que começa.
+              Reajuste depois: na tela do cliente, toque em Reajustar preço no produto.
             </p>
-            <div className="grid gap-4 sm:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-2">
               <Campo
                 id="valor_frete"
                 rotulo="Valor por viagem (R$)"
@@ -206,12 +219,6 @@ export function FormCliente({ cliente }: { cliente?: Cliente }) {
                   inputMode="decimal"
                   className="h-11 text-base"
                 />
-              </Campo>
-              <Campo id="sentido" rotulo="Trecho carregado">
-                <select {...register('sentido')} {...ariaCampo('sentido')} className={classeSelect}>
-                  <option value="volta">Volta (BH → SJE)</option>
-                  <option value="ida">Ida (SJE → BH)</option>
-                </select>
               </Campo>
               <Campo id="vigencia_inicio" rotulo="Vale a partir de" erro={e('vigencia_inicio')}>
                 <Input

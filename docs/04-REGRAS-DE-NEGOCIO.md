@@ -303,15 +303,17 @@ diferença  = cobrado − previsto  (> 0: cobrou a mais → "contestar")
 - Reajuste = nova tarifa com data de início; a passagem usa a tarifa da data dela.
 - O pedágio cobrado entra no resultado (§8) junto com o pedágio lançado como despesa.
 
-## 13. Frete pelo preço combinado (`precoFrete.ts`) — RF-44
+## 13. Frete pelo preço combinado do produto (`precoFrete.ts`) — RF-44/RF-45
 
 ```
-preço da viagem = preço do cliente, no sentido, com o início mais recente até a data da saída (Brasília)
-ao concluir (motorista): para cada sentido com preço → lança o frete (se ainda não houver)
+produto/local (cliente) → trecho carregado pelo lugar: região de BH = volta; região de SJE = ida
+preço da viagem = preço do produto com o início mais recente até a data da saída (Brasília)
+ao concluir (motorista), se o cliente lança sozinho e a viagem tem produto:
+  lança o frete no trecho do produto, para o cliente do produto (se ainda não houver)
 ```
 
-- Só o cliente marcado "lançar o frete sozinho" (um por vez). Sem preço na data = nada é lançado.
-- O frete automático pode ser corrigido ou apagado pela gestão; viagens sem frete abrem o formulário já preenchido com o preço.
+- Viagem sem produto escolhido ("Outra carga") ou produto sem preço na data: a gestão lança o frete (alerta no painel).
+- O frete automático pode ser corrigido ou apagado; viagem sem frete abre o formulário já preenchido com o preço do produto.
 - Reajuste não muda viagens antigas.
 
 ## 14. Pneus (fase 2 — especificação antecipada)

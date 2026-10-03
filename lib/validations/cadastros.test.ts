@@ -150,6 +150,10 @@ describe('cadastroClienteSchema (frete e carga no cadastro)', () => {
   });
   it('local sem produto não', () =>
     expect(cadastroClienteSchema.safeParse({ ...base, produto: '' }).success).toBe(false));
+  it('frete sem produto não (o preço é do produto)', () =>
+    expect(cadastroClienteSchema.safeParse({ ...base, produto: '', local: '' }).success).toBe(
+      false,
+    ));
   it('lançar sozinho exige o valor', () =>
     expect(cadastroClienteSchema.safeParse({ ...base, valor_frete: '' }).success).toBe(false));
   it('valor exige a data de início', () =>

@@ -12,8 +12,8 @@ export type ClienteForm = z.input<typeof clienteSchema>;
 export type ClienteDados = z.output<typeof clienteSchema>;
 
 /**
- * Cadastro de cliente novo já com o frete e a carga (pedido de 2026-10-03): preço combinado
- * (vira a primeira linha de precos_frete) e o que carrega + onde (primeiro local de carga).
+ * Cadastro de cliente novo já com o frete e a carga (pedido de 2026-10-03): o produto + onde
+ * (primeiro local de carga, que define o trecho) e o frete dele (primeira linha de precos_frete).
  * Tudo opcional; depois se edita na tela do cliente.
  */
 export const cadastroClienteSchema = clienteSchema
@@ -21,12 +21,13 @@ export const cadastroClienteSchema = clienteSchema
     produto: textoOpcional,
     local: textoOpcional,
     valor_frete: centavosOpcional,
+    /** Trecho carregado, pelo lugar do produto (região de BH = volta). */
     sentido: z.enum(['ida', 'volta']),
     vigencia_inicio: z.string().trim(),
     frete_automatico: z.boolean(),
   })
   .superRefine((d, ctx) => {
-    if (d.local && !d.produto) {
+    if ((d.local || d.valor_frete !== null) && !d.produto) {
       ctx.addIssue({
         code: 'custom',
         path: ['produto'],

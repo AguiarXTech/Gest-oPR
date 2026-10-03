@@ -915,6 +915,7 @@ export type Database = {
           endereco: string | null
           id: string
           nome: string
+          sentido: Database["public"]["Enums"]["sentido_frete"]
           updated_at: string
         }
         Insert: {
@@ -924,6 +925,7 @@ export type Database = {
           endereco?: string | null
           id?: string
           nome: string
+          sentido?: Database["public"]["Enums"]["sentido_frete"]
           updated_at?: string
         }
         Update: {
@@ -933,6 +935,7 @@ export type Database = {
           endereco?: string | null
           id?: string
           nome?: string
+          sentido?: Database["public"]["Enums"]["sentido_frete"]
           updated_at?: string
         }
         Relationships: [
@@ -1183,35 +1186,32 @@ export type Database = {
       }
       precos_frete: {
         Row: {
-          cliente_id: string
           created_at: string
           id: string
-          sentido: Database["public"]["Enums"]["sentido_frete"]
+          local_carga_id: string
           valor_centavos: number
           vigencia_inicio: string
         }
         Insert: {
-          cliente_id: string
           created_at?: string
           id?: string
-          sentido: Database["public"]["Enums"]["sentido_frete"]
+          local_carga_id: string
           valor_centavos: number
           vigencia_inicio: string
         }
         Update: {
-          cliente_id?: string
           created_at?: string
           id?: string
-          sentido?: Database["public"]["Enums"]["sentido_frete"]
+          local_carga_id?: string
           valor_centavos?: number
           vigencia_inicio?: string
         }
         Relationships: [
           {
-            foreignKeyName: "precos_frete_cliente_id_fkey"
-            columns: ["cliente_id"]
+            foreignKeyName: "precos_frete_local_carga_id_fkey"
+            columns: ["local_carga_id"]
             isOneToOne: false
-            referencedRelation: "clientes"
+            referencedRelation: "locais_carga"
             referencedColumns: ["id"]
           },
         ]
