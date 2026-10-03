@@ -68,6 +68,7 @@ A operação hoje depende de papel, WhatsApp e memória. Isso gera cinco problem
 | RF-38 | Despesas pessoais do motorista (opcional): alimentação, pernoite etc., só para o controle dele. **Só ele vê** (nem a gestão); não entram no acerto | motorista |
 | RF-39 | Dono/admin que também dirige usa a área do motorista: o cadastro de funcionário com o CPF dele é ligado ao login existente ("Criar acesso" liga, mantendo o papel) | dono/admin |
 | RF-40 | Foto de cada caminhão (lista, ficha e escolha do caminhão pelo motorista) | gestor |
+| RF-46 | Remover viagem com motivo (teste, criada errada, duplicada), registrado na auditoria; opção de apagar junto os abastecimentos e despesas dela; viagem em acerto não sai | gestor |
 | RF-45 | Locais de carga no cadastro do cliente (nome e endereço, ex.: Cimento Liz); o motorista toca onde vai carregar ao iniciar a viagem e abre o endereço no mapa | gestor (cadastro), motorista (escolha) |
 | RF-44 | Preço do frete de cada produto do cliente, com reajustes por data; o trecho carregado vem do lugar do produto; frete lançado sozinho quando o motorista conclui a viagem com aquele produto (cliente marcado); a gestão corrige se for diferente | gestor |
 | RF-43 | Cavalo e carreta separados: caminhão é peça única ou cavalo/trator; carreta tem cadastro próprio (configuração/tipo, carroceria e eixos em campo livre, documentos, foto) e é escolhida pelo motorista ao iniciar a viagem com um cavalo | gestor (cadastro), motorista (escolha) |

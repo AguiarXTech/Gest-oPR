@@ -13,6 +13,7 @@ Legenda: **T** = total · **L** = leitura · **P** = só os próprios registros 
 | Clientes | T | T | — |
 | Preço do frete combinado | T | T | — |
 | Locais de carga | T | T | L |
+| Remover viagem (com motivo, na auditoria) | T | T | — |
 | Fornecedores | T | T | L |
 | Viagens | T | T | P: cria; edita só `em_andamento` e sem acerto |
 | Fretes (cliente, valor, CT-e/MDF-e) | T | T | — (Q6: nem frete nem custos do caminhão) |

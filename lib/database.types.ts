@@ -1592,6 +1592,14 @@ export type Database = {
         Args: never
         Returns: Database["public"]["Enums"]["papel_usuario"]
       }
+      remover_viagem: {
+        Args: {
+          p_apagar_lancamentos?: boolean
+          p_motivo: string
+          p_viagem: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       entidade_documento: "empresa" | "caminhao" | "funcionario" | "carreta"

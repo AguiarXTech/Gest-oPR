@@ -101,6 +101,7 @@ Sprints de ~1 semana, com dedicação parcial. Cada tarefa tem ID (`S{sprint}-{n
 | A-9 | Cavalo e carreta separados (RF-43): cadastro de carretas, escolha na viagem, pedágio pelo conjunto | Feito |
 | A-10 | Preço do frete no cliente com reajuste e lançamento automático (RF-44) | Feito |
 | A-11 | Locais de carga do cliente escolhidos pelo motorista (RF-45) | Feito |
+| A-12 | Remover viagem com motivo (RF-46) | Feito |
 
 Migrations `20261001000007`, `20261002000000`, `20261003000000` e `20261004000000`–`02`. Próximas candidatas (pesquisa de 2026-10-01): pneus com estoque e CPK, custos fixos e contas a receber, checklist pré-viagem, avisos no celular.
 

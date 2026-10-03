@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { FormFrete } from '@/components/gestao/FormFrete';
+import { RemoverViagem } from '@/components/gestao/RemoverViagem';
 import { TrocarCarreta } from '@/components/gestao/TrocarCarreta';
 import { dataBrasilia } from '@/lib/domain/comissao';
 import { formatarBRL } from '@/lib/domain/dinheiro';
@@ -194,6 +195,13 @@ export default async function DetalheViagem({ params }: PageProps<'/g/viagens/[i
           </ul>
         )}
       </section>
+
+      <RemoverViagem
+        viagemId={v.id}
+        abastecimentos={v.abastecimentos.length}
+        despesas={v.despesas_viagem.length}
+        emAcerto={v.acerto_id !== null}
+      />
     </div>
   );
 }
