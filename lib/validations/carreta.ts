@@ -13,7 +13,7 @@ export const carretaSchema = z
   .object({
     placa: placaObrigatoria,
     apelido: textoOpcional,
-    /** Texto livre: a variação é grande (carreta, vanderléia, bitrem, rodotrem...). */
+    /** Texto livre: a variação é grande (carreta, bitrem, rodotrem...). Na tela aparece como "Configuração / tipo".. */
     composicao: textoOpcional,
     carroceria: textoOpcional,
     eixos: inteiroOpcional(1, 9, 'Eixos: de 1 a 9.'),

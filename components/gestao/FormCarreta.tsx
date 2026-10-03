@@ -81,9 +81,9 @@ export function FormCarreta({ carreta }: { carreta?: Carreta }) {
         </Campo>
         <Campo
           id="composicao"
-          rotulo="Composição"
+          rotulo="Configuração / tipo"
           erro={e('composicao')}
-          ajuda="Ex.: carreta, vanderléia, bitrem, rodotrem"
+          ajuda="Ex.: carreta, bitrem, rodotrem"
         >
           <Input
             {...register('composicao')}
@@ -95,7 +95,7 @@ export function FormCarreta({ carreta }: { carreta?: Carreta }) {
           id="carroceria"
           rotulo="Carroceria"
           erro={e('carroceria')}
-          ajuda="Ex.: graneleira, tanque, caçamba, baú"
+          ajuda="Ex.: graneleira, grade baixa, tanque, caçamba, baú"
         >
           <Input
             {...register('carroceria')}
