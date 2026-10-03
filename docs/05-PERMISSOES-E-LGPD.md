@@ -9,6 +9,7 @@ Legenda: **T** = total · **L** = leitura · **P** = só os próprios registros 
 | Usuários (criar/desativar) | T | T | — |
 | Funcionários | T | T | L (P) |
 | Caminhões | T | T | L |
+| Carretas | T | T | L |
 | Clientes | T | T | — |
 | Fornecedores | T | T | L |
 | Viagens | T | T | P: cria; edita só `em_andamento` e sem acerto |

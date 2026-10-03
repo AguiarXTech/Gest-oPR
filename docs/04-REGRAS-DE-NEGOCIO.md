@@ -290,9 +290,11 @@ Rota atual: uma praça (Roças Novas, BR-381), passando na ida e na volta. Cobra
 
 ```
 eixos cobrados = exceção da viagem (gestão)            se informada
-               = eixos do caminhão                     se carregado
+               = eixos do conjunto                     se carregado
                = eixos − eixos_suspensos               se vazio
 carregado: volta sempre (Q3); ida só com frete de ida
+conjunto  = caminhão (truck ou cavalo) + carreta da viagem, se houver;
+            eixos e eixos suspensos somam; sem eixos num dos cadastros = sem previsão
 previsto   = tarifa por eixo vigente na data × eixos cobrados
 diferença  = cobrado − previsto  (> 0: cobrou a mais → "contestar")
 ```

@@ -343,6 +343,7 @@ export type Database = {
           modelo: string | null
           observacoes: string | null
           placa: string
+          tipo: Database["public"]["Enums"]["tipo_veiculo"]
           updated_at: string
         }
         Insert: {
@@ -361,6 +362,7 @@ export type Database = {
           modelo?: string | null
           observacoes?: string | null
           placa: string
+          tipo?: Database["public"]["Enums"]["tipo_veiculo"]
           updated_at?: string
         }
         Update: {
@@ -377,6 +379,52 @@ export type Database = {
           km_atual?: number
           marca?: string | null
           modelo?: string | null
+          observacoes?: string | null
+          placa?: string
+          tipo?: Database["public"]["Enums"]["tipo_veiculo"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      carretas: {
+        Row: {
+          apelido: string | null
+          ativo: boolean
+          carroceria: string | null
+          composicao: string
+          created_at: string
+          eixos: number | null
+          eixos_suspensos: number
+          foto_path: string | null
+          id: string
+          observacoes: string | null
+          placa: string
+          updated_at: string
+        }
+        Insert: {
+          apelido?: string | null
+          ativo?: boolean
+          carroceria?: string | null
+          composicao?: string
+          created_at?: string
+          eixos?: number | null
+          eixos_suspensos?: number
+          foto_path?: string | null
+          id?: string
+          observacoes?: string | null
+          placa: string
+          updated_at?: string
+        }
+        Update: {
+          apelido?: string | null
+          ativo?: boolean
+          carroceria?: string | null
+          composicao?: string
+          created_at?: string
+          eixos?: number | null
+          eixos_suspensos?: number
+          foto_path?: string | null
+          id?: string
           observacoes?: string | null
           placa?: string
           updated_at?: string
@@ -633,6 +681,7 @@ export type Database = {
         Row: {
           arquivo_path: string | null
           caminhao_id: string | null
+          carreta_id: string | null
           created_at: string
           emissao: string | null
           entidade: Database["public"]["Enums"]["entidade_documento"]
@@ -647,6 +696,7 @@ export type Database = {
         Insert: {
           arquivo_path?: string | null
           caminhao_id?: string | null
+          carreta_id?: string | null
           created_at?: string
           emissao?: string | null
           entidade: Database["public"]["Enums"]["entidade_documento"]
@@ -661,6 +711,7 @@ export type Database = {
         Update: {
           arquivo_path?: string | null
           caminhao_id?: string | null
+          carreta_id?: string | null
           created_at?: string
           emissao?: string | null
           entidade?: Database["public"]["Enums"]["entidade_documento"]
@@ -678,6 +729,13 @@ export type Database = {
             columns: ["caminhao_id"]
             isOneToOne: false
             referencedRelation: "caminhoes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documentos_carreta_id_fkey"
+            columns: ["carreta_id"]
+            isOneToOne: false
+            referencedRelation: "carretas"
             referencedColumns: ["id"]
           },
           {
@@ -1206,6 +1264,7 @@ export type Database = {
         Row: {
           acerto_id: string | null
           caminhao_id: string
+          carreta_id: string | null
           created_at: string
           data_chegada: string | null
           data_saida: string
@@ -1224,6 +1283,7 @@ export type Database = {
         Insert: {
           acerto_id?: string | null
           caminhao_id: string
+          carreta_id?: string | null
           created_at?: string
           data_chegada?: string | null
           data_saida?: string
@@ -1242,6 +1302,7 @@ export type Database = {
         Update: {
           acerto_id?: string | null
           caminhao_id?: string
+          carreta_id?: string | null
           created_at?: string
           data_chegada?: string | null
           data_saida?: string
@@ -1273,6 +1334,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "viagens_carreta_id_fkey"
+            columns: ["carreta_id"]
+            isOneToOne: false
+            referencedRelation: "carretas"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "viagens_motorista_id_fkey"
             columns: ["motorista_id"]
             isOneToOne: false
@@ -1287,6 +1355,7 @@ export type Database = {
         Row: {
           arquivo_path: string | null
           caminhao_id: string | null
+          carreta_id: string | null
           created_at: string | null
           dias_para_vencer: number | null
           emissao: string | null
@@ -1305,6 +1374,13 @@ export type Database = {
             columns: ["caminhao_id"]
             isOneToOne: false
             referencedRelation: "caminhoes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documentos_carreta_id_fkey"
+            columns: ["carreta_id"]
+            isOneToOne: false
+            referencedRelation: "carretas"
             referencedColumns: ["id"]
           },
           {
@@ -1426,7 +1502,7 @@ export type Database = {
       }
     }
     Enums: {
-      entidade_documento: "empresa" | "caminhao" | "funcionario"
+      entidade_documento: "empresa" | "caminhao" | "funcionario" | "carreta"
       forma_pagamento_abastecimento: "motorista" | "cartao_empresa" | "faturado"
       papel_usuario: "dono" | "admin" | "motorista"
       sentido_frete: "ida" | "volta"
@@ -1465,6 +1541,7 @@ export type Database = {
         | "outro"
       tipo_fornecedor: "posto" | "oficina" | "recapadora" | "loja" | "outro"
       tipo_manutencao: "preventiva" | "corretiva"
+      tipo_veiculo: "truck" | "cavalo"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1595,7 +1672,7 @@ export const Constants = {
   },
   public: {
     Enums: {
-      entidade_documento: ["empresa", "caminhao", "funcionario"],
+      entidade_documento: ["empresa", "caminhao", "funcionario", "carreta"],
       forma_pagamento_abastecimento: [
         "motorista",
         "cartao_empresa",
@@ -1642,6 +1719,7 @@ export const Constants = {
       ],
       tipo_fornecedor: ["posto", "oficina", "recapadora", "loja", "outro"],
       tipo_manutencao: ["preventiva", "corretiva"],
+      tipo_veiculo: ["truck", "cavalo"],
     },
   },
 } as const
