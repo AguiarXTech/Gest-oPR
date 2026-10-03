@@ -1035,6 +1035,70 @@ export type Database = {
           },
         ]
       }
+      montagens_pneu: {
+        Row: {
+          caminhao_id: string | null
+          carreta_id: string | null
+          id: string
+          km_montagem: number | null
+          km_retirada: number | null
+          km_rodado: number | null
+          montado_em: string
+          pneu_id: string
+          posicao: string
+          retirado_em: string | null
+          vida: number
+        }
+        Insert: {
+          caminhao_id?: string | null
+          carreta_id?: string | null
+          id?: string
+          km_montagem?: number | null
+          km_retirada?: number | null
+          km_rodado?: number | null
+          montado_em?: string
+          pneu_id: string
+          posicao: string
+          retirado_em?: string | null
+          vida: number
+        }
+        Update: {
+          caminhao_id?: string | null
+          carreta_id?: string | null
+          id?: string
+          km_montagem?: number | null
+          km_retirada?: number | null
+          km_rodado?: number | null
+          montado_em?: string
+          pneu_id?: string
+          posicao?: string
+          retirado_em?: string | null
+          vida?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "montagens_pneu_caminhao_id_fkey"
+            columns: ["caminhao_id"]
+            isOneToOne: false
+            referencedRelation: "caminhoes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "montagens_pneu_carreta_id_fkey"
+            columns: ["carreta_id"]
+            isOneToOne: false
+            referencedRelation: "carretas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "montagens_pneu_pneu_id_fkey"
+            columns: ["pneu_id"]
+            isOneToOne: false
+            referencedRelation: "pneus"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       multas: {
         Row: {
           arquivo_path: string | null
@@ -1157,6 +1221,74 @@ export type Database = {
           },
         ]
       }
+      pneus: {
+        Row: {
+          condicao_entrada: Database["public"]["Enums"]["condicao_pneu"]
+          created_at: string
+          data_compra: string | null
+          descartado_em: string | null
+          dot: string | null
+          fornecedor_id: string | null
+          id: string
+          marca: string | null
+          marca_fogo: string
+          medida: string | null
+          modelo: string | null
+          motivo_descarte: string | null
+          observacoes: string | null
+          status: Database["public"]["Enums"]["status_pneu"]
+          updated_at: string
+          valor_compra_centavos: number | null
+          vida: number
+        }
+        Insert: {
+          condicao_entrada?: Database["public"]["Enums"]["condicao_pneu"]
+          created_at?: string
+          data_compra?: string | null
+          descartado_em?: string | null
+          dot?: string | null
+          fornecedor_id?: string | null
+          id?: string
+          marca?: string | null
+          marca_fogo: string
+          medida?: string | null
+          modelo?: string | null
+          motivo_descarte?: string | null
+          observacoes?: string | null
+          status?: Database["public"]["Enums"]["status_pneu"]
+          updated_at?: string
+          valor_compra_centavos?: number | null
+          vida?: number
+        }
+        Update: {
+          condicao_entrada?: Database["public"]["Enums"]["condicao_pneu"]
+          created_at?: string
+          data_compra?: string | null
+          descartado_em?: string | null
+          dot?: string | null
+          fornecedor_id?: string | null
+          id?: string
+          marca?: string | null
+          marca_fogo?: string
+          medida?: string | null
+          modelo?: string | null
+          motivo_descarte?: string | null
+          observacoes?: string | null
+          status?: Database["public"]["Enums"]["status_pneu"]
+          updated_at?: string
+          valor_compra_centavos?: number | null
+          vida?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pneus_fornecedor_id_fkey"
+            columns: ["fornecedor_id"]
+            isOneToOne: false
+            referencedRelation: "fornecedores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pracas_pedagio: {
         Row: {
           ativa: boolean
@@ -1250,6 +1382,54 @@ export type Database = {
             columns: ["funcionario_id"]
             isOneToOne: true
             referencedRelation: "funcionarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      recapagens_pneu: {
+        Row: {
+          custo_centavos: number | null
+          enviado_em: string
+          fornecedor_id: string | null
+          id: string
+          observacoes: string | null
+          pneu_id: string
+          retornou_em: string | null
+          vida_resultante: number | null
+        }
+        Insert: {
+          custo_centavos?: number | null
+          enviado_em?: string
+          fornecedor_id?: string | null
+          id?: string
+          observacoes?: string | null
+          pneu_id: string
+          retornou_em?: string | null
+          vida_resultante?: number | null
+        }
+        Update: {
+          custo_centavos?: number | null
+          enviado_em?: string
+          fornecedor_id?: string | null
+          id?: string
+          observacoes?: string | null
+          pneu_id?: string
+          retornou_em?: string | null
+          vida_resultante?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recapagens_pneu_fornecedor_id_fkey"
+            columns: ["fornecedor_id"]
+            isOneToOne: false
+            referencedRelation: "fornecedores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recapagens_pneu_pneu_id_fkey"
+            columns: ["pneu_id"]
+            isOneToOne: false
+            referencedRelation: "pneus"
             referencedColumns: ["id"]
           },
         ]
@@ -1586,8 +1766,26 @@ export type Database = {
         Args: { p_caminhao_id: string }
         Returns: Json
       }
+      descartar_pneu: {
+        Args: { p_motivo: string; p_pneu: string }
+        Returns: undefined
+      }
+      enviar_recapagem: {
+        Args: { p_fornecedor?: string; p_pneu: string }
+        Returns: undefined
+      }
       funcionario_atual: { Args: never; Returns: string }
       is_gestor: { Args: never; Returns: boolean }
+      montar_pneu: {
+        Args: {
+          p_caminhao: string
+          p_carreta: string
+          p_km_montagem?: number
+          p_pneu: string
+          p_posicao: string
+        }
+        Returns: undefined
+      }
       papel_atual: {
         Args: never
         Returns: Database["public"]["Enums"]["papel_usuario"]
@@ -1600,8 +1798,24 @@ export type Database = {
         }
         Returns: undefined
       }
+      retirar_pneu: {
+        Args: {
+          p_destino: string
+          p_fornecedor?: string
+          p_km_retirada: number
+          p_km_rodado: number
+          p_motivo?: string
+          p_pneu: string
+        }
+        Returns: undefined
+      }
+      retorno_recapagem: {
+        Args: { p_custo_centavos?: number; p_pneu: string }
+        Returns: undefined
+      }
     }
     Enums: {
+      condicao_pneu: "novo" | "usado"
       entidade_documento: "empresa" | "caminhao" | "funcionario" | "carreta"
       forma_pagamento_abastecimento: "motorista" | "cartao_empresa" | "faturado"
       papel_usuario: "dono" | "admin" | "motorista"
@@ -1612,6 +1826,7 @@ export type Database = {
         | "contestado"
         | "ressarcido"
       status_acerto: "rascunho" | "fechado" | "pago"
+      status_pneu: "estoque" | "montado" | "em_recapagem" | "descartado"
       status_viagem: "planejada" | "em_andamento" | "concluida" | "cancelada"
       tipo_comissao:
         | "pct_frete_bruto"
@@ -1772,6 +1987,7 @@ export const Constants = {
   },
   public: {
     Enums: {
+      condicao_pneu: ["novo", "usado"],
       entidade_documento: ["empresa", "caminhao", "funcionario", "carreta"],
       forma_pagamento_abastecimento: [
         "motorista",
@@ -1787,6 +2003,7 @@ export const Constants = {
         "ressarcido",
       ],
       status_acerto: ["rascunho", "fechado", "pago"],
+      status_pneu: ["estoque", "montado", "em_recapagem", "descartado"],
       status_viagem: ["planejada", "em_andamento", "concluida", "cancelada"],
       tipo_comissao: [
         "pct_frete_bruto",

@@ -316,7 +316,7 @@ ao concluir (motorista), se o cliente lança sozinho e a viagem tem produto:
 - O frete automático pode ser corrigido ou apagado; viagem sem frete abre o formulário já preenchido com o preço do produto.
 - Reajuste não muda viagens antigas.
 
-## 14. Pneus (fase 2 — especificação antecipada)
+## 14. Pneus (`pneus.ts`) — RF-30
 
 **Identificação.** `marca_fogo` (número gravado no pneu, único) + DOT.
 
@@ -341,5 +341,9 @@ ao concluir (motorista), se o cliente lança sozinho e a viagem tem produto:
 
 **Regras:**
 - Uma posição tem no máximo 1 pneu montado. Um pneu tem no máximo 1 montagem aberta.
-- `km_rodado_montagem = km_caminhao_retirada − km_caminhao_montagem`.
+- `km_rodado_montagem = km_caminhao_retirada − km_caminhao_montagem` no caminhão (cavalo ou truck).
+- **Carreta não tem hodômetro:** km da montagem = soma do km das viagens em que a carreta foi puxada entre a montagem e a retirada.
+- **Entrada:** pneu comprado `novo` ou `usado`. Vida = nº de recapagens (retorno da recapagem soma 1).
+- **No estoque:** *novo* (km desde novo), *recapado* (km desde a última recapagem e, se entrou novo, desde novo) e *usado* (km de antes não dá para calcular; mostra só o rodado na frota).
+- Operações são funções do banco (`montar_pneu`, `retirar_pneu`, `enviar_recapagem`, `retorno_recapagem`, `descartar_pneu`): estado e montagem mudam juntos. Rodízio = retirar + montar.
 - `CPK = (valor_compra + Σ recapagens + Σ consertos) / Σ km_rodado` (R$/km, exibir com 4 casas).
