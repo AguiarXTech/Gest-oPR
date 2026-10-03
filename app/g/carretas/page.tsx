@@ -16,7 +16,7 @@ export default async function ListaCarretas() {
     supabase
       .from('carretas')
       .select(
-        'id, placa, apelido, composicao, carroceria, eixos, eixos_suspensos, ativo, foto_path',
+        'id, placa, apelido, marca, ano, composicao, carroceria, eixos, eixos_suspensos, ativo, foto_path',
       )
       .order('ativo', { ascending: false })
       .order('placa'),
@@ -83,6 +83,7 @@ export default async function ListaCarretas() {
               {c.apelido && <span className="font-medium">{c.apelido}</span>}
               <span className="text-sm text-muted-foreground">
                 {[
+                  [c.marca, c.ano].filter(Boolean).join(' '),
                   c.composicao,
                   c.carroceria,
                   c.eixos !== null &&

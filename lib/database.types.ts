@@ -388,6 +388,7 @@ export type Database = {
       }
       carretas: {
         Row: {
+          ano: number | null
           apelido: string | null
           ativo: boolean
           carroceria: string | null
@@ -397,11 +398,13 @@ export type Database = {
           eixos_suspensos: number
           foto_path: string | null
           id: string
+          marca: string | null
           observacoes: string | null
           placa: string
           updated_at: string
         }
         Insert: {
+          ano?: number | null
           apelido?: string | null
           ativo?: boolean
           carroceria?: string | null
@@ -411,11 +414,13 @@ export type Database = {
           eixos_suspensos?: number
           foto_path?: string | null
           id?: string
+          marca?: string | null
           observacoes?: string | null
           placa: string
           updated_at?: string
         }
         Update: {
+          ano?: number | null
           apelido?: string | null
           ativo?: boolean
           carroceria?: string | null
@@ -425,6 +430,7 @@ export type Database = {
           eixos_suspensos?: number
           foto_path?: string | null
           id?: string
+          marca?: string | null
           observacoes?: string | null
           placa?: string
           updated_at?: string

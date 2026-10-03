@@ -20,6 +20,8 @@ function valoresIniciais(c?: Carreta): CarretaForm {
   return {
     placa: c ? formatarPlaca(c.placa) : '',
     apelido: c?.apelido ?? '',
+    marca: c?.marca ?? '',
+    ano: c?.ano == null ? '' : String(c.ano),
     composicao: c?.composicao ?? '',
     carroceria: c?.carroceria ?? '',
     eixos: c?.eixos == null ? '' : String(c.eixos),
@@ -76,6 +78,21 @@ export function FormCarreta({ carreta }: { carreta?: Carreta }) {
           <Input
             {...register('apelido')}
             {...ariaCampo('apelido', e('apelido'))}
+            className="h-11 text-base"
+          />
+        </Campo>
+        <Campo id="marca" rotulo="Marca" erro={e('marca')} ajuda="Ex.: Randon, Librelato, Facchini">
+          <Input
+            {...register('marca')}
+            {...ariaCampo('marca', e('marca'), 'ajuda')}
+            className="h-11 text-base"
+          />
+        </Campo>
+        <Campo id="ano" rotulo="Ano" erro={e('ano')}>
+          <Input
+            {...register('ano')}
+            {...ariaCampo('ano', e('ano'))}
+            inputMode="numeric"
             className="h-11 text-base"
           />
         </Campo>

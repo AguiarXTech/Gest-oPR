@@ -3,7 +3,7 @@
 
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(10);
+select plan(11);
 
 insert into auth.users (id, email) values
   ('11111111-1111-1111-1111-111111111111', 'm1@teste.local'),
@@ -30,6 +30,8 @@ select throws_ok($$insert into public.carretas (placa, eixos, eixos_suspensos) v
   '23514', null, 'eixos suspensos menores que os eixos');
 select lives_ok($$insert into public.carretas (placa, composicao, eixos) values ('CAR7X77', 'Treminhão', 5)$$,
   'composição e eixos livres');
+select throws_ok($$insert into public.carretas (placa, ano) values ('CAR6W66', 1800)$$,
+  '23514', null, 'ano da carreta fora do intervalo');
 select lives_ok(
   $$insert into public.documentos (tipo, entidade, carreta_id, vencimento) values ('crlv', 'carreta', 'dddddddd-0000-0000-0000-000000000001', '2027-03-31')$$,
   'documento da carreta');

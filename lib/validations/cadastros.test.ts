@@ -84,6 +84,8 @@ describe('carretaSchema', () => {
   const base = {
     placa: 'car-1c11',
     apelido: '',
+    marca: 'Randon',
+    ano: '2015',
     composicao: 'carreta',
     carroceria: 'Grade baixa',
     eixos: '3',
@@ -94,6 +96,8 @@ describe('carretaSchema', () => {
     expect(carretaSchema.parse(base)).toEqual({
       placa: 'CAR1C11',
       apelido: null,
+      marca: 'Randon',
+      ano: 2015,
       composicao: 'carreta',
       carroceria: 'Grade baixa',
       eixos: 3,
@@ -105,6 +109,8 @@ describe('carretaSchema', () => {
     expect(carretaSchema.safeParse({ ...base, eixos_suspensos: '3' }).success).toBe(false));
   it('configuração/tipo livre; vazia vira null', () =>
     expect(carretaSchema.parse({ ...base, composicao: '' }).composicao).toBeNull());
+  it('recusa ano fora do intervalo', () =>
+    expect(carretaSchema.safeParse({ ...base, ano: '1800' }).success).toBe(false));
   it('recusa placa inválida', () =>
     expect(carretaSchema.safeParse({ ...base, placa: '123' }).success).toBe(false));
 });

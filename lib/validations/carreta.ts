@@ -13,6 +13,8 @@ export const carretaSchema = z
   .object({
     placa: placaObrigatoria,
     apelido: textoOpcional,
+    marca: textoOpcional,
+    ano: inteiroOpcional(1950, 2100, 'Ano inválido.'),
     /** Texto livre: a variação é grande (carreta, bitrem, rodotrem...). Na tela aparece como "Configuração / tipo".. */
     composicao: textoOpcional,
     carroceria: textoOpcional,
