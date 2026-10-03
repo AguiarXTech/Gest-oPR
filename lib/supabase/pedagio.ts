@@ -1,7 +1,13 @@
 // Controle de pedágio do mês: para cada viagem, as passagens previstas (ida e volta em
 // cada praça ativa) e o que o app de pagamento cobrou.
 import { dataBrasilia } from '@/lib/domain/comissao';
-import { conferirCobranca, passagensPrevistas, type Conferencia, type Sentido } from '@/lib/domain/pedagio';
+import {
+  conferirCobranca,
+  eixosDoConjunto,
+  passagensPrevistas,
+  type Conferencia,
+  type Sentido,
+} from '@/lib/domain/pedagio';
 import { limitesDoMes } from '@/lib/supabase/painel';
 import type { createClient } from '@/lib/supabase/server';
 
@@ -15,7 +21,12 @@ export type LinhaPassagem = {
   data: string;
   eixos: number | null;
   previstoCentavos: number | null;
-  cobranca: { id: string; valorCentavos: number; situacao: 'conferido' | 'contestar' | 'contestado' | 'ressarcido'; observacao: string | null } | null;
+  cobranca: {
+    id: string;
+    valorCentavos: number;
+    situacao: 'conferido' | 'contestar' | 'contestado' | 'ressarcido';
+    observacao: string | null;
+  } | null;
   conferencia: Conferencia | null;
   diferencaCentavos: number | null;
 };
@@ -23,6 +34,7 @@ export type LinhaPassagem = {
 export type ViagemPedagioMes = {
   id: string;
   placa: string;
+  placaCarreta: string | null;
   motorista: string;
   dataSaida: string;
   eixosIda: number | null;
@@ -35,12 +47,17 @@ export async function carregarPedagioMes(supabase: Cliente, mes: string) {
   const [{ data: viagens }, { data: pracas }] = await Promise.all([
     supabase
       .from('viagens')
-      .select('id, data_saida, data_chegada, eixos_ida, eixos_volta, caminhoes(placa, eixos, eixos_suspensos), funcionarios(nome), fretes(sentido), cobrancas_pedagio(id, praca_id, sentido, valor_cobrado_centavos, situacao, observacao)')
+      .select(
+        'id, data_saida, data_chegada, eixos_ida, eixos_volta, caminhoes(placa, eixos, eixos_suspensos), carretas(placa, eixos, eixos_suspensos), funcionarios(nome), fretes(sentido), cobrancas_pedagio(id, praca_id, sentido, valor_cobrado_centavos, situacao, observacao)',
+      )
       .neq('status', 'cancelada')
       .gte('data_saida', inicio)
       .lt('data_saida', fim)
       .order('data_saida', { ascending: false }),
-    supabase.from('pracas_pedagio').select('id, nome, rodovia, ativa, tarifas_pedagio(vigencia_inicio, tarifa_eixo_centavos)').order('nome'),
+    supabase
+      .from('pracas_pedagio')
+      .select('id, nome, rodovia, ativa, tarifas_pedagio(vigencia_inicio, tarifa_eixo_centavos)')
+      .order('nome'),
   ]);
 
   const ativas = (pracas ?? []).filter((p) => p.ativa);
@@ -54,8 +71,16 @@ export async function carregarPedagioMes(supabase: Cliente, mes: string) {
           eixosIda: v.eixos_ida,
           eixosVolta: v.eixos_volta,
         },
-        { eixos: v.caminhoes?.eixos ?? null, eixosSuspensos: v.caminhoes?.eixos_suspensos ?? 0 },
-        p.tarifas_pedagio.map((t) => ({ vigenciaInicio: t.vigencia_inicio, tarifaEixoCentavos: t.tarifa_eixo_centavos })),
+        eixosDoConjunto(
+          { eixos: v.caminhoes?.eixos ?? null, eixosSuspensos: v.caminhoes?.eixos_suspensos ?? 0 },
+          v.carretas
+            ? { eixos: v.carretas.eixos, eixosSuspensos: v.carretas.eixos_suspensos }
+            : null,
+        ),
+        p.tarifas_pedagio.map((t) => ({
+          vigenciaInicio: t.vigencia_inicio,
+          tarifaEixoCentavos: t.tarifa_eixo_centavos,
+        })),
       );
       return previstas.map((pp): LinhaPassagem => {
         const c = v.cobrancas_pedagio.find((x) => x.praca_id === p.id && x.sentido === pp.sentido);
@@ -68,7 +93,14 @@ export async function carregarPedagioMes(supabase: Cliente, mes: string) {
           data: pp.data,
           eixos: pp.eixos,
           previstoCentavos: pp.previstoCentavos,
-          cobranca: c ? { id: c.id, valorCentavos: c.valor_cobrado_centavos, situacao: c.situacao, observacao: c.observacao } : null,
+          cobranca: c
+            ? {
+                id: c.id,
+                valorCentavos: c.valor_cobrado_centavos,
+                situacao: c.situacao,
+                observacao: c.observacao,
+              }
+            : null,
           conferencia: conf?.situacao ?? null,
           diferencaCentavos: conf?.diferencaCentavos ?? null,
         };
@@ -77,6 +109,7 @@ export async function carregarPedagioMes(supabase: Cliente, mes: string) {
     return {
       id: v.id,
       placa: v.caminhoes?.placa ?? '',
+      placaCarreta: v.carretas?.placa ?? null,
       motorista: v.funcionarios?.nome ?? '',
       dataSaida: v.data_saida,
       eixosIda: v.eixos_ida,

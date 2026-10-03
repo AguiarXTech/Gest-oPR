@@ -23,14 +23,19 @@ function deslocar(mes: string, delta: number) {
   return `${Math.floor(total / 12)}-${String((total % 12) + 1).padStart(2, '0')}`;
 }
 const nomeMes = (mes: string) => {
-  const t = new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${mes}-15T12:00:00Z`));
+  const t = new Intl.DateTimeFormat('pt-BR', {
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).format(new Date(`${mes}-15T12:00:00Z`));
   return t.charAt(0).toUpperCase() + t.slice(1);
 };
 
 export default async function Pedagio({ searchParams }: PageProps<'/g/pedagio'>) {
   const { mes: bruto } = await searchParams;
   const atual = mesAtual();
-  const mes = typeof bruto === 'string' && /^\d{4}-\d{2}$/.test(bruto) && bruto <= atual ? bruto : atual;
+  const mes =
+    typeof bruto === 'string' && /^\d{4}-\d{2}$/.test(bruto) && bruto <= atual ? bruto : atual;
   const supabase = await createClient();
   const { viagens, pracas, totais } = await carregarPedagioMes(supabase, mes);
 
@@ -38,13 +43,24 @@ export default async function Pedagio({ searchParams }: PageProps<'/g/pedagio'>)
     <>
       <div className="flex flex-col gap-3">
         <h1 className="text-3xl">Pedágio</h1>
-        <nav aria-label="Mês" className="flex items-center justify-between gap-2 rounded-xl border bg-card p-1 shadow-xs">
-          <Link href={`/g/pedagio?mes=${deslocar(mes, -1)}`} aria-label="Mês anterior" className="flex size-11 items-center justify-center rounded-lg hover:bg-muted">
+        <nav
+          aria-label="Mês"
+          className="flex items-center justify-between gap-2 rounded-xl border bg-card p-1 shadow-xs"
+        >
+          <Link
+            href={`/g/pedagio?mes=${deslocar(mes, -1)}`}
+            aria-label="Mês anterior"
+            className="flex size-11 items-center justify-center rounded-lg hover:bg-muted"
+          >
             <ChevronLeft className="size-6" aria-hidden />
           </Link>
           <span className="font-semibold">{nomeMes(mes)}</span>
           {mes < atual ? (
-            <Link href={`/g/pedagio?mes=${deslocar(mes, 1)}`} aria-label="Próximo mês" className="flex size-11 items-center justify-center rounded-lg hover:bg-muted">
+            <Link
+              href={`/g/pedagio?mes=${deslocar(mes, 1)}`}
+              aria-label="Próximo mês"
+              className="flex size-11 items-center justify-center rounded-lg hover:bg-muted"
+            >
               <ChevronRight className="size-6" aria-hidden />
             </Link>
           ) : (
@@ -62,14 +78,26 @@ export default async function Pedagio({ searchParams }: PageProps<'/g/pedagio'>)
           <p className="text-sm text-muted-foreground">Cobrado</p>
           <p className="text-2xl font-bold tabular-nums">{formatarBRL(totais.cobradoCentavos)}</p>
         </div>
-        <div className={cn('col-span-2 rounded-xl border p-4 shadow-xs', totais.aMaisEmAbertoCentavos > 0 ? 'border-destructive bg-destructive/10' : 'bg-card')}>
+        <div
+          className={cn(
+            'col-span-2 rounded-xl border p-4 shadow-xs',
+            totais.aMaisEmAbertoCentavos > 0 ? 'border-destructive bg-destructive/10' : 'bg-card',
+          )}
+        >
           <p className="text-sm text-muted-foreground">Cobrado a mais, ainda não ressarcido</p>
-          <p className={cn('text-3xl font-bold tabular-nums', totais.aMaisEmAbertoCentavos > 0 && 'text-destructive')}>
+          <p
+            className={cn(
+              'text-3xl font-bold tabular-nums',
+              totais.aMaisEmAbertoCentavos > 0 && 'text-destructive',
+            )}
+          >
             {formatarBRL(totais.aMaisEmAbertoCentavos)}
           </p>
           <p className="text-sm text-muted-foreground">
             {totais.paraContestar > 0 && `${totais.paraContestar} cobrança(s) para contestar · `}
-            {totais.semLancamento > 0 ? `${totais.semLancamento} passagem(ns) sem o valor cobrado lançado` : 'Todas as passagens lançadas'}
+            {totais.semLancamento > 0
+              ? `${totais.semLancamento} passagem(ns) sem o valor cobrado lançado`
+              : 'Todas as passagens lançadas'}
           </p>
         </div>
       </section>
@@ -81,7 +109,11 @@ export default async function Pedagio({ searchParams }: PageProps<'/g/pedagio'>)
           {viagens.map((v) => (
             <li key={v.id} className="flex flex-col gap-1 rounded-2xl border bg-card p-4 shadow-xs">
               <Link href={`/g/viagens/${v.id}`} className="text-lg font-semibold hover:underline">
-                <span className="font-mono">{formatarPlaca(v.placa)}</span> · {v.motorista}
+                <span className="font-mono">
+                  {formatarPlaca(v.placa)}
+                  {v.placaCarreta && ` + ${formatarPlaca(v.placaCarreta)}`}
+                </span>{' '}
+                · {v.motorista}
               </Link>
               <EixosViagem viagemId={v.id} ida={v.eixosIda} volta={v.eixosVolta} />
               <div className="flex flex-col divide-y">
@@ -91,12 +123,17 @@ export default async function Pedagio({ searchParams }: PageProps<'/g/pedagio'>)
               </div>
             </li>
           ))}
-          {viagens.length === 0 && <li className="rounded-xl border border-dashed p-6 text-center text-muted-foreground">Nenhuma viagem neste mês.</li>}
+          {viagens.length === 0 && (
+            <li className="rounded-xl border border-dashed p-6 text-center text-muted-foreground">
+              Nenhuma viagem neste mês.
+            </li>
+          )}
         </ul>
       )}
       <p className="text-sm text-muted-foreground">
-        Previsto = tarifa por eixo × eixos. Ida vazia conta só os eixos no chão (eixo suspenso vazio não paga, Lei 13.103); ida com carga e
-        volta contam todos. Atenção: com MDF-e aberto, o app cobra o eixo suspenso como carregado.
+        Previsto = tarifa por eixo × eixos (cavalo + carreta da viagem). Ida vazia conta só os eixos
+        no chão (eixo suspenso vazio não paga, Lei 13.103); ida com carga e volta contam todos.
+        Atenção: com MDF-e aberto, o app cobra o eixo suspenso como carregado.
       </p>
     </>
   );
