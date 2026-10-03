@@ -27,6 +27,7 @@ function valoresIniciais(c?: Caminhao): CaminhaoForm {
     ano: paraTexto(c?.ano ?? null),
     eixos: paraTexto(c?.eixos ?? null),
     configuracao_eixos: c?.configuracao_eixos ?? '',
+    eixos_suspensos: String(c?.eixos_suspensos ?? 0),
     capacidade_tanque_l: paraTexto(c?.capacidade_tanque_l ?? null).replace('.', ','),
     km_atual: paraTexto(c?.km_atual ?? null),
     observacoes: c?.observacoes ?? '',
@@ -103,6 +104,14 @@ export function FormCaminhao({ caminhao }: { caminhao?: Caminhao }) {
         </Campo>
         <Campo id="eixos" rotulo="Eixos" erro={e('eixos')}>
           <Input {...register('eixos')} {...ariaCampo('eixos', e('eixos'))} inputMode="numeric" className="h-11 text-base" />
+        </Campo>
+        <Campo id="eixos_suspensos" rotulo="Eixos que sobem (vazio)" erro={e('eixos_suspensos')} ajuda="Para calcular o pedágio da ida vazia">
+          <Input
+            {...register('eixos_suspensos')}
+            {...ariaCampo('eixos_suspensos', e('eixos_suspensos'), 'Para calcular o pedágio da ida vazia')}
+            inputMode="numeric"
+            className="h-11 text-base"
+          />
         </Campo>
         <Campo id="configuracao_eixos" rotulo="Configuração" erro={e('configuracao_eixos')} ajuda="Ex.: toco, truck, cavalo 6x2">
           <Input
