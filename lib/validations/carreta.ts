@@ -13,9 +13,8 @@ export const carretaSchema = z
   .object({
     placa: placaObrigatoria,
     apelido: textoOpcional,
-    /** Carreta, bitrem ou rodotrem: define os eixos. */
-    composicao: z.enum(['carreta', 'bitrem', 'rodotrem'], 'Escolha a composição.'),
-    /** Vanderléia, tanque, caçamba... (lib/domain/veiculos.ts). */
+    /** Texto livre: a variação é grande (carreta, vanderléia, bitrem, rodotrem...). */
+    composicao: textoOpcional,
     carroceria: textoOpcional,
     eixos: inteiroOpcional(1, 9, 'Eixos: de 1 a 9.'),
     eixos_suspensos: eixosSuspensos,

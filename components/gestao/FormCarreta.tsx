@@ -4,12 +4,11 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { useForm, useWatch } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import type { Tables } from '@/lib/database.types';
 import { formatarPlaca } from '@/lib/domain/placa';
-import { CARROCERIAS, COMPOSICOES_CARRETA, eixosSugeridos } from '@/lib/domain/veiculos';
 import { createClient } from '@/lib/supabase/client';
 import { traduzirErroBanco } from '@/lib/supabase/erros';
 import { carretaSchema, type CarretaDados, type CarretaForm } from '@/lib/validations/carreta';
@@ -21,8 +20,7 @@ function valoresIniciais(c?: Carreta): CarretaForm {
   return {
     placa: c ? formatarPlaca(c.placa) : '',
     apelido: c?.apelido ?? '',
-    // text com check no banco: o tipo gerado é string
-    composicao: (c?.composicao ?? 'carreta') as CarretaForm['composicao'],
+    composicao: c?.composicao ?? '',
     carroceria: c?.carroceria ?? '',
     eixos: c?.eixos == null ? '' : String(c.eixos),
     eixos_suspensos: String(c?.eixos_suspensos ?? 0),
@@ -37,9 +35,6 @@ export function FormCarreta({ carreta }: { carreta?: Carreta }) {
   const {
     register,
     handleSubmit,
-    control,
-    setValue,
-    getValues,
     formState: { errors },
   } = useForm<CarretaForm, unknown, CarretaDados>({
     resolver: zodResolver(carretaSchema),
@@ -60,10 +55,6 @@ export function FormCarreta({ carreta }: { carreta?: Carreta }) {
   });
 
   const e = (campo: keyof CarretaForm) => errors[campo]?.message;
-  const carroceria = useWatch({ control, name: 'carroceria' });
-  // valor antigo digitado à mão continua aparecendo até ser trocado
-  const carroceriaAntiga =
-    carroceria && !(CARROCERIAS as readonly string[]).includes(carroceria) ? carroceria : null;
 
   return (
     <form
@@ -90,43 +81,27 @@ export function FormCarreta({ carreta }: { carreta?: Carreta }) {
         </Campo>
         <Campo
           id="composicao"
-          rotulo="Composição *"
+          rotulo="Composição"
           erro={e('composicao')}
-          ajuda="Preenche os eixos sozinho; dá para corrigir"
+          ajuda="Ex.: carreta, vanderléia, bitrem, rodotrem"
         >
-          <select
-            {...register('composicao', {
-              onChange: (ev: React.ChangeEvent<HTMLSelectElement>) => {
-                const eixos = eixosSugeridos(ev.target.value);
-                if (eixos === null) return;
-                setValue('eixos', String(eixos));
-                if (Number(getValues('eixos_suspensos')) >= eixos) setValue('eixos_suspensos', '0');
-              },
-            })}
+          <Input
+            {...register('composicao')}
             {...ariaCampo('composicao', e('composicao'), 'ajuda')}
-            className="h-11 w-full rounded-lg border border-input bg-transparent px-2.5 text-base"
-          >
-            {COMPOSICOES_CARRETA.map((o) => (
-              <option key={o.valor} value={o.valor}>
-                {o.rotulo}
-              </option>
-            ))}
-          </select>
+            className="h-11 text-base"
+          />
         </Campo>
-        <Campo id="carroceria" rotulo="Carroceria" erro={e('carroceria')}>
-          <select
+        <Campo
+          id="carroceria"
+          rotulo="Carroceria"
+          erro={e('carroceria')}
+          ajuda="Ex.: graneleira, tanque, caçamba, baú"
+        >
+          <Input
             {...register('carroceria')}
-            {...ariaCampo('carroceria', e('carroceria'))}
-            className="h-11 w-full rounded-lg border border-input bg-transparent px-2.5 text-base"
-          >
-            <option value="">Escolha…</option>
-            {CARROCERIAS.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-            {carroceriaAntiga && <option value={carroceriaAntiga}>{carroceriaAntiga}</option>}
-          </select>
+            {...ariaCampo('carroceria', e('carroceria'), 'ajuda')}
+            className="h-11 text-base"
+          />
         </Campo>
         <Campo id="eixos" rotulo="Eixos da carreta (sem o cavalo)" erro={e('eixos')}>
           <Input

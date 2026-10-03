@@ -28,7 +28,7 @@ export default async function IniciarViagem() {
         .order('placa'),
       supabase
         .from('carretas')
-        .select('id, placa, apelido, foto_path')
+        .select('id, placa, apelido, composicao, carroceria, foto_path')
         .eq('ativo', true)
         .order('placa'),
       // RLS: só as viagens do próprio motorista → sugere o último caminhão que ele usou (Q7)

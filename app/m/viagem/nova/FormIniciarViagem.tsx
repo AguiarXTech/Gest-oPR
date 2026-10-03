@@ -28,7 +28,14 @@ type Caminhao = {
   km_atual: number;
   fotoUrl?: string | null;
 };
-type Carreta = { id: string; placa: string; apelido: string | null; fotoUrl?: string | null };
+type Carreta = {
+  id: string;
+  placa: string;
+  apelido: string | null;
+  composicao?: string | null;
+  carroceria?: string | null;
+  fotoUrl?: string | null;
+};
 
 type Props = {
   funcionarioId: string;
@@ -194,7 +201,9 @@ export function FormIniciarViagem({
                 ) : (
                   <>
                     <span className="font-mono text-xl font-bold">{formatarPlaca(c.placa)}</span>
-                    {c.apelido && <span className="text-muted-foreground">{c.apelido}</span>}
+                    <span className="text-muted-foreground empty:hidden">
+                      {[c.apelido, c.composicao, c.carroceria].filter(Boolean).join(' · ')}
+                    </span>
                   </>
                 )}
               </span>

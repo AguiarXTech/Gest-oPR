@@ -28,8 +28,8 @@ select lives_ok(
   'gestor cadastra a carreta com placa própria');
 select throws_ok($$insert into public.carretas (placa, eixos, eixos_suspensos) values ('CAR9Z99', 2, 2)$$,
   '23514', null, 'eixos suspensos menores que os eixos');
-select throws_ok($$insert into public.carretas (placa, composicao) values ('CAR7X77', 'treminhao')$$,
-  '23514', null, 'composição só carreta, bitrem ou rodotrem');
+select lives_ok($$insert into public.carretas (placa, composicao, eixos) values ('CAR7X77', 'Treminhão', 5)$$,
+  'composição e eixos livres');
 select lives_ok(
   $$insert into public.documentos (tipo, entidade, carreta_id, vencimento) values ('crlv', 'carreta', 'dddddddd-0000-0000-0000-000000000001', '2027-03-31')$$,
   'documento da carreta');
@@ -42,7 +42,7 @@ select throws_ok(
 reset role;
 set local role authenticated;
 set local request.jwt.claims = '{"sub":"11111111-1111-1111-1111-111111111111","role":"authenticated"}';
-select is((select count(*) from public.carretas)::int, 1, 'motorista vê as carretas para escolher');
+select is((select count(*) from public.carretas)::int, 2, 'motorista vê as carretas para escolher');
 select lives_ok(
   $$insert into public.viagens (caminhao_id, carreta_id, motorista_id, origem, destino, km_saida)
     values ('cccccccc-0000-0000-0000-000000000001', 'dddddddd-0000-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000001', 'SJE', 'BH', 1000)$$,

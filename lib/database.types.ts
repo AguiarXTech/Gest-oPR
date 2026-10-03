@@ -391,7 +391,7 @@ export type Database = {
           apelido: string | null
           ativo: boolean
           carroceria: string | null
-          composicao: string
+          composicao: string | null
           created_at: string
           eixos: number | null
           eixos_suspensos: number
@@ -405,7 +405,7 @@ export type Database = {
           apelido?: string | null
           ativo?: boolean
           carroceria?: string | null
-          composicao?: string
+          composicao?: string | null
           created_at?: string
           eixos?: number | null
           eixos_suspensos?: number
@@ -419,7 +419,7 @@ export type Database = {
           apelido?: string | null
           ativo?: boolean
           carroceria?: string | null
-          composicao?: string
+          composicao?: string | null
           created_at?: string
           eixos?: number | null
           eixos_suspensos?: number

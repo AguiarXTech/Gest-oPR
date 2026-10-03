@@ -4,7 +4,6 @@ import { Plus } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { formatarPlaca } from '@/lib/domain/placa';
-import { COMPOSICOES_CARRETA } from '@/lib/domain/veiculos';
 import { urlsFotosCaminhoes } from '@/lib/supabase/fotosCaminhoes';
 import { createClient } from '@/lib/supabase/server';
 import { cn } from '@/lib/utils';
@@ -84,7 +83,7 @@ export default async function ListaCarretas() {
               {c.apelido && <span className="font-medium">{c.apelido}</span>}
               <span className="text-sm text-muted-foreground">
                 {[
-                  COMPOSICOES_CARRETA.find((o) => o.valor === c.composicao)?.nome,
+                  c.composicao,
                   c.carroceria,
                   c.eixos !== null &&
                     `${c.eixos} eixos${c.eixos_suspensos ? ` (${c.eixos_suspensos} sobe)` : ''}`,

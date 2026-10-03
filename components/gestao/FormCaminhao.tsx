@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import type { Tables } from '@/lib/database.types';
 import { formatarPlaca } from '@/lib/domain/placa';
-import { CONFIGURACOES_CAMINHAO, eixosSugeridos, TIPOS_VEICULO } from '@/lib/domain/veiculos';
 import { createClient } from '@/lib/supabase/client';
 import { traduzirErroBanco } from '@/lib/supabase/erros';
 import { caminhaoSchema, type CaminhaoDados, type CaminhaoForm } from '@/lib/validations/caminhao';
@@ -45,8 +44,6 @@ export function FormCaminhao({ caminhao }: { caminhao?: Caminhao }) {
     register,
     handleSubmit,
     control,
-    setValue,
-    getValues,
     formState: { errors },
   } = useForm<CaminhaoForm, unknown, CaminhaoDados>({
     resolver: zodResolver(caminhaoSchema),
@@ -78,12 +75,7 @@ export function FormCaminhao({ caminhao }: { caminhao?: Caminhao }) {
   });
 
   const e = (campo: keyof CaminhaoForm) => errors[campo]?.message;
-  const [tipo, configuracao] = useWatch({ control, name: ['tipo', 'configuracao_eixos'] });
-  const ehCavalo = tipo === 'cavalo';
-  const opcoes = CONFIGURACOES_CAMINHAO[tipo === 'cavalo' ? 'cavalo' : 'truck'];
-  // valor antigo digitado à mão continua aparecendo até ser trocado
-  const valorAntigo =
-    configuracao && !opcoes.some((o) => o.valor === configuracao) ? configuracao : null;
+  const ehCavalo = useWatch({ control, name: 'tipo' }) === 'cavalo';
 
   return (
     <form
@@ -111,40 +103,25 @@ export function FormCaminhao({ caminhao }: { caminhao?: Caminhao }) {
           }
         >
           <select
-            {...register('tipo', { onChange: () => setValue('configuracao_eixos', '') })}
+            {...register('tipo')}
             {...ariaCampo('tipo', undefined, 'ajuda')}
             className="h-11 w-full rounded-lg border border-input bg-transparent px-2.5 text-base"
           >
-            <option value="truck">{TIPOS_VEICULO.truck}</option>
-            <option value="cavalo">{TIPOS_VEICULO.cavalo}</option>
+            <option value="truck">Caminhão inteiro (peça única)</option>
+            <option value="cavalo">Cavalo (puxa carreta)</option>
           </select>
         </Campo>
         <Campo
           id="configuracao_eixos"
           rotulo="Configuração"
           erro={e('configuracao_eixos')}
-          ajuda="Preenche os eixos sozinho; dá para corrigir"
+          ajuda="Do jeito que vocês chamam. Ex.: toco, truck, 6x2, 6x4"
         >
-          <select
-            {...register('configuracao_eixos', {
-              onChange: (ev: React.ChangeEvent<HTMLSelectElement>) => {
-                const eixos = eixosSugeridos(ev.target.value);
-                if (eixos !== null) setValue('eixos', String(eixos));
-                if (eixos !== null && Number(getValues('eixos_suspensos')) >= eixos)
-                  setValue('eixos_suspensos', '0');
-              },
-            })}
+          <Input
+            {...register('configuracao_eixos')}
             {...ariaCampo('configuracao_eixos', e('configuracao_eixos'), 'ajuda')}
-            className="h-11 w-full rounded-lg border border-input bg-transparent px-2.5 text-base"
-          >
-            <option value="">Escolha…</option>
-            {opcoes.map((o) => (
-              <option key={o.valor} value={o.valor}>
-                {o.rotulo}
-              </option>
-            ))}
-            {valorAntigo && <option value={valorAntigo}>{valorAntigo}</option>}
-          </select>
+            className="h-11 text-base"
+          />
         </Campo>
         <Campo
           id="apelido"

@@ -68,7 +68,7 @@ A operação hoje depende de papel, WhatsApp e memória. Isso gera cinco problem
 | RF-38 | Despesas pessoais do motorista (opcional): alimentação, pernoite etc., só para o controle dele. **Só ele vê** (nem a gestão); não entram no acerto | motorista |
 | RF-39 | Dono/admin que também dirige usa a área do motorista: o cadastro de funcionário com o CPF dele é ligado ao login existente ("Criar acesso" liga, mantendo o papel) | dono/admin |
 | RF-40 | Foto de cada caminhão (lista, ficha e escolha do caminhão pelo motorista) | gestor |
-| RF-43 | Cavalo e carreta separados: caminhão é peça única (toco, truck, bitruck) ou cavalo/trator (4x2, 6x2, 6x4); carreta tem cadastro próprio (composição carreta/bitrem/rodotrem, carroceria, eixos, documentos, foto) e é escolhida pelo motorista ao iniciar a viagem com um cavalo | gestor (cadastro), motorista (escolha) |
+| RF-43 | Cavalo e carreta separados: caminhão é peça única ou cavalo/trator; carreta tem cadastro próprio (composição, carroceria e eixos em campo livre, documentos, foto) e é escolhida pelo motorista ao iniciar a viagem com um cavalo | gestor (cadastro), motorista (escolha) |
 | RF-42 | Controle de pedágio: previsto por passagem (tarifa por eixo × eixos; ida vazia sem os eixos suspensos) × cobrado pelo app de pedágio por câmera/placa; cobranças a mais ficam "para contestar" até o ressarcimento | gestor |
 | RF-41 | Botão "voltar ao início" em todas as telas; no painel, resumo do mês do total da frota e de cada caminhão (fretes, diesel, pedágio, despesas, manutenção, comissão, resultado) | todos |
 

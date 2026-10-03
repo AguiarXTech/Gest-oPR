@@ -103,8 +103,8 @@ describe('carretaSchema', () => {
   });
   it('suspensos precisam ser menos que os eixos', () =>
     expect(carretaSchema.safeParse({ ...base, eixos_suspensos: '3' }).success).toBe(false));
-  it('composição só carreta, bitrem ou rodotrem', () =>
-    expect(carretaSchema.safeParse({ ...base, composicao: 'treminhao' }).success).toBe(false));
+  it('composição livre; vazia vira null', () =>
+    expect(carretaSchema.parse({ ...base, composicao: '' }).composicao).toBeNull());
   it('recusa placa inválida', () =>
     expect(carretaSchema.safeParse({ ...base, placa: '123' }).success).toBe(false));
 });
