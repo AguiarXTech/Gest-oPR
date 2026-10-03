@@ -4,7 +4,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { Plus, Trash2 } from 'lucide-react';
+import { useFieldArray, useForm } from 'react-hook-form';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import type { Tables } from '@/lib/database.types';
 import { formatarCnpj } from '@/lib/domain/cnpj';
@@ -22,17 +24,26 @@ import { RodapeFormulario } from './RodapeFormulario';
 
 type Cliente = Tables<'clientes'>;
 
+const produtoVazio = () => ({
+  produto: '',
+  local: '',
+  sentido: 'volta' as const,
+  valor_frete: '',
+  vigencia_inicio: hojeIso(),
+});
+
 const classeSelect = 'h-11 w-full rounded-lg border border-input bg-transparent px-2.5 text-base';
 
 export function FormCliente({ cliente }: { cliente?: Cliente }) {
   const router = useRouter();
   const [supabase] = useState(createClient);
 
-  // Cliente novo já sai com o frete e a carga (pedido de 2026-10-03); na edição, essas
-  // partes ficam nos quadros "Preço do frete" e "O que carrega e onde" da tela do cliente.
+  // Cliente novo já sai com os produtos e o frete de cada um (pedido de 2026-10-03); na
+  // edição, isso fica no quadro "O que carrega, onde e o frete" da tela do cliente.
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors },
   } = useForm<CadastroClienteForm, unknown, CadastroClienteDados>({
     resolver: zodResolver(cadastroClienteSchema),
@@ -42,14 +53,12 @@ export function FormCliente({ cliente }: { cliente?: Cliente }) {
       contato: cliente?.contato ?? '',
       prazo_pagamento_dias:
         cliente?.prazo_pagamento_dias != null ? String(cliente.prazo_pagamento_dias) : '',
-      produto: '',
-      local: '',
-      valor_frete: '',
-      sentido: 'volta',
-      vigencia_inicio: hojeIso(),
+      produtos: cliente ? [] : [produtoVazio()],
       frete_automatico: !cliente,
     },
   });
+
+  const produtos = useFieldArray({ control, name: 'produtos' });
 
   const salvar = useMutation({
     mutationFn: async (d: CadastroClienteDados) => {
@@ -75,19 +84,24 @@ export function FormCliente({ cliente }: { cliente?: Cliente }) {
         .select('id')
         .single();
       if (error) throw error;
-      if (d.produto) {
+      for (const p of d.produtos) {
         // o trecho vem do lugar do produto; o preço é do produto
         const { data: local, error: e2 } = await supabase
           .from('locais_carga')
-          .insert({ cliente_id: novo.id, nome: d.produto, endereco: d.local, sentido: d.sentido })
+          .insert({
+            cliente_id: novo.id,
+            nome: p.produto ?? '',
+            endereco: p.local,
+            sentido: p.sentido,
+          })
           .select('id')
           .single();
         if (e2) throw e2;
-        if (d.valor_frete !== null) {
+        if (p.valor_frete !== null) {
           const { error: e3 } = await supabase.from('precos_frete').insert({
             local_carga_id: local.id,
-            vigencia_inicio: d.vigencia_inicio,
-            valor_centavos: d.valor_frete,
+            vigencia_inicio: p.vigencia_inicio,
+            valor_centavos: p.valor_frete,
           });
           if (e3) throw e3;
         }
@@ -101,7 +115,10 @@ export function FormCliente({ cliente }: { cliente?: Cliente }) {
     },
   });
 
-  const e = (campo: keyof CadastroClienteForm) => errors[campo]?.message;
+  const e = (campo: Exclude<keyof CadastroClienteForm, 'produtos' | 'frete_automatico'>) =>
+    errors[campo]?.message;
+  const ep = (i: number, campo: keyof CadastroClienteForm['produtos'][number]) =>
+    errors.produtos?.[i]?.[campo]?.message;
 
   return (
     <form
@@ -162,96 +179,128 @@ export function FormCliente({ cliente }: { cliente?: Cliente }) {
       </div>
 
       {!cliente && (
-        <>
-          <fieldset className="flex flex-col gap-4 rounded-2xl border p-4">
-            <legend className="px-1 text-lg font-semibold">O que carrega e onde</legend>
-            <p className="-mt-2 text-sm text-muted-foreground">
-              O motorista escolhe isso ao iniciar a viagem. Dá para adicionar outros depois.
-            </p>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Campo id="produto" rotulo="Produto" erro={e('produto')} ajuda="Ex.: Cimento Liz">
-                <Input
-                  {...register('produto')}
-                  {...ariaCampo('produto', e('produto'), 'ajuda')}
-                  className="h-11 text-base"
-                />
-              </Campo>
-              <Campo
-                id="local"
-                rotulo="Local (cidade)"
-                erro={e('local')}
-                ajuda="Ex.: Vespasiano - MG"
-              >
-                <Input
-                  {...register('local')}
-                  {...ariaCampo('local', e('local'), 'ajuda')}
-                  className="h-11 text-base"
-                />
-              </Campo>
-              <Campo id="sentido" rotulo="Onde fica" ajuda="Define o trecho carregado">
-                <select
-                  {...register('sentido')}
-                  {...ariaCampo('sentido', undefined, 'ajuda')}
-                  className={classeSelect}
-                >
-                  <option value="volta">{REGIAO_DO_TRECHO.volta}</option>
-                  <option value="ida">{REGIAO_DO_TRECHO.ida}</option>
-                </select>
-              </Campo>
-            </div>
-          </fieldset>
+        <fieldset className="flex flex-col gap-4 rounded-2xl border p-4">
+          <legend className="px-1 text-lg font-semibold">Produtos que carrega e o frete</legend>
+          <p className="-mt-2 text-sm text-muted-foreground">
+            Um cartão por produto. O lugar do produto define o trecho carregado. O motorista escolhe
+            o produto ao iniciar a viagem.
+          </p>
 
-          <fieldset className="flex flex-col gap-4 rounded-2xl border p-4">
-            <legend className="px-1 text-lg font-semibold">Frete do produto</legend>
-            <p className="-mt-2 text-sm text-muted-foreground">
-              Reajuste depois: na tela do cliente, toque em Reajustar preço no produto.
-            </p>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Campo
-                id="valor_frete"
-                rotulo="Valor por viagem (R$)"
-                erro={e('valor_frete')}
-                ajuda="Ex.: 5.080,00"
-              >
-                <Input
-                  {...register('valor_frete')}
-                  {...ariaCampo('valor_frete', e('valor_frete'), 'ajuda')}
-                  inputMode="decimal"
-                  className="h-11 text-base"
-                />
-              </Campo>
-              <Campo id="vigencia_inicio" rotulo="Vale a partir de" erro={e('vigencia_inicio')}>
-                <Input
-                  {...register('vigencia_inicio')}
-                  {...ariaCampo('vigencia_inicio', e('vigencia_inicio'))}
-                  type="date"
-                  className="h-11 text-base"
-                />
-              </Campo>
-            </div>
-            <label className="flex min-h-11 cursor-pointer items-start gap-3">
-              <input
-                type="checkbox"
-                {...register('frete_automatico')}
-                className="mt-1 size-5 shrink-0"
-              />
-              <span>
-                <span className="block font-medium">Lançar o frete sozinho</span>
-                <span className="text-sm text-muted-foreground">
-                  Quando o motorista concluir a viagem. O motorista não vê o valor.
-                </span>
+          {produtos.fields.map((campo, i) => {
+            const id = (nome: string) => `produtos-${i}-${nome}`;
+            return (
+              <div key={campo.id} className="flex flex-col gap-4 rounded-xl border bg-muted/30 p-3">
+                <div className="flex items-center justify-between gap-2">
+                  <h3 className="font-semibold">Produto {i + 1}</h3>
+                  {produtos.fields.length > 1 && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      className="h-11"
+                      onClick={() => produtos.remove(i)}
+                      aria-label={`Remover produto ${i + 1}`}
+                    >
+                      <Trash2 aria-hidden /> Remover
+                    </Button>
+                  )}
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Campo
+                    id={id('produto')}
+                    rotulo="Produto"
+                    erro={ep(i, 'produto')}
+                    ajuda="Ex.: Cimento Liz"
+                  >
+                    <Input
+                      {...register(`produtos.${i}.produto`)}
+                      {...ariaCampo(id('produto'), ep(i, 'produto'), 'ajuda')}
+                      className="h-11 text-base"
+                    />
+                  </Campo>
+                  <Campo
+                    id={id('local')}
+                    rotulo="Local (cidade)"
+                    erro={ep(i, 'local')}
+                    ajuda="Ex.: Vespasiano - MG"
+                  >
+                    <Input
+                      {...register(`produtos.${i}.local`)}
+                      {...ariaCampo(id('local'), ep(i, 'local'), 'ajuda')}
+                      className="h-11 text-base"
+                    />
+                  </Campo>
+                  <Campo id={id('sentido')} rotulo="Onde fica" ajuda="Define o trecho carregado">
+                    <select
+                      {...register(`produtos.${i}.sentido`)}
+                      {...ariaCampo(id('sentido'), undefined, 'ajuda')}
+                      className={classeSelect}
+                    >
+                      <option value="volta">{REGIAO_DO_TRECHO.volta}</option>
+                      <option value="ida">{REGIAO_DO_TRECHO.ida}</option>
+                    </select>
+                  </Campo>
+                  <Campo
+                    id={id('valor_frete')}
+                    rotulo="Frete por viagem (R$)"
+                    erro={ep(i, 'valor_frete')}
+                    ajuda="Ex.: 5.080,00"
+                  >
+                    <Input
+                      {...register(`produtos.${i}.valor_frete`)}
+                      {...ariaCampo(id('valor_frete'), ep(i, 'valor_frete'), 'ajuda')}
+                      inputMode="decimal"
+                      className="h-11 text-base"
+                    />
+                  </Campo>
+                  <Campo
+                    id={id('vigencia_inicio')}
+                    rotulo="Frete vale a partir de"
+                    erro={ep(i, 'vigencia_inicio')}
+                  >
+                    <Input
+                      {...register(`produtos.${i}.vigencia_inicio`)}
+                      {...ariaCampo(id('vigencia_inicio'), ep(i, 'vigencia_inicio'))}
+                      type="date"
+                      className="h-11 text-base"
+                    />
+                  </Campo>
+                </div>
+              </div>
+            );
+          })}
+
+          <Button
+            type="button"
+            variant="outline"
+            size="lg"
+            className="self-start"
+            onClick={() => produtos.append(produtoVazio())}
+          >
+            <Plus aria-hidden /> Adicionar outro produto
+          </Button>
+
+          <label className="flex min-h-11 cursor-pointer items-start gap-3 border-t pt-4">
+            <input
+              type="checkbox"
+              {...register('frete_automatico')}
+              className="mt-1 size-5 shrink-0"
+            />
+            <span>
+              <span className="block font-medium">Lançar o frete sozinho</span>
+              <span className="text-sm text-muted-foreground">
+                Quando o motorista concluir a viagem, entra o frete do produto que ele escolheu. O
+                motorista não vê o valor. Reajuste depois na tela do cliente.
               </span>
-            </label>
-          </fieldset>
-        </>
+            </span>
+          </label>
+        </fieldset>
       )}
 
       <RodapeFormulario
         erro={
           salvar.isError
             ? traduzirErroBanco(salvar.error, {
-                '23505':
-                  'Já existe um cliente com este CNPJ, ou outro cliente já lança o frete sozinho.',
+                '23505': 'Já existe um cliente com este CNPJ.',
               })
             : null
         }

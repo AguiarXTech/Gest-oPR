@@ -16,15 +16,15 @@ export type ClienteDados = z.output<typeof clienteSchema>;
  * (primeiro local de carga, que define o trecho) e o frete dele (primeira linha de precos_frete).
  * Tudo opcional; depois se edita na tela do cliente.
  */
-export const cadastroClienteSchema = clienteSchema
-  .extend({
+/** Um produto do cadastro: produto + local (define o trecho) + frete. Linha toda em branco é ignorada. */
+export const produtoCadastroSchema = z
+  .object({
     produto: textoOpcional,
     local: textoOpcional,
-    valor_frete: centavosOpcional,
     /** Trecho carregado, pelo lugar do produto (região de BH = volta). */
     sentido: z.enum(['ida', 'volta']),
+    valor_frete: centavosOpcional,
     vigencia_inicio: z.string().trim(),
-    frete_automatico: z.boolean(),
   })
   .superRefine((d, ctx) => {
     if ((d.local || d.valor_frete !== null) && !d.produto) {
@@ -44,14 +44,29 @@ export const cadastroClienteSchema = clienteSchema
         message: 'Informe desde quando vale.',
       });
     }
-    if (d.frete_automatico && d.valor_frete === null) {
+  });
+
+export const cadastroClienteSchema = clienteSchema
+  .extend({
+    /** Um cliente pode mandar carregar vários produtos, cada um com o seu frete. */
+    produtos: z.array(produtoCadastroSchema),
+    frete_automatico: z.boolean(),
+  })
+  .superRefine((d, ctx) => {
+    if (
+      d.frete_automatico &&
+      d.produtos.length > 0 &&
+      !d.produtos.some((p) => p.produto && p.valor_frete !== null)
+    ) {
       ctx.addIssue({
         code: 'custom',
-        path: ['valor_frete'],
+        path: ['produtos', 0, 'valor_frete'],
         message: 'Para lançar sozinho, informe o valor do frete.',
       });
     }
-  });
+  })
+  // linhas em branco ficam de fora
+  .transform((d) => ({ ...d, produtos: d.produtos.filter((p) => p.produto) }));
 
 export type CadastroClienteForm = z.input<typeof cadastroClienteSchema>;
 export type CadastroClienteDados = z.output<typeof cadastroClienteSchema>;

@@ -115,47 +115,62 @@ describe('carretaSchema', () => {
     expect(carretaSchema.safeParse({ ...base, placa: '123' }).success).toBe(false));
 });
 
-describe('cadastroClienteSchema (frete e carga no cadastro)', () => {
+describe('cadastroClienteSchema (vários produtos no cadastro)', () => {
+  const liz = {
+    produto: 'Cimento Liz',
+    local: 'Vespasiano - MG',
+    sentido: 'volta' as const,
+    valor_frete: '5.080,00',
+    vigencia_inicio: '2026-10-01',
+  };
+  const areia = {
+    produto: 'Areia',
+    local: 'Guanhães - MG',
+    sentido: 'ida' as const,
+    valor_frete: '1.500,00',
+    vigencia_inicio: '2026-10-01',
+  };
+  const vazio = {
+    produto: '',
+    local: '',
+    sentido: 'volta' as const,
+    valor_frete: '',
+    vigencia_inicio: '2026-10-01',
+  };
   const base = {
     razao_social: 'Japa Cimentos',
     cnpj: '',
     contato: '',
     prazo_pagamento_dias: '',
-    produto: 'Cimento Liz',
-    local: 'Vespasiano - MG',
-    valor_frete: '5.080,00',
-    sentido: 'volta' as const,
-    vigencia_inicio: '2026-10-01',
     frete_automatico: true,
   };
-  it('converte o frete para centavos e guarda produto e local', () => {
-    const r = cadastroClienteSchema.parse(base);
-    expect(r).toMatchObject({
-      produto: 'Cimento Liz',
-      local: 'Vespasiano - MG',
-      valor_frete: 508000,
-      sentido: 'volta',
-      frete_automatico: true,
-    });
+
+  it('vários produtos, cada um com o seu trecho e frete', () => {
+    const r = cadastroClienteSchema.parse({ ...base, produtos: [liz, areia] });
+    expect(r.produtos).toMatchObject([
+      { produto: 'Cimento Liz', local: 'Vespasiano - MG', sentido: 'volta', valor_frete: 508000 },
+      { produto: 'Areia', sentido: 'ida', valor_frete: 150000 },
+    ]);
   });
-  it('tudo opcional: só a razão social', () => {
-    const r = cadastroClienteSchema.parse({
-      ...base,
-      produto: '',
-      local: '',
-      valor_frete: '',
-      frete_automatico: false,
-    });
-    expect(r).toMatchObject({ produto: null, local: null, valor_frete: null });
-  });
-  it('local sem produto não', () =>
-    expect(cadastroClienteSchema.safeParse({ ...base, produto: '' }).success).toBe(false));
-  it('frete sem produto não (o preço é do produto)', () =>
-    expect(cadastroClienteSchema.safeParse({ ...base, produto: '', local: '' }).success).toBe(
-      false,
+  it('linha em branco é ignorada', () =>
+    expect(cadastroClienteSchema.parse({ ...base, produtos: [liz, vazio] }).produtos).toHaveLength(
+      1,
     ));
-  it('lançar sozinho exige o valor', () =>
-    expect(cadastroClienteSchema.safeParse({ ...base, valor_frete: '' }).success).toBe(false));
-  it('valor exige a data de início', () =>
-    expect(cadastroClienteSchema.safeParse({ ...base, vigencia_inicio: '' }).success).toBe(false));
+  it('só a razão social, sem produtos', () =>
+    expect(
+      cadastroClienteSchema.parse({ ...base, frete_automatico: false, produtos: [vazio] }).produtos,
+    ).toEqual([]));
+  it('frete ou local sem produto não', () =>
+    expect(
+      cadastroClienteSchema.safeParse({ ...base, produtos: [{ ...liz, produto: '' }] }).success,
+    ).toBe(false));
+  it('lançar sozinho exige um frete', () =>
+    expect(
+      cadastroClienteSchema.safeParse({ ...base, produtos: [{ ...liz, valor_frete: '' }] }).success,
+    ).toBe(false));
+  it('frete exige a data de início', () =>
+    expect(
+      cadastroClienteSchema.safeParse({ ...base, produtos: [{ ...liz, vigencia_inicio: '' }] })
+        .success,
+    ).toBe(false));
 });
