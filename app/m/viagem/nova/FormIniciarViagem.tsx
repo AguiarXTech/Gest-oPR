@@ -36,7 +36,6 @@ type Carreta = {
   carroceria?: string | null;
   fotoUrl?: string | null;
 };
-type Local = { id: string; nome: string; endereco: string | null };
 
 type Props = {
   funcionarioId: string;
@@ -44,9 +43,6 @@ type Props = {
   carretas: Carreta[];
   caminhaoSugerido: string | null;
   carretaSugerida: string | null;
-  /** Locais de carga dos clientes (Cimento Liz...). */
-  locais: Local[];
-  localSugerido: string | null;
   rotaPadrao: { origem: string; destino: string };
 };
 
@@ -69,8 +65,6 @@ export function FormIniciarViagem({
   carretas,
   caminhaoSugerido,
   carretaSugerida,
-  locais,
-  localSugerido,
   rotaPadrao,
 }: Props) {
   const router = useRouter();
@@ -98,16 +92,15 @@ export function FormIniciarViagem({
     defaultValues: {
       caminhao_id: sugerido ?? '',
       carreta_id: carretas.some((c) => c.id === carretaSugerida) ? (carretaSugerida ?? '') : '',
-      local_carga_id: locais.some((l) => l.id === localSugerido) ? (localSugerido ?? '') : '',
       origem: rotaPadrao.origem,
       destino: rotaPadrao.destino,
       km_saida: '',
     },
   });
 
-  const [caminhaoId, carretaId, localId, kmDigitado, origem, destino] = useWatch({
+  const [caminhaoId, carretaId, kmDigitado, origem, destino] = useWatch({
     control,
-    name: ['caminhao_id', 'carreta_id', 'local_carga_id', 'km_saida', 'origem', 'destino'],
+    name: ['caminhao_id', 'carreta_id', 'km_saida', 'origem', 'destino'],
   });
   const caminhao = caminhoes.find((c) => c.id === caminhaoId);
   const ehCavalo = caminhao?.tipo === 'cavalo';
@@ -132,10 +125,6 @@ export function FormIniciarViagem({
   function enviar(dados: IniciarViagemDados) {
     if (ehCavalo && !carretaId) {
       setError('carreta_id', { message: 'Escolha a carreta (ou "Sem carreta").' });
-      return;
-    }
-    if (locais.length > 0 && !localId) {
-      setError('local_carga_id', { message: 'Escolha o que vai carregar (ou "Outra carga").' });
       return;
     }
     if (caminhao && dados.km_saida < caminhao.km_atual && !avisoKm) {
@@ -223,36 +212,6 @@ export function FormIniciarViagem({
           ))}
           {errors.carreta_id && (
             <p className="font-medium text-destructive">{errors.carreta_id.message}</p>
-          )}
-        </fieldset>
-      )}
-
-      {locais.length > 0 && (
-        <fieldset className="flex flex-col gap-2">
-          <legend className="mb-2 text-lg font-semibold">O que vai carregar?</legend>
-          {[...locais, { id: 'outro', nome: 'Outra carga', endereco: null }].map((l) => (
-            <label
-              key={l.id}
-              className={cn(
-                'flex min-h-16 cursor-pointer items-center gap-3 rounded-2xl border bg-card p-4 shadow-xs',
-                localId === l.id && 'border-primary ring-2 ring-primary',
-              )}
-            >
-              <input
-                type="radio"
-                value={l.id}
-                {...register('local_carga_id')}
-                className="sr-only"
-              />
-              <span className="flex flex-1 flex-col">
-                <span className="text-xl font-bold">{l.nome}</span>
-                {l.endereco && <span className="text-muted-foreground">{l.endereco}</span>}
-              </span>
-              {localId === l.id && <Check className="size-7 text-primary" aria-hidden />}
-            </label>
-          ))}
-          {errors.local_carga_id && (
-            <p className="font-medium text-destructive">{errors.local_carga_id.message}</p>
           )}
         </fieldset>
       )}

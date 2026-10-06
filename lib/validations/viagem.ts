@@ -24,10 +24,6 @@ export const iniciarViagemSchema = z.object({
   carreta_id: z
     .union([z.literal(''), z.literal('sem'), z.guid()])
     .transform((v) => (v === '' || v === 'sem' ? null : v)),
-  /** Onde vai carregar: id do local do cliente, ou 'outro' / '' (não informado). */
-  local_carga_id: z
-    .union([z.literal(''), z.literal('outro'), z.guid()])
-    .transform((v) => (v === '' || v === 'outro' ? null : v)),
   origem: z.string().trim().min(2, 'Digite a origem.'),
   destino: z.string().trim().min(2, 'Digite o destino.'),
   km_saida: kmObrigatorio('Digite o km do painel na saída.'),
@@ -35,6 +31,13 @@ export const iniciarViagemSchema = z.object({
 
 export const finalizarViagemSchema = z.object({
   km_chegada: kmObrigatorio('Digite o km do painel na chegada.'),
+  /**
+   * O que carregou: escolhido só ao finalizar, porque a carga pode trocar no meio da
+   * viagem (pedido de 2026-10-06). Id do produto do cliente, ou 'outro' / ''.
+   */
+  local_carga_id: z
+    .union([z.literal(''), z.literal('outro'), z.guid()])
+    .transform((v) => (v === '' || v === 'outro' ? null : v)),
 });
 
 export type IniciarViagemForm = z.input<typeof iniciarViagemSchema>;

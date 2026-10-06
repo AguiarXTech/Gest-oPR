@@ -70,7 +70,7 @@ A operação hoje depende de papel, WhatsApp e memória. Isso gera cinco problem
 | RF-40 | Foto de cada caminhão (lista, ficha e escolha do caminhão pelo motorista) | gestor |
 | RF-47 | Motorista vê a própria CNH e os documentos (com anexo) do cavalo e da carreta da viagem em andamento, para a fiscalização | motorista |
 | RF-46 | Remover viagem com motivo (teste, criada errada, duplicada), registrado na auditoria; opção de apagar junto os abastecimentos e despesas dela; viagem em acerto não sai | gestor |
-| RF-45 | Locais de carga no cadastro do cliente (nome e endereço, ex.: Cimento Liz); o motorista toca onde vai carregar ao iniciar a viagem e abre o endereço no mapa | gestor (cadastro), motorista (escolha) |
+| RF-45 | Locais de carga no cadastro do cliente (nome e endereço, ex.: Cimento Liz); o motorista toca o que carregou ao finalizar a viagem (a carga pode trocar no meio do caminho) | gestor (cadastro), motorista (escolha) |
 | RF-44 | Preço do frete de cada produto do cliente, com reajustes por data; o trecho carregado vem do lugar do produto; frete lançado sozinho quando o motorista conclui a viagem com aquele produto (cliente marcado); a gestão corrige se for diferente | gestor |
 | RF-43 | Cavalo e carreta separados: caminhão é peça única ou cavalo/trator; carreta tem cadastro próprio (configuração/tipo, carroceria e eixos em campo livre, documentos, foto) e é escolhida pelo motorista ao iniciar a viagem com um cavalo | gestor (cadastro), motorista (escolha) |
 | RF-42 | Controle de pedágio: previsto por passagem (tarifa por eixo × eixos; ida vazia sem os eixos suspensos) × cobrado pelo app de pedágio por câmera/placa; cobranças a mais ficam "para contestar" até o ressarcimento | gestor |

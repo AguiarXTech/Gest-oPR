@@ -83,7 +83,7 @@ export default async function DetalheViagem({ params }: PageProps<'/g/viagens/[i
         </p>
         {v.locais_carga && (
           <p className="font-medium">
-            Carrega em: {v.locais_carga.nome}
+            Carregou: {v.locais_carga.nome}
             {v.locais_carga.endereco && (
               <span className="font-normal text-muted-foreground">
                 {' '}

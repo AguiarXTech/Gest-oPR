@@ -95,7 +95,7 @@ export default async function ListaViagens({ searchParams }: PageProps<'/g/viage
                     saiu {formatarDataHora(v.data_saida)}
                     {v.data_chegada && ` · voltou ${formatarDataHora(v.data_chegada)}`}
                     {v.km_chegada !== null && ` · ${formatarKm(v.km_chegada - v.km_saida)}`}
-                    {v.locais_carga && ` · carrega em ${v.locais_carga.nome}`}
+                    {v.locais_carga && ` · carregou ${v.locais_carga.nome}`}
                   </span>
                 </span>
                 <span className="flex items-center gap-2 sm:flex-col sm:items-end">
