@@ -8,6 +8,9 @@ import { PracasPedagio } from '@/components/gestao/PracasPedagio';
 import { formatarBRL } from '@/lib/domain/dinheiro';
 import { formatarPlaca } from '@/lib/domain/placa';
 import { competencia } from '@/lib/domain/resultado';
+import { PagoPeloMotorista } from '@/components/gestao/PagoPeloMotorista';
+import { carregarDespesasMotorista } from '@/lib/supabase/despesasMotorista';
+import { limitesDoMes } from '@/lib/supabase/painel';
 import { carregarPedagioMes } from '@/lib/supabase/pedagio';
 import { createClient } from '@/lib/supabase/server';
 import { cn } from '@/lib/utils';
@@ -37,7 +40,12 @@ export default async function Pedagio({ searchParams }: PageProps<'/g/pedagio'>)
   const mes =
     typeof bruto === 'string' && /^\d{4}-\d{2}$/.test(bruto) && bruto <= atual ? bruto : atual;
   const supabase = await createClient();
-  const { viagens, pracas, totais } = await carregarPedagioMes(supabase, mes);
+  const { inicioData, fimData } = limitesDoMes(mes);
+  const [{ viagens, pracas, totais }, doMotorista] = await Promise.all([
+    carregarPedagioMes(supabase, mes),
+    // pedágio que o motorista pagou do bolso (dinheiro/cartão dele): volta no acerto
+    carregarDespesasMotorista(supabase, 'pedagio', { inicio: inicioData, fim: fimData }),
+  ]);
 
   return (
     <>
@@ -100,6 +108,37 @@ export default async function Pedagio({ searchParams }: PageProps<'/g/pedagio'>)
               : 'Todas as passagens lançadas'}
           </p>
         </div>
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="text-lg font-semibold">Pago pelo motorista</h2>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-xl border bg-card p-4 shadow-xs">
+            <p className="text-sm text-muted-foreground">No mês</p>
+            <p className="text-2xl font-bold tabular-nums">
+              {formatarBRL(doMotorista.totalPeriodoCentavos)}
+            </p>
+          </div>
+          <div
+            className={cn(
+              'rounded-xl border p-4 shadow-xs',
+              doMotorista.aDevolverCentavos > 0 ? 'border-alerta bg-alerta/10' : 'bg-card',
+            )}
+          >
+            <p className="text-sm text-muted-foreground">A devolver no acerto</p>
+            <p className="text-2xl font-bold tabular-nums">
+              {formatarBRL(doMotorista.aDevolverCentavos)}
+            </p>
+          </div>
+        </div>
+        <PagoPeloMotorista
+          itens={doMotorista.itens}
+          vazio="Nenhum pedágio pago por motorista neste mês."
+        />
+        <p className="text-sm text-muted-foreground">
+          Acima: o que o motorista pagou e lançou como despesa. Abaixo: o que o app de pedágio
+          cobrou pela placa (pago pela empresa).
+        </p>
       </section>
 
       <PracasPedagio pracas={pracas} />

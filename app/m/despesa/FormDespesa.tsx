@@ -15,6 +15,7 @@ import { despesaReembolsavel } from '@/lib/domain/acerto';
 import { formatarBRL } from '@/lib/domain/dinheiro';
 import { createClient } from '@/lib/supabase/client';
 import { repetirSeFalharRede, traduzirErroBanco } from '@/lib/supabase/erros';
+import { formatarPlaca } from '@/lib/domain/placa';
 import { cn } from '@/lib/utils';
 import { gerarUuid, jaFoiSalvo } from '@/lib/uuid';
 import {
@@ -24,7 +25,13 @@ import {
   type DespesaForm,
 } from '@/lib/validations/despesa';
 
-type Props = { funcionarioId: string; viagem: { id: string; caminhao_id: string } | null };
+type Props = {
+  funcionarioId: string;
+  viagem: { id: string; caminhao_id: string } | null;
+  /** Sem viagem em andamento: a despesa precisa de um caminhão (senão some do resumo). */
+  caminhoes: { id: string; placa: string; apelido: string | null }[];
+  caminhaoSugerido: string | null;
+};
 type Rascunho = { id: string; valores: DespesaForm };
 
 const RASCUNHO = 'despesa';
@@ -34,7 +41,7 @@ function hoje() {
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo' }).format(new Date());
 }
 
-export function FormDespesa({ funcionarioId, viagem }: Props) {
+export function FormDespesa({ funcionarioId, viagem, caminhoes, caminhaoSugerido }: Props) {
   const router = useRouter();
   const [supabase] = useState(createClient);
   const [inicial] = useState<Rascunho>(() => {
@@ -52,6 +59,14 @@ export function FormDespesa({ funcionarioId, viagem }: Props) {
     };
   });
   const [salvo, setSalvo] = useState<{ tipo: string; valor: number } | null>(null);
+  const [caminhaoId, setCaminhaoId] = useState(
+    caminhoes.some((c) => c.id === caminhaoSugerido)
+      ? (caminhaoSugerido ?? '')
+      : caminhoes.length === 1
+        ? caminhoes[0].id
+        : '',
+  );
+  const [erroCaminhao, setErroCaminhao] = useState(false);
 
   const {
     register,
@@ -80,7 +95,7 @@ export function FormDespesa({ funcionarioId, viagem }: Props) {
         reembolsavel: despesaReembolsavel(dados.tipo),
         motorista_id: funcionarioId, // o trigger força o funcionário logado
         viagem_id: viagem?.id ?? null,
-        caminhao_id: viagem?.caminhao_id ?? null,
+        caminhao_id: viagem?.caminhao_id ?? caminhaoId,
       });
       if (error && !jaFoiSalvo(error)) throw error;
       return { tipo: TIPOS_DESPESA[dados.tipo], valor };
@@ -119,7 +134,13 @@ export function FormDespesa({ funcionarioId, viagem }: Props) {
 
   return (
     <form
-      onSubmit={handleSubmit((d) => salvar.mutate(d))}
+      onSubmit={handleSubmit((d) => {
+        if (!viagem && !caminhaoId) {
+          setErroCaminhao(true);
+          return;
+        }
+        salvar.mutate(d);
+      })}
       noValidate
       className="flex flex-col gap-6"
     >
@@ -192,9 +213,31 @@ export function FormDespesa({ funcionarioId, viagem }: Props) {
       </section>
 
       {!viagem && (
-        <p className="text-sm text-muted-foreground">
-          Sem viagem em andamento: a despesa fica sem viagem ligada.
-        </p>
+        <fieldset className="flex flex-col gap-2">
+          <legend className="mb-1 text-lg font-semibold">De qual caminhão?</legend>
+          <p className="text-sm text-muted-foreground">Você não está em viagem agora.</p>
+          <div className="grid grid-cols-2 gap-2">
+            {caminhoes.map((c) => (
+              <button
+                key={c.id}
+                type="button"
+                aria-pressed={caminhaoId === c.id}
+                onClick={() => {
+                  setCaminhaoId(c.id);
+                  setErroCaminhao(false);
+                }}
+                className={cn(
+                  'flex min-h-14 flex-col items-center justify-center rounded-xl border bg-card p-2 font-semibold',
+                  caminhaoId === c.id && 'border-primary bg-primary text-primary-foreground',
+                )}
+              >
+                <span className="font-mono">{formatarPlaca(c.placa)}</span>
+                {c.apelido && <span className="text-sm font-normal opacity-80">{c.apelido}</span>}
+              </button>
+            ))}
+          </div>
+          {erroCaminhao && <p className="font-medium text-destructive">Escolha o caminhão.</p>}
+        </fieldset>
       )}
 
       {salvar.isError && (

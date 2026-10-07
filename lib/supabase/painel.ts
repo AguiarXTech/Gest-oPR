@@ -1,6 +1,7 @@
 // Dados do mês para o painel (S5-3) e o detalhe do caminhão (S5-4): regras §8.
 // A comissão é a calculada pela regra vigente (estimada enquanto o acerto não fecha).
 import { calcularComissaoViagem, regraVigente } from '@/lib/domain/comissao';
+import { separarDespesas } from '@/lib/domain/despesas';
 import { calcularResultado, ratearDiesel, type Resultado } from '@/lib/domain/resultado';
 import { paraRegraDominio } from '@/lib/supabase/acerto';
 import type { createClient } from '@/lib/supabase/server';
@@ -92,6 +93,9 @@ export async function carregarMes(
     const vs = (viagens ?? []).filter((v) => v.caminhao_id === c.id);
     const abs = (abastecimentos ?? []).filter((a) => a.caminhao_id === c.id);
     const ds = (despesas ?? []).filter((d) => d.caminhao_id === c.id);
+    const separadas = separarDespesas(
+      ds.map((d) => ({ tipo: d.tipo, valorCentavos: d.valor_centavos })),
+    );
     const diesel = abs.reduce((t, a) => t + a.valor_total_centavos, 0);
     const litros = abs.reduce((t, a) => t + Number(a.litros), 0);
     const kmMes = vs.reduce((t, v) => t + ((v.km_chegada ?? v.km_saida) - v.km_saida), 0);
@@ -151,17 +155,17 @@ export async function carregarMes(
       dieselCentavos: diesel,
       litros,
       pedagioCentavos:
-        ds.filter((d) => d.tipo === 'pedagio').reduce((t, d) => t + d.valor_centavos, 0) +
+        separadas.pedagioCentavos +
         vs.reduce(
           (t, v) => t + v.cobrancas_pedagio.reduce((s, c) => s + c.valor_cobrado_centavos, 0),
           0,
         ),
-      despesasCentavos: ds
-        .filter((d) => d.tipo !== 'pedagio')
-        .reduce((t, d) => t + d.valor_centavos, 0),
-      manutencaoCentavos: (manutencoes ?? [])
-        .filter((m) => m.caminhao_id === c.id)
-        .reduce((t, m) => t + m.valor_centavos, 0),
+      despesasCentavos: separadas.outrasCentavos,
+      // manutenção lançada pela gestão (pago pelo dono) + a que o motorista pagou e lançou
+      manutencaoCentavos:
+        (manutencoes ?? [])
+          .filter((m) => m.caminhao_id === c.id)
+          .reduce((t, m) => t + m.valor_centavos, 0) + separadas.manutencaoCentavos,
     });
     return {
       id: c.id,
@@ -180,6 +184,13 @@ export async function carregarMes(
   const soma = (
     campo: 'dieselCentavos' | 'pedagioCentavos' | 'despesasCentavos' | 'manutencaoCentavos',
   ) => comMovimento.reduce((t, c) => t + c.resultado[campo], 0);
+  // despesa lançada sem viagem e sem caminhão (antes de 2026-10-07 o app deixava): não
+  // tem caminhão para entrar, mas entra no total da frota para não sumir
+  const semCaminhao = separarDespesas(
+    (despesas ?? [])
+      .filter((d) => d.caminhao_id === null)
+      .map((d) => ({ tipo: d.tipo, valorCentavos: d.valor_centavos })),
+  );
   const frota = calcularResultado({
     viagens: comMovimento.flatMap((c) =>
       c.viagens.map((v) => ({
@@ -190,9 +201,9 @@ export async function carregarMes(
     ),
     dieselCentavos: soma('dieselCentavos'),
     litros: (abastecimentos ?? []).reduce((t, a) => t + Number(a.litros), 0),
-    pedagioCentavos: soma('pedagioCentavos'),
-    despesasCentavos: soma('despesasCentavos'),
-    manutencaoCentavos: soma('manutencaoCentavos'),
+    pedagioCentavos: soma('pedagioCentavos') + semCaminhao.pedagioCentavos,
+    despesasCentavos: soma('despesasCentavos') + semCaminhao.outrasCentavos,
+    manutencaoCentavos: soma('manutencaoCentavos') + semCaminhao.manutencaoCentavos,
   });
 
   return {

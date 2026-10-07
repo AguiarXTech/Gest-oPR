@@ -102,6 +102,7 @@ Sprints de ~1 semana, com dedicação parcial. Cada tarefa tem ID (`S{sprint}-{n
 | A-10 | Preço do frete no cliente com reajuste e lançamento automático (RF-44) | Feito |
 | A-11 | Locais de carga do cliente escolhidos pelo motorista (RF-45) | Feito |
 | A-12 | Remover viagem com motivo (RF-46) | Feito |
+| A-16 | Quem pagou (dono × motorista) em Manutenção e Pedágio; despesa sempre com caminhão (RF-49) | Feito |
 | A-15 | Valor sem erro de digitação e correção de lançamentos pelo motorista (RF-48) | Feito |
 | A-14 | Documentos do veículo da viagem e CNH na área do motorista (RF-47) | Feito |
 | A-13 | Gestão de pneus (RF-30): estoque, montados em cavalos/trucks e carretas, recapagem, descarte e km | Feito |

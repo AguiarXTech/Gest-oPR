@@ -216,13 +216,17 @@ Uma viagem concluída **sem nenhum frete lançado** **impede o fechamento do ace
 ```
 receita  = Σ fretes (ida + volta) das viagens concluídas no mês
 diesel   = Σ valor dos abastecimentos do caminhão no mês
-pedagio  = Σ despesas tipo pedagio das viagens do caminhão no mês
-despesas = Σ outras despesas das viagens do caminhão no mês
-manutencao = Σ manutenções do caminhão no mês (oficina e peças)
+pedagio  = Σ despesas tipo pedagio do caminhão no mês + Σ cobranças do app de pedágio
+despesas = Σ outras despesas do caminhão no mês
+manutencao = Σ manutenções lançadas pela gestão (pago pelo dono) + Σ despesas tipo manutencao (pago pelo motorista)
 comissao = Σ comissão calculada das viagens (mesmo sem acerto fechado; marcar "estimada" se não fechado)
 resultado = receita − diesel − pedagio − despesas − manutencao − comissao
 custo_por_km = (diesel + pedagio + despesas + manutencao + comissao) / km rodados no mês
 ```
+
+Despesas contam pela data e pelo caminhão (com ou sem viagem). Despesa sem caminhão (lançada antes de 2026-10-07, quando o app deixava) entra só no total da frota; a gestão escolhe o caminhão na conferência. Sem viagem, o motorista escolhe o caminhão ao lançar.
+
+**Quem pagou:** despesa lançada pelo motorista e reembolsável é dele, do bolso, e volta no acerto (a devolver → no acerto → devolvido). Manutenção e pedágio pagos pelo motorista aparecem nas áreas Manutenção e Pedágio, com o total a devolver.
 
 Manutenção entra desde 2026-10-01. A fase 2 soma pneus (via CPK × km) e custos fixos (seguro, parcelas, IPVA rateado).
 
