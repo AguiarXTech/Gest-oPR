@@ -32,7 +32,23 @@ describe('calcularResultado (regras §8.1)', () => {
         { freteCentavos: 570000, kmRodado: 600, comissaoCentavos: 15000 },
       ],
       dieselCentavos: 230000,
-      litros: 400,
+      // medições de tanque cheio fechadas no mês: 580 km / 190 L e 600 km / 200 L
+      medicoesConsumo: [
+        {
+          abastecimentoId: 'a2',
+          dataHora: '2026-10-03T10:00:00Z',
+          distancia: 580,
+          litros: 190,
+          kmL: 580 / 190,
+        },
+        {
+          abastecimentoId: 'a3',
+          dataHora: '2026-10-09T10:00:00Z',
+          distancia: 600,
+          litros: 200,
+          kmL: 3,
+        },
+      ],
       pedagioCentavos: 19440,
       despesasCentavos: 8000,
     });
@@ -43,23 +59,51 @@ describe('calcularResultado (regras §8.1)', () => {
       km: 1180,
       custoPorKmCentavos: Math.round((230000 + 19440 + 8000 + 30000) / 1180),
     });
-    expect(r.kmPorLitro).toBeCloseTo(2.95, 2);
+    expect(r.kmPorLitro).toBeCloseTo(1180 / 390, 4); // ponderada: Σ km ÷ Σ L
   });
 
   it('manutenção entra no custo', () => {
     const r = calcularResultado({
       viagens: [{ freteCentavos: 450000, kmRodado: 580, comissaoCentavos: 15000 }],
       dieselCentavos: 0,
-      litros: 0,
+      medicoesConsumo: [],
       pedagioCentavos: 0,
       despesasCentavos: 0,
       manutencaoCentavos: 120000,
     });
-    expect(r).toMatchObject({ manutencaoCentavos: 120000, resultadoCentavos: 450000 - 15000 - 120000 });
+    expect(r).toMatchObject({
+      manutencaoCentavos: 120000,
+      resultadoCentavos: 450000 - 15000 - 120000,
+    });
   });
 
   it('mês sem viagens: resultado negativo do que gastou, sem custo por km', () => {
-    const r = calcularResultado({ viagens: [], dieselCentavos: 50000, litros: 80, pedagioCentavos: 0, despesasCentavos: 0 });
-    expect(r).toMatchObject({ receitaCentavos: 0, resultadoCentavos: -50000, custoPorKmCentavos: null, kmPorLitro: null });
+    const r = calcularResultado({
+      viagens: [],
+      dieselCentavos: 50000,
+      medicoesConsumo: [],
+      pedagioCentavos: 0,
+      despesasCentavos: 0,
+    });
+    expect(r).toMatchObject({
+      receitaCentavos: 0,
+      resultadoCentavos: -50000,
+      custoPorKmCentavos: null,
+      kmPorLitro: null,
+    });
+  });
+
+  it('km/L não mistura km de uma viagem com diesel de outra (pedido de 2026-10-07)', () => {
+    // 562 km rodados e 268 L abastecidos no fim da viagem, sem tanque cheio anterior:
+    // antes dava 562 / 268 = 2,10 km/L; agora não há medição e o km/L fica em branco
+    const r = calcularResultado({
+      viagens: [{ freteCentavos: 508000, kmRodado: 562, comissaoCentavos: 50000 }],
+      dieselCentavos: 165892,
+      medicoesConsumo: [],
+      pedagioCentavos: 0,
+      despesasCentavos: 0,
+    });
+    expect(r.kmPorLitro).toBeNull();
+    expect(r.dieselCentavos).toBe(165892); // o custo do diesel continua o que foi pago no mês
   });
 });

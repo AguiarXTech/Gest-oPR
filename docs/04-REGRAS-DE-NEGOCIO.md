@@ -222,7 +222,10 @@ manutencao = Σ manutenções lançadas pela gestão (pago pelo dono) + Σ despe
 comissao = Σ comissão calculada das viagens (mesmo sem acerto fechado; marcar "estimada" se não fechado)
 resultado = receita − diesel − pedagio − despesas − manutencao − comissao
 custo_por_km = (diesel + pedagio + despesas + manutencao + comissao) / km rodados no mês
+km_por_litro = Σ distâncias ÷ Σ litros das medições de tanque cheio que fecham no mês (§4)
 ```
+
+O km/L **não** é km das viagens ÷ litros do mês: o diesel abastecido no fim de uma viagem é queimado na seguinte, e a conta misturava as duas (ex.: 562 km ÷ 268 L = 2,10 km/L). Sem duas medições de tanque cheio do mesmo caminhão, o km/L fica em branco. O custo do diesel continua sendo o que foi abastecido no mês.
 
 Despesas contam pela data e pelo caminhão (com ou sem viagem). Despesa sem caminhão (lançada antes de 2026-10-07, quando o app deixava) entra só no total da frota; a gestão escolhe o caminhão na conferência. Sem viagem, o motorista escolhe o caminhão ao lançar.
 

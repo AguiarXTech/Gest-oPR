@@ -24,7 +24,9 @@ export type Medicao = {
 // Litros somados em mililitros inteiros para não acumular erro de ponto flutuante.
 const paraMl = (litros: number) => Math.round(litros * 1000);
 
-export function ordenarAbastecimentos<T extends { km: number; dataHora: string }>(lista: readonly T[]): T[] {
+export function ordenarAbastecimentos<T extends { km: number; dataHora: string }>(
+  lista: readonly T[],
+): T[] {
   return [...lista].sort((a, b) => a.km - b.km || a.dataHora.localeCompare(b.dataHora));
 }
 
@@ -63,4 +65,32 @@ export function mediaPonderada(medicoes: readonly Medicao[]): number | null {
   const distancia = medicoes.reduce((t, m) => t + m.distancia, 0);
   const ml = medicoes.reduce((t, m) => t + paraMl(m.litros), 0);
   return ml > 0 ? distancia / (ml / 1000) : null;
+}
+
+/**
+ * Medições de tanque cheio que fecham no período (km/L do mês, §4 e §8.1), separadas por
+ * caminhão. A lista deve trazer também o último tanque cheio antes do período, que abre a
+ * primeira medição. Assim o km/L não mistura o km de uma viagem com o diesel de outra.
+ */
+export function medicoesNoPeriodo(
+  abastecimentos: readonly (AbastecimentoConsumo & { caminhaoId: string })[],
+  inicio: string,
+  fim: string,
+  caminhaoId?: string,
+): (Medicao & { caminhaoId: string })[] {
+  const ini = Date.parse(inicio);
+  const end = Date.parse(fim);
+  const porCaminhao = new Map<string, AbastecimentoConsumo[]>();
+  for (const a of abastecimentos) {
+    if (caminhaoId && a.caminhaoId !== caminhaoId) continue;
+    porCaminhao.set(a.caminhaoId, [...(porCaminhao.get(a.caminhaoId) ?? []), a]);
+  }
+  return [...porCaminhao].flatMap(([id, lista]) =>
+    calcularMedicoes(lista)
+      .filter((m) => {
+        const t = Date.parse(m.dataHora);
+        return t >= ini && t < end;
+      })
+      .map((m) => ({ ...m, caminhaoId: id })),
+  );
 }

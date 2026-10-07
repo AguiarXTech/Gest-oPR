@@ -212,8 +212,8 @@ export default async function PainelGestao({ searchParams }: PageProps<'/g'>) {
           <p className="text-3xl font-bold tabular-nums">{formatarBRL(frota.dieselCentavos)}</p>
           <p className="text-sm text-muted-foreground tabular-nums">
             {frota.kmPorLitro !== null
-              ? `média ${kmL.format(frota.kmPorLitro)} km/L na frota`
-              : 'Sem km/L ainda'}
+              ? `média ${kmL.format(frota.kmPorLitro)} km/L (tanque cheio a tanque cheio)`
+              : 'Sem km/L ainda: precisa de dois abastecimentos de tanque cheio do mesmo caminhão'}
           </p>
         </section>
 
@@ -276,7 +276,8 @@ export default async function PainelGestao({ searchParams }: PageProps<'/g'>) {
       )}
       <p className="text-sm text-muted-foreground">
         Valores estimados até o fechamento do mês: o diesel é dividido entre as viagens pelo km e a
-        comissão segue a regra de cada motorista.
+        comissão segue a regra de cada motorista. O km/L é medido entre dois abastecimentos de
+        tanque cheio do mesmo caminhão (km rodado ÷ litros colocados), sem misturar viagens.
       </p>
     </>
   );

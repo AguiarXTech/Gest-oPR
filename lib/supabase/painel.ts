@@ -1,6 +1,7 @@
 // Dados do mês para o painel (S5-3) e o detalhe do caminhão (S5-4): regras §8.
 // A comissão é a calculada pela regra vigente (estimada enquanto o acerto não fecha).
 import { calcularComissaoViagem, regraVigente } from '@/lib/domain/comissao';
+import { medicoesNoPeriodo } from '@/lib/domain/consumo';
 import { separarDespesas } from '@/lib/domain/despesas';
 import { calcularResultado, ratearDiesel, type Resultado } from '@/lib/domain/resultado';
 import { paraRegraDominio } from '@/lib/supabase/acerto';
@@ -50,7 +51,7 @@ export async function carregarMes(
   const [
     { data: caminhoes },
     { data: viagens },
-    { data: abastecimentos },
+    { data: abastecimentosPeriodo },
     { data: despesas },
     { data: regras },
     { data: manutencoes },
@@ -64,10 +65,11 @@ export async function carregarMes(
       .eq('status', 'concluida')
       .gte('data_saida', inicio)
       .lt('data_saida', fim),
+    // 120 dias antes do mês: traz o último tanque cheio, que abre a 1ª medição de km/L (§4)
     supabase
       .from('abastecimentos')
-      .select('caminhao_id, litros, valor_total_centavos')
-      .gte('data_hora', inicio)
+      .select('id, caminhao_id, km, litros, tanque_cheio, data_hora, valor_total_centavos')
+      .gte('data_hora', new Date(Date.parse(inicio) - 120 * 86_400_000).toISOString())
       .lt('data_hora', fim),
     supabase
       .from('despesas_viagem')
@@ -81,6 +83,23 @@ export async function carregarMes(
       .gte('data', inicioData)
       .lt('data', fimData),
   ]);
+
+  // custo do diesel = o que foi abastecido no mês; km/L = tanque cheio a tanque cheio
+  const abastecimentos = (abastecimentosPeriodo ?? []).filter(
+    (a) => Date.parse(a.data_hora) >= Date.parse(inicio),
+  );
+  const medicoes = medicoesNoPeriodo(
+    (abastecimentosPeriodo ?? []).map((a) => ({
+      id: a.id,
+      caminhaoId: a.caminhao_id,
+      km: a.km,
+      litros: Number(a.litros),
+      tanqueCheio: a.tanque_cheio,
+      dataHora: a.data_hora,
+    })),
+    inicio,
+    fim,
+  );
 
   const regrasPorMotorista = new Map<string, ReturnType<typeof paraRegraDominio>[]>();
   for (const r of regras ?? [])
@@ -97,7 +116,6 @@ export async function carregarMes(
       ds.map((d) => ({ tipo: d.tipo, valorCentavos: d.valor_centavos })),
     );
     const diesel = abs.reduce((t, a) => t + a.valor_total_centavos, 0);
-    const litros = abs.reduce((t, a) => t + Number(a.litros), 0);
     const kmMes = vs.reduce((t, v) => t + ((v.km_chegada ?? v.km_saida) - v.km_saida), 0);
 
     const viagensDoMes: ViagemDoMes[] = vs.map((v) => {
@@ -153,7 +171,7 @@ export async function carregarMes(
         comissaoCentavos: v.comissaoCentavos,
       })),
       dieselCentavos: diesel,
-      litros,
+      medicoesConsumo: medicoes.filter((m) => m.caminhaoId === c.id),
       pedagioCentavos:
         separadas.pedagioCentavos +
         vs.reduce(
@@ -200,7 +218,7 @@ export async function carregarMes(
       })),
     ),
     dieselCentavos: soma('dieselCentavos'),
-    litros: (abastecimentos ?? []).reduce((t, a) => t + Number(a.litros), 0),
+    medicoesConsumo: medicoes.filter((m) => comMovimento.some((c) => c.id === m.caminhaoId)),
     pedagioCentavos: soma('pedagioCentavos') + semCaminhao.pedagioCentavos,
     despesasCentavos: soma('despesasCentavos') + semCaminhao.outrasCentavos,
     manutencaoCentavos: soma('manutencaoCentavos') + semCaminhao.manutencaoCentavos,
