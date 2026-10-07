@@ -5,7 +5,9 @@ import { useMutation } from '@tanstack/react-query';
 import { Check, QrCode, ScanLine } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { useForm, useWatch } from 'react-hook-form';
+import { Controller, useForm, useWatch } from 'react-hook-form';
+import { CampoDinheiro } from '@/components/motorista/CampoDinheiro';
+import { lerDecimal } from '@/lib/domain/numeros';
 import { ListaAnomalias } from '@/components/abastecimento/ListaAnomalias';
 import { LeitorQr } from '@/components/camera/LeitorQr';
 import { FotoComprovante } from '@/components/camera/FotoComprovante';
@@ -22,7 +24,11 @@ import { createClient } from '@/lib/supabase/client';
 import { repetirSeFalharRede, traduzirErroBanco } from '@/lib/supabase/erros';
 import { cn } from '@/lib/utils';
 import { gerarUuid, jaFoiSalvo } from '@/lib/uuid';
-import { abastecimentoSchema, type AbastecimentoDados, type AbastecimentoForm } from '@/lib/validations/abastecimento';
+import {
+  abastecimentoSchema,
+  type AbastecimentoDados,
+  type AbastecimentoForm,
+} from '@/lib/validations/abastecimento';
 
 type Caminhao = { id: string; placa: string; apelido: string | null; km_atual: number };
 type Posto = { id: string; nome: string; cnpj: string | null };
@@ -39,11 +45,18 @@ type Resultado = { kmL: number | null; anomalias: Anomalia[] };
 
 const RASCUNHO = 'abastecimento';
 const numero = new Intl.NumberFormat('pt-BR');
+const litrosFmt = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 3 });
 const kmL = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 type DadosAnalise = {
   capacidade_tanque_l: number | null;
-  abastecimentos: { id: string; km: number; litros: number; tanque_cheio: boolean; data_hora: string }[];
+  abastecimentos: {
+    id: string;
+    km: number;
+    litros: number;
+    tanque_cheio: boolean;
+    data_hora: string;
+  }[];
   precos_litro_centavos: number[];
 };
 
@@ -77,7 +90,12 @@ export function FormAbastecer({ funcionarioId, viagem, caminhoes, postos, config
     return {
       id: r?.id ?? gerarUuid(),
       semQr: r?.semQr ?? false,
-      valores: { ...padrao, ...r?.valores, forma_pagamento: 'faturado', ...(viagem ? { caminhao_id: viagem.caminhao_id } : {}) },
+      valores: {
+        ...padrao,
+        ...r?.valores,
+        forma_pagamento: 'faturado',
+        ...(viagem ? { caminhao_id: viagem.caminhao_id } : {}),
+      },
     };
   });
   const recuperado = Boolean(lerRascunhoSemErro());
@@ -97,6 +115,8 @@ export function FormAbastecer({ funcionarioId, viagem, caminhoes, postos, config
   });
 
   const valores = useWatch({ control }) as AbastecimentoForm;
+  // mostra ao vivo como os litros foram entendidos (ponto x vírgula no teclado)
+  const litrosLidos = valores.litros ? lerDecimal(valores.litros) : null;
   useEffect(() => {
     if (!resultado) salvarRascunho<Rascunho>(RASCUNHO, { id: inicial.id, semQr, valores });
   }, [valores, semQr, inicial.id, resultado]);
@@ -120,7 +140,9 @@ export function FormAbastecer({ funcionarioId, viagem, caminhoes, postos, config
       if (error && !jaFoiSalvo(error)) throw error;
 
       // Análise só para avisar o motorista; se falhar, o abastecimento já está salvo.
-      const { data } = await supabase.rpc('dados_analise_abastecimento', { p_caminhao_id: dados.caminhao_id });
+      const { data } = await supabase.rpc('dados_analise_abastecimento', {
+        p_caminhao_id: dados.caminhao_id,
+      });
       const analise = data as DadosAnalise | null;
       if (!analise) return { kmL: null, anomalias: [] };
 
@@ -131,7 +153,11 @@ export function FormAbastecer({ funcionarioId, viagem, caminhoes, postos, config
         tanqueCheio: a.tanque_cheio,
         dataHora: a.data_hora,
       }));
-      const alvo = historico.find((h) => h.id === inicial.id) ?? { id: inicial.id, km: dados.km, dataHora: new Date().toISOString() };
+      const alvo = historico.find((h) => h.id === inicial.id) ?? {
+        id: inicial.id,
+        km: dados.km,
+        dataHora: new Date().toISOString(),
+      };
       const contexto = montarContextoAnalise(
         alvo,
         historico,
@@ -140,9 +166,22 @@ export function FormAbastecer({ funcionarioId, viagem, caminhoes, postos, config
         config,
       );
       const anomalias = detectarAnomalias(
-        { km: dados.km, litros: dados.litros, valorTotalCentavos: valor_total, dataHora: alvo.dataHora, nfceChave: dados.nfce_chave, fotoPath: dados.foto_path },
+        {
+          km: dados.km,
+          litros: dados.litros,
+          valorTotalCentavos: valor_total,
+          dataHora: alvo.dataHora,
+          nfceChave: dados.nfce_chave,
+          fotoPath: dados.foto_path,
+        },
         // o próprio preço não entra na mediana
-        { ...contexto, precosLitroRecentesCentavos: removerUm(analise.precos_litro_centavos, Math.round(valor_total / dados.litros)) },
+        {
+          ...contexto,
+          precosLitroRecentesCentavos: removerUm(
+            analise.precos_litro_centavos,
+            Math.round(valor_total / dados.litros),
+          ),
+        },
       );
       return { kmL: contexto.kmLDesteAbastecimento, anomalias };
     },
@@ -155,7 +194,9 @@ export function FormAbastecer({ funcionarioId, viagem, caminhoes, postos, config
   function aoLerQr(texto: string) {
     const lida = extrairChave(texto);
     if (!lida) {
-      setErroQr('Esse QR não tem a chave de uma nota. Tente de novo, leia de uma foto ou toque em "Sem QR".');
+      setErroQr(
+        'Esse QR não tem a chave de uma nota. Tente de novo, leia de uma foto ou toque em "Sem QR".',
+      );
       return;
     }
     setErroQr(null);
@@ -166,21 +207,29 @@ export function FormAbastecer({ funcionarioId, viagem, caminhoes, postos, config
   if (resultado) {
     return (
       <div className="flex flex-col gap-4">
-        <section role="status" className="flex flex-col gap-1 rounded-2xl border-2 border-sucesso bg-card p-5 shadow-xs">
+        <section
+          role="status"
+          className="flex flex-col gap-1 rounded-2xl border-2 border-sucesso bg-card p-5 shadow-xs"
+        >
           <p className="text-2xl font-bold text-sucesso">✓ Abastecimento salvo</p>
           {resultado.kmL !== null ? (
             <p className="text-lg">
-              Consumo desde o último tanque cheio: <span className="font-semibold tabular-nums">{kmL.format(resultado.kmL)} km/L</span>
+              Consumo desde o último tanque cheio:{' '}
+              <span className="font-semibold tabular-nums">{kmL.format(resultado.kmL)} km/L</span>
             </p>
           ) : (
-            <p className="text-muted-foreground">O consumo aparece quando houver dois abastecimentos de tanque cheio.</p>
+            <p className="text-muted-foreground">
+              O consumo aparece quando houver dois abastecimentos de tanque cheio.
+            </p>
           )}
         </section>
         {resultado.anomalias.length > 0 && (
           <section className="flex flex-col gap-2">
             <p className="font-semibold">Confira, por favor:</p>
             <ListaAnomalias anomalias={resultado.anomalias} />
-            <p className="text-sm text-muted-foreground">Se algum dado estiver errado, avise o escritório.</p>
+            <p className="text-sm text-muted-foreground">
+              Se algum dado estiver errado, avise o escritório.
+            </p>
           </section>
         )}
         <Button
@@ -197,7 +246,11 @@ export function FormAbastecer({ funcionarioId, viagem, caminhoes, postos, config
   }
 
   return (
-    <form onSubmit={handleSubmit((d) => salvar.mutate(d))} noValidate className="flex flex-col gap-6">
+    <form
+      onSubmit={handleSubmit((d) => salvar.mutate(d))}
+      noValidate
+      className="flex flex-col gap-6"
+    >
       {recuperado && (
         <p className="rounded-xl border border-alerta/50 bg-alerta/10 p-3 text-sm font-medium">
           Continuando o abastecimento que não foi enviado.
@@ -215,7 +268,8 @@ export function FormAbastecer({ funcionarioId, viagem, caminhoes, postos, config
               <Check className="size-5" aria-hidden /> Nota lida
             </p>
             <p className="text-muted-foreground">
-              {posto ? posto.nome : `Posto CNPJ ${formatarCnpj(chave.cnpjEmitente)}`} · nota nº {chave.numero}
+              {posto ? posto.nome : `Posto CNPJ ${formatarCnpj(chave.cnpjEmitente)}`} · nota nº{' '}
+              {chave.numero}
             </p>
             <Button
               type="button"
@@ -244,7 +298,13 @@ export function FormAbastecer({ funcionarioId, viagem, caminhoes, postos, config
                 {erroQr}
               </p>
             )}
-            <Button type="button" variant="ghost" size="lg" onClick={() => setSemQr(true)} className="text-muted-foreground">
+            <Button
+              type="button"
+              variant="ghost"
+              size="lg"
+              onClick={() => setSemQr(true)}
+              className="text-muted-foreground"
+            >
               Sem QR / cupom apagado
             </Button>
           </>
@@ -260,7 +320,9 @@ export function FormAbastecer({ funcionarioId, viagem, caminhoes, postos, config
           onChange={(c) => setValue('foto_path', c ?? '', { shouldValidate: Boolean(c) })}
           rotulo=""
         />
-        {errors.foto_path && <p className="font-medium text-destructive">{errors.foto_path.message}</p>}
+        {errors.foto_path && (
+          <p className="font-medium text-destructive">{errors.foto_path.message}</p>
+        )}
         <div className="mt-2 border-t pt-3">
           <FotoComprovante
             funcionarioId={funcionarioId}
@@ -277,8 +339,11 @@ export function FormAbastecer({ funcionarioId, viagem, caminhoes, postos, config
 
         {viagem && caminhao ? (
           <p className="text-muted-foreground">
-            Caminhão <span className="font-mono font-semibold text-foreground">{formatarPlaca(caminhao.placa)}</span> (viagem em
-            andamento)
+            Caminhão{' '}
+            <span className="font-mono font-semibold text-foreground">
+              {formatarPlaca(caminhao.placa)}
+            </span>{' '}
+            (viagem em andamento)
           </p>
         ) : (
           <fieldset className="flex flex-col gap-2">
@@ -296,7 +361,9 @@ export function FormAbastecer({ funcionarioId, viagem, caminhoes, postos, config
                 {c.apelido && <span className="text-muted-foreground">{c.apelido}</span>}
               </label>
             ))}
-            {errors.caminhao_id && <p className="font-medium text-destructive">{errors.caminhao_id.message}</p>}
+            {errors.caminhao_id && (
+              <p className="font-medium text-destructive">{errors.caminhao_id.message}</p>
+            )}
           </fieldset>
         )}
 
@@ -306,22 +373,45 @@ export function FormAbastecer({ funcionarioId, viagem, caminhoes, postos, config
           erro={errors.km?.message}
           ajuda={caminhao ? `Último registrado: ${numero.format(caminhao.km_atual)}` : undefined}
         >
-          <Input {...register('km')} {...ariaCampo('km', errors.km?.message, caminhao ? 'ajuda' : undefined)} inputMode="numeric" autoComplete="off" className="h-14 text-2xl tabular-nums" />
+          <Input
+            {...register('km')}
+            {...ariaCampo('km', errors.km?.message, caminhao ? 'ajuda' : undefined)}
+            inputMode="numeric"
+            autoComplete="off"
+            className="h-14 text-2xl tabular-nums"
+          />
         </Campo>
-        <div className="grid grid-cols-2 gap-3">
-          <Campo id="litros" rotulo="Litros" erro={errors.litros?.message}>
-            <Input {...register('litros')} {...ariaCampo('litros', errors.litros?.message)} inputMode="decimal" autoComplete="off" className="h-14 text-2xl tabular-nums" />
-          </Campo>
-          <Campo id="valor_total" rotulo="Valor total (R$)" erro={errors.valor_total?.message}>
-            <Input
-              {...register('valor_total')}
-              {...ariaCampo('valor_total', errors.valor_total?.message)}
-              inputMode="decimal"
-              autoComplete="off"
-              className="h-14 text-2xl tabular-nums"
+        <Campo
+          id="litros"
+          rotulo="Litros"
+          erro={errors.litros?.message}
+          ajuda={
+            litrosLidos !== null
+              ? `Entendido: ${litrosFmt.format(litrosLidos)} litros`
+              : 'Como está na bomba ou no cupom'
+          }
+        >
+          <Input
+            {...register('litros')}
+            {...ariaCampo('litros', errors.litros?.message, 'ajuda')}
+            inputMode="decimal"
+            autoComplete="off"
+            className="h-14 text-2xl tabular-nums"
+          />
+        </Campo>
+        <Controller
+          control={control}
+          name="valor_total"
+          render={({ field, fieldState }) => (
+            <CampoDinheiro
+              id="valor_total"
+              rotulo="Valor total"
+              valor={field.value}
+              aoMudar={field.onChange}
+              erro={fieldState.error?.message}
             />
-          </Campo>
-        </div>
+          )}
+        />
 
         <fieldset className="flex flex-col gap-2">
           <legend className="mb-1 font-medium">Encheu o tanque?</legend>
@@ -337,7 +427,9 @@ export function FormAbastecer({ funcionarioId, viagem, caminhoes, postos, config
                 onClick={() => setValue('tanque_cheio', valor as boolean)}
                 className={cn(
                   'h-14 rounded-xl border text-lg font-semibold',
-                  valores.tanque_cheio === valor ? 'border-primary bg-primary text-primary-foreground' : 'bg-card',
+                  valores.tanque_cheio === valor
+                    ? 'border-primary bg-primary text-primary-foreground'
+                    : 'bg-card',
                 )}
               >
                 {rotulo as string}
@@ -345,19 +437,27 @@ export function FormAbastecer({ funcionarioId, viagem, caminhoes, postos, config
             ))}
           </div>
         </fieldset>
-
       </section>
 
       {salvar.isError && (
-        <div role="alert" className="flex flex-col gap-1 rounded-xl border border-destructive/50 bg-destructive/10 p-4">
+        <div
+          role="alert"
+          className="flex flex-col gap-1 rounded-xl border border-destructive/50 bg-destructive/10 p-4"
+        >
           <p className="font-semibold text-destructive">Não enviado.</p>
           <p>{traduzir(salvar.error)}</p>
-          <p className="text-sm text-muted-foreground">Os dados continuam guardados neste celular. Toque em Salvar de novo.</p>
+          <p className="text-sm text-muted-foreground">
+            Os dados continuam guardados neste celular. Toque em Salvar de novo.
+          </p>
         </div>
       )}
 
       <Button type="submit" size="xl" disabled={salvar.isPending} className="w-full">
-        {salvar.isPending ? 'Salvando…' : salvar.isError ? 'Tentar de novo' : 'Salvar abastecimento'}
+        {salvar.isPending
+          ? 'Salvando…'
+          : salvar.isError
+            ? 'Tentar de novo'
+            : 'Salvar abastecimento'}
       </Button>
     </form>
   );

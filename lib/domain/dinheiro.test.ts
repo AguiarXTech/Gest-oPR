@@ -4,6 +4,7 @@ import {
   formatarBRL,
   percentualParaPontosBase,
   reaisParaCentavos,
+  valorPorDigitos,
   somarCentavos,
 } from './dinheiro';
 
@@ -54,6 +55,14 @@ describe('reaisParaCentavos', () => {
     ['1234,5', 123450],
     ['R$ 10', 1000],
     ['0,01', 1],
+    // teclado do celular com ponto decimal (o motorista digitou 115.50 e virava 11.550,00)
+    ['115.50', 11550],
+    ['115.5', 11550],
+    ['0.99', 99],
+    // ponto com 3 dígitos depois continua sendo milhar
+    ['1.500', 150000],
+    ['1.234.567', 123456700],
+    ['1.500,00', 150000],
   ])('"%s" → %i', (texto, esperado) => {
     expect(reaisParaCentavos(texto)).toBe(esperado);
   });
@@ -62,4 +71,22 @@ describe('reaisParaCentavos', () => {
     expect(() => reaisParaCentavos('12,345')).toThrow(RangeError);
     expect(() => reaisParaCentavos('abc')).toThrow(RangeError);
   });
+});
+
+describe('valorPorDigitos (campo estilo maquininha: só números, da direita para a esquerda)', () => {
+  it.each([
+    ['', ''],
+    ['1', '0,01'],
+    ['11', '0,11'],
+    ['115', '1,15'],
+    ['11550', '115,50'],
+    ['1155000', '11.550,00'],
+    ['0011550', '115,50'],
+    ['R$ 115,50', '115,50'],
+    ['00', ''],
+  ])('"%s" → "%s"', (entrada, esperado) => expect(valorPorDigitos(entrada)).toBe(esperado));
+  it('no máximo 9 dígitos (R$ 9.999.999,99)', () =>
+    expect(valorPorDigitos('12345678901')).toBe('1.234.567,89'));
+  it('o resultado volta certo em centavos', () =>
+    expect(reaisParaCentavos(valorPorDigitos('11550'))).toBe(11550));
 });

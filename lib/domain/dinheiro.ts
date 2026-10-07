@@ -48,10 +48,30 @@ export function formatarBRL(centavos: number): string {
 
 /** Converte texto digitado ("1.234,56", "1234,5", "R$ 10") para centavos. */
 export function reaisParaCentavos(texto: string): number {
-  const limpo = texto.replace(/[R$\s]/g, '').replace(/\./g, '').replace(',', '.');
+  const semSimbolo = texto.replace(/[R$\s]/g, '');
+  // Teclado numérico do celular às vezes só tem ponto: "115.50" é 115 reais e 50 centavos.
+  // Sem vírgula e com um único ponto seguido de 1 ou 2 dígitos, o ponto é decimal;
+  // "1.500" (3 dígitos depois) continua sendo milhar.
+  const pontoDecimal = !semSimbolo.includes(',') && /^\d+\.\d{1,2}$/.test(semSimbolo);
+  const limpo = pontoDecimal ? semSimbolo : semSimbolo.replace(/\./g, '').replace(',', '.');
   if (!/^\d+(\.\d{1,2})?$/.test(limpo)) {
     throw new RangeError(`valor monetário inválido: "${texto}"`);
   }
   const [inteiros, decimais = ''] = limpo.split('.');
   return Number(inteiros) * 100 + Number(decimais.padEnd(2, '0'));
+}
+
+/**
+ * Campo de valor estilo maquininha/Pix (pedido de 2026-10-07): o motorista digita só os
+ * números e o valor se forma da direita para a esquerda (11550 → "115,50"). Sem vírgula ou
+ * ponto para errar. Devolve o texto formatado (sem "R$"), ou '' se não houver valor.
+ */
+export function valorPorDigitos(texto: string): string {
+  const digitos = texto.replace(/\D/g, '').replace(/^0+/, '').slice(0, 9);
+  if (!digitos) return '';
+  const centavos = Number(digitos);
+  return new Intl.NumberFormat('pt-BR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(centavos / 100);
 }

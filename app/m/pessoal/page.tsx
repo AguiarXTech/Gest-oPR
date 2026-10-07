@@ -7,7 +7,8 @@ import { competencia } from '@/lib/domain/resultado';
 import { formatarData } from '@/lib/formatar';
 import { createClient } from '@/lib/supabase/server';
 import { CATEGORIAS_PESSOAIS } from '@/lib/validations/despesaPessoal';
-import { ApagarDespesaPessoal, FormDespesaPessoal } from './FormDespesaPessoal';
+import { CorrigirLancamento } from '@/components/motorista/CorrigirLancamento';
+import { FormDespesaPessoal } from './FormDespesaPessoal';
 
 export const metadata: Metadata = { title: 'Minhas despesas · Gestão RPortugues' };
 
@@ -26,7 +27,10 @@ export default async function DespesasPessoais() {
   const doMes = data ?? [];
   const total = doMes.reduce((t, d) => t + d.valor_centavos, 0);
   const porCategoria = Object.entries(CATEGORIAS_PESSOAIS)
-    .map(([c, rotulo]) => ({ rotulo, valor: doMes.filter((d) => d.categoria === c).reduce((t, d) => t + d.valor_centavos, 0) }))
+    .map(([c, rotulo]) => ({
+      rotulo,
+      valor: doMes.filter((d) => d.categoria === c).reduce((t, d) => t + d.valor_centavos, 0),
+    }))
     .filter((c) => c.valor > 0);
 
   return (
@@ -53,21 +57,30 @@ export default async function DespesasPessoais() {
 
       <ul className="flex flex-col divide-y rounded-2xl border bg-card shadow-xs">
         {doMes.map((d) => (
-          <li key={d.id} className="flex items-center justify-between gap-2 p-3">
-            <span className="flex flex-col">
-              <span className="font-medium">{CATEGORIAS_PESSOAIS[d.categoria as keyof typeof CATEGORIAS_PESSOAIS] ?? d.categoria}</span>
-              <span className="text-sm text-muted-foreground">
-                {formatarData(d.data)}
-                {d.descricao && ` · ${d.descricao}`}
+          <li key={d.id} className="flex flex-col gap-2 p-3">
+            <span className="flex items-center justify-between gap-2">
+              <span className="flex flex-col">
+                <span className="font-medium">
+                  {CATEGORIAS_PESSOAIS[d.categoria as keyof typeof CATEGORIAS_PESSOAIS] ??
+                    d.categoria}
+                </span>
+                <span className="text-sm text-muted-foreground">
+                  {formatarData(d.data)}
+                  {d.descricao && ` · ${d.descricao}`}
+                </span>
               </span>
-            </span>
-            <span className="flex items-center gap-1">
               <span className="font-semibold tabular-nums">{formatarBRL(d.valor_centavos)}</span>
-              <ApagarDespesaPessoal id={d.id} />
             </span>
+            <CorrigirLancamento
+              tabela="despesas_pessoais"
+              id={d.id}
+              valorCentavos={d.valor_centavos}
+            />
           </li>
         ))}
-        {doMes.length === 0 && <li className="p-3 text-muted-foreground">Nada lançado neste mês.</li>}
+        {doMes.length === 0 && (
+          <li className="p-3 text-muted-foreground">Nada lançado neste mês.</li>
+        )}
       </ul>
     </>
   );

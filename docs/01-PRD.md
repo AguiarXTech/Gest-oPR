@@ -68,6 +68,7 @@ A operação hoje depende de papel, WhatsApp e memória. Isso gera cinco problem
 | RF-38 | Despesas pessoais do motorista (opcional): alimentação, pernoite etc., só para o controle dele. **Só ele vê** (nem a gestão); não entram no acerto | motorista |
 | RF-39 | Dono/admin que também dirige usa a área do motorista: o cadastro de funcionário com o CPF dele é ligado ao login existente ("Criar acesso" liga, mantendo o papel) | dono/admin |
 | RF-40 | Foto de cada caminhão (lista, ficha e escolha do caminhão pelo motorista) | gestor |
+| RF-48 | Valor digitado sem erro (campo só de números, estilo maquininha: 11550 = R$ 115,50) e "Meus lançamentos" para o motorista corrigir ou apagar valor de abastecimento e despesa ainda não conferidos | motorista |
 | RF-47 | Motorista vê a própria CNH e os documentos (com anexo) do cavalo e da carreta da viagem em andamento, para a fiscalização | motorista |
 | RF-46 | Remover viagem com motivo (teste, criada errada, duplicada), registrado na auditoria; opção de apagar junto os abastecimentos e despesas dela; viagem em acerto não sai | gestor |
 | RF-45 | Locais de carga no cadastro do cliente (nome e endereço, ex.: Cimento Liz); o motorista toca o que carregou ao finalizar a viagem (a carga pode trocar no meio do caminho) | gestor (cadastro), motorista (escolha) |

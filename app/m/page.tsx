@@ -3,6 +3,7 @@
 import {
   FileText,
   Flag,
+  ListChecks,
   Fuel,
   LayoutDashboard,
   PiggyBank,
@@ -74,6 +75,13 @@ export default async function HomeMotorista() {
         )}
         <BotaoGrande href="/m/despesa" rotulo="Despesa" icone={Receipt} pronto />
         <BotaoGrande href="/m/extrato" rotulo="Meu extrato" icone={Wallet} pronto />
+        <BotaoGrande
+          href="/m/lancamentos"
+          rotulo="Meus lançamentos (corrigir valor)"
+          icone={ListChecks}
+          pronto
+          largo
+        />
         <BotaoGrande
           href="/m/documentos"
           rotulo="Documentos (CNH, CRLV)"

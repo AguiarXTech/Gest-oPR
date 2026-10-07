@@ -4,7 +4,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { useForm, useWatch } from 'react-hook-form';
+import { Controller, useForm, useWatch } from 'react-hook-form';
+import { CampoDinheiro } from '@/components/motorista/CampoDinheiro';
 import { FotoComprovante } from '@/components/camera/FotoComprovante';
 import { ariaCampo, Campo } from '@/components/gestao/Campo';
 import { apagarRascunho, lerRascunho, salvarRascunho } from '@/components/motorista/rascunho';
@@ -146,16 +147,20 @@ export function FormDespesa({ funcionarioId, viagem }: Props) {
         {errors.tipo && <p className="font-medium text-destructive">{errors.tipo.message}</p>}
       </fieldset>
 
-      <div className="grid grid-cols-2 gap-3">
-        <Campo id="valor" rotulo="Valor (R$)" erro={errors.valor?.message}>
-          <Input
-            {...register('valor')}
-            {...ariaCampo('valor', errors.valor?.message)}
-            inputMode="decimal"
-            autoComplete="off"
-            className="h-14 text-2xl tabular-nums"
+      <Controller
+        control={control}
+        name="valor"
+        render={({ field, fieldState }) => (
+          <CampoDinheiro
+            id="valor"
+            rotulo="Valor"
+            valor={field.value}
+            aoMudar={field.onChange}
+            erro={fieldState.error?.message}
           />
-        </Campo>
+        )}
+      />
+      <div className="grid grid-cols-2 gap-3">
         <Campo id="data" rotulo="Data" erro={errors.data?.message}>
           <Input
             {...register('data')}
