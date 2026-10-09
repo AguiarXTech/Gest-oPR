@@ -244,6 +244,9 @@ export default async function Conferencia({ searchParams }: PageProps<'/g/abaste
         <Aba href={url('despesas', filtro)} ativa={tipo === 'despesas'}>
           Despesas
         </Aba>
+        <Aba href="/g/abastecimentos/relatorio" ativa={false}>
+          Relatório
+        </Aba>
       </nav>
       <nav aria-label="Filtro" className="flex flex-wrap gap-2">
         {Object.entries(filtros).map(([valor, rotulo]) => (

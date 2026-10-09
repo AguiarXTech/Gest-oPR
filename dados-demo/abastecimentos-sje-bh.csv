@@ -1,0 +1,166 @@
+data_hora,placa,motorista,posto,cidade,km,litros,preco_litro,valor_total,tanque_cheio,trecho
+2026-07-01 06:00,DEM1A01,"Carlos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",480000,"74,927","6,07","454,81",Sim,ida
+2026-07-01 14:00,DEM1A01,"Carlos (demo)","Posto Anel (demo)","Belo Horizonte - MG",480298,"76,734","5,93","455,03",Não,volta
+2026-07-01 15:00,DEM2B02,"Marcos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",350000,"86,990","6,09","529,77",Sim,ida
+2026-07-02 00:00,DEM3C03,"Paulo (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",610000,"111,552","6,06","676,01",Sim,ida
+2026-07-02 15:51,DEM1A01,"Carlos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",480570,"141,270","6,07","857,51",Sim,volta
+2026-07-03 01:45,DEM2B02,"Marcos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",350588,"231,271","6,05","1.399,19",Sim,volta
+2026-07-03 09:27,DEM3C03,"Paulo (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",610575,"209,335","6,06","1.268,57",Sim,volta
+2026-07-04 18:30,DEM3C03,"Paulo (demo)","Posto Anel (demo)","Belo Horizonte - MG",610879,"66,305","5,99","397,17",Não,volta
+2026-07-05 07:41,DEM1A01,"Carlos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",481142,"207,529","6,06","1.257,63",Sim,volta
+2026-07-05 12:33,DEM3C03,"Paulo (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",611154,"145,203","6,11","887,19",Sim,volta
+2026-07-05 20:15,DEM2B02,"Marcos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",351160,"227,666","6,10","1.388,76",Sim,volta
+2026-07-07 01:19,DEM1A01,"Carlos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",481727,"219,653","6,11","1.342,08",Sim,volta
+2026-07-07 14:21,DEM3C03,"Paulo (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",611744,"214,209","6,09","1.304,53",Sim,volta
+2026-07-08 19:57,DEM2B02,"Marcos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",351737,"229,664","6,07","1.394,06",Sim,volta
+2026-07-09 14:25,DEM1A01,"Carlos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",482315,"222,342","6,10","1.356,29",Sim,volta
+2026-07-09 15:21,DEM3C03,"Paulo (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",612338,"209,713","6,09","1.277,15",Sim,volta
+2026-07-11 02:34,DEM1A01,"Carlos (demo)","Posto Anel (demo)","Belo Horizonte - MG",482626,"65,021","6,00","390,13",Não,volta
+2026-07-11 10:06,DEM2B02,"Marcos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",352340,"236,370","6,12","1.446,58",Sim,volta
+2026-07-12 01:10,DEM1A01,"Carlos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",482897,"152,703","6,08","928,43",Sim,volta
+2026-07-12 10:25,DEM3C03,"Paulo (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",612934,"219,118","6,09","1.334,43",Sim,volta
+2026-07-13 00:36,DEM1A01,"Carlos (demo)","Posto Anel (demo)","Belo Horizonte - MG",483198,"89,002","5,97","531,34",Não,volta
+2026-07-13 08:28,DEM2B02,"Marcos (demo)","Posto Anel (demo)","Belo Horizonte - MG",352655,"80,874","5,99","484,44",Não,volta
+2026-07-13 23:39,DEM3C03,"Paulo (demo)","Posto Anel (demo)","Belo Horizonte - MG",613241,"100,157","6,00","600,94",Não,volta
+2026-07-14 03:39,DEM2B02,"Marcos (demo)","Posto Rota 381 (demo)","Itabira - MG",352935,"147,514","6,02","888,03",Sim,volta
+2026-07-14 04:15,DEM1A01,"Carlos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",483468,"125,008","6,12","765,05",Sim,volta
+2026-07-14 18:45,DEM3C03,"Paulo (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",613520,"114,498","6,10","698,44",Sim,volta
+2026-07-16 01:26,DEM2B02,"Marcos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",353521,"235,894","6,11","1.441,31",Sim,volta
+2026-07-16 14:44,DEM1A01,"Carlos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",484069,"226,063","6,10","1.378,98",Sim,volta
+2026-07-17 02:58,DEM3C03,"Paulo (demo)","Posto Rota 381 (demo)","Itabira - MG",614096,"210,869","6,06","1.277,87",Sim,volta
+2026-07-18 03:28,DEM2B02,"Marcos (demo)","Posto Rota 381 (demo)","Itabira - MG",354103,"227,313","6,05","1.375,24",Sim,volta
+2026-07-18 10:52,DEM1A01,"Carlos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",484648,"215,954","6,10","1.317,32",Sim,volta
+2026-07-19 04:15,DEM3C03,"Paulo (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",614670,"213,773","6,13","1.310,43",Sim,volta
+2026-07-19 20:02,DEM2B02,"Marcos (demo)","Posto Anel (demo)","Belo Horizonte - MG",354416,"108,836","6,02","655,19",Não,volta
+2026-07-20 07:31,DEM1A01,"Carlos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",485224,"212,233","6,13","1.300,99",Sim,volta
+2026-07-20 11:15,DEM3C03,"Paulo (demo)","Posto Rota 381 (demo)","Itabira - MG",614969,"77,903","7,19","560,12",Não,volta
+2026-07-20 20:03,DEM2B02,"Marcos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",354690,"123,220","6,13","755,34",Sim,volta
+2026-07-21 08:47,DEM3C03,"Paulo (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",615256,"133,042","6,11","812,89",Sim,volta
+2026-07-22 16:14,DEM1A01,"Carlos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",485817,"222,575","6,13","1.364,38",Sim,volta
+2026-07-23 19:48,DEM3C03,"Paulo (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",615842,"213,201","6,10","1.300,53",Sim,volta
+2026-07-23 21:19,DEM2B02,"Marcos (demo)","Posto Rota 381 (demo)","Itabira - MG",355277,"234,248","6,09","1.426,57",Sim,volta
+2026-07-24 20:22,DEM1A01,"Carlos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",486406,"219,605","6,13","1.346,18",Sim,volta
+2026-07-25 11:13,DEM2B02,"Marcos (demo)","Posto Anel (demo)","Belo Horizonte - MG",355589,"66,721","6,04","402,99",Não,volta
+2026-07-26 05:17,DEM3C03,"Paulo (demo)","Posto Rota 381 (demo)","Itabira - MG",616418,"203,290","6,10","1.240,07",Sim,volta
+2026-07-26 11:20,DEM2B02,"Marcos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",355873,"166,367","6,11","1.016,50",Sim,volta
+2026-07-27 06:04,DEM1A01,"Carlos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",486995,"221,878","6,14","1.362,33",Sim,volta
+2026-07-28 13:15,DEM3C03,"Paulo (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",617016,"215,643","6,14","1.324,05",Sim,volta
+2026-07-28 14:55,DEM1A01,"Carlos (demo)","Posto Anel (demo)","Belo Horizonte - MG",487294,"99,284","6,05","600,67",Não,volta
+2026-07-28 15:21,DEM2B02,"Marcos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",356445,"226,334","6,16","1.394,22",Sim,volta
+2026-07-29 12:40,DEM1A01,"Carlos (demo)","Posto Rota 381 (demo)","Itabira - MG",487569,"122,841","6,08","746,87",Sim,volta
+2026-07-30 15:56,DEM3C03,"Paulo (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",617595,"210,707","6,15","1.295,85",Sim,volta
+2026-07-31 08:50,DEM2B02,"Marcos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",357018,"230,646","6,12","1.411,55",Sim,volta
+2026-07-31 13:40,DEM1A01,"Carlos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",488145,"212,770","6,16","1.310,66",Sim,volta
+2026-07-31 15:25,DEM3C03,"Paulo (demo)","Posto Anel (demo)","Belo Horizonte - MG",617895,"67,318","6,01","404,58",Não,volta
+2026-08-01 19:05,DEM3C03,"Paulo (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",618167,"143,397","6,16","883,33",Sim,volta
+2026-08-02 05:11,DEM2B02,"Marcos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",357604,"230,744","6,17","1.423,69",Sim,volta
+2026-08-02 17:29,DEM3C03,"Paulo (demo)","Posto Anel (demo)","Belo Horizonte - MG",618481,"65,341","6,06","395,97",Não,volta
+2026-08-02 18:40,DEM1A01,"Carlos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",488737,"222,891","6,14","1.368,55",Sim,volta
+2026-08-03 12:52,DEM3C03,"Paulo (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",618756,"151,253","6,13","927,18",Sim,volta
+2026-08-04 06:55,DEM2B02,"Marcos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",358201,"231,509","6,16","1.426,10",Sim,volta
+2026-08-04 17:50,DEM3C03,"Paulo (demo)","Posto Anel (demo)","Belo Horizonte - MG",619053,"100,198","6,07","608,20",Não,volta
+2026-08-05 03:13,DEM1A01,"Carlos (demo)","Posto Rota 381 (demo)","Itabira - MG",489316,"219,058","6,10","1.336,25",Sim,volta
+2026-08-05 19:48,DEM3C03,"Paulo (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",619323,"102,642","6,16","632,27",Sim,volta
+2026-08-06 05:25,DEM1A01,"Carlos (demo)","Posto Anel (demo)","Belo Horizonte - MG",489615,"91,898","6,06","556,90",Não,volta
+2026-08-06 15:08,DEM2B02,"Marcos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",358778,"234,627","6,16","1.445,30",Sim,volta
+2026-08-06 20:27,DEM3C03,"Paulo (demo)","Posto Anel (demo)","Belo Horizonte - MG",619637,"99,862","6,06","605,16",Não,volta
+2026-08-07 08:53,DEM1A01,"Carlos (demo)","Posto Rota 381 (demo)","Itabira - MG",489887,"121,699","6,12","744,80",Sim,volta
+2026-08-07 21:05,DEM3C03,"Paulo (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",619915,"115,494","6,17","712,60",Sim,volta
+2026-08-09 12:23,DEM2B02,"Marcos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",359355,"231,219","6,15","1.422,00",Sim,volta
+2026-08-09 21:18,DEM1A01,"Carlos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",490477,"222,872","6,19","1.379,58",Sim,volta
+2026-08-10 14:39,DEM3C03,"Paulo (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",620493,"207,755","6,16","1.279,77",Sim,volta
+2026-08-11 02:07,DEM1A01,"Carlos (demo)","Posto Anel (demo)","Belo Horizonte - MG",490775,"74,901","6,06","453,90",Não,volta
+2026-08-11 17:54,DEM2B02,"Marcos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",359934,"230,291","6,19","1.425,50",Sim,volta
+2026-08-11 20:46,DEM1A01,"Carlos (demo)","Posto Rota 381 (demo)","Itabira - MG",491053,"141,897","6,14","871,25",Sim,volta
+2026-08-12 20:43,DEM3C03,"Paulo (demo)","Posto Rota 381 (demo)","Itabira - MG",621069,"205,219","6,15","1.262,10",Sim,volta
+2026-08-13 15:59,DEM1A01,"Carlos (demo)","Posto Anel (demo)","Belo Horizonte - MG",491367,"88,801","6,08","539,91",Não,volta
+2026-08-14 02:48,DEM2B02,"Marcos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",360528,"310,371","6,17","1.914,99",Sim,volta
+2026-08-14 04:34,DEM3C03,"Paulo (demo)","Posto Anel (demo)","Belo Horizonte - MG",621379,"69,063","6,08","419,90",Não,volta
+2026-08-14 15:08,DEM1A01,"Carlos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",491653,"145,555","6,16","896,62",Sim,volta
+2026-08-15 04:36,DEM3C03,"Paulo (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",621650,"144,729","6,20","897,32",Sim,volta
+2026-08-15 13:09,DEM2B02,"Marcos (demo)","Posto Anel (demo)","Belo Horizonte - MG",360827,"76,905","6,08","467,58",Não,volta
+2026-08-16 08:23,DEM2B02,"Marcos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",361097,"150,694","6,20","934,30",Sim,volta
+2026-08-17 07:17,DEM1A01,"Carlos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",492252,"224,564","6,18","1.387,81",Sim,volta
+2026-08-18 02:44,DEM3C03,"Paulo (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",622240,"210,049","6,19","1.300,20",Sim,volta
+2026-08-18 06:38,DEM2B02,"Marcos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",361685,"236,056","6,21","1.465,91",Sim,volta
+2026-08-18 22:27,DEM1A01,"Carlos (demo)","Posto Anel (demo)","Belo Horizonte - MG",492560,"60,185","6,07","365,32",Não,volta
+2026-08-20 00:06,DEM2B02,"Marcos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",362263,"233,847","6,21","1.452,19",Sim,volta
+2026-08-20 01:31,DEM1A01,"Carlos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",492828,"158,996","6,18","982,60",Sim,volta
+2026-08-20 21:36,DEM3C03,"Paulo (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",622817,"208,573","6,20","1.293,15",Sim,volta
+2026-08-21 21:01,DEM2B02,"Marcos (demo)","Posto Anel (demo)","Belo Horizonte - MG",362576,"108,281","6,12","662,68",Não,volta
+2026-08-22 17:20,DEM2B02,"Marcos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",362860,"129,813","6,23","808,73",Sim,volta
+2026-08-22 17:58,DEM1A01,"Carlos (demo)","Posto Rota 381 (demo)","Itabira - MG",493416,"225,216","6,17","1.389,58",Sim,volta
+2026-08-23 02:52,DEM3C03,"Paulo (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",623403,"214,624","6,18","1.326,38",Sim,volta
+2026-08-24 00:08,DEM1A01,"Carlos (demo)","Posto Anel (demo)","Belo Horizonte - MG",493728,"109,266","6,08","664,34",Não,volta
+2026-08-24 16:47,DEM2B02,"Marcos (demo)","Posto Anel (demo)","Belo Horizonte - MG",363173,"76,275","6,10","465,28",Não,volta
+2026-08-24 21:10,DEM1A01,"Carlos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",494012,"115,055","6,19","712,19",Sim,volta
+2026-08-25 07:46,DEM3C03,"Paulo (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",623978,"207,230","6,23","1.291,04",Sim,volta
+2026-08-25 13:19,DEM2B02,"Marcos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",363457,"162,482","6,24","1.013,89",Sim,volta
+2026-08-26 17:03,DEM3C03,"Paulo (demo)","Posto Anel (demo)","Belo Horizonte - MG",624292,"68,673","6,14","421,65",Não,volta
+2026-08-27 18:01,DEM3C03,"Paulo (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",624570,"149,479","6,19","925,28",Sim,volta
+2026-08-27 20:47,DEM1A01,"Carlos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",494593,"217,403","6,21","1.350,07",Sim,volta
+2026-08-27 23:48,DEM2B02,"Marcos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",364036,"225,942","6,22","1.405,36",Sim,volta
+2026-08-29 17:46,DEM1A01,"Carlos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",495180,"217,101","6,23","1.352,54",Sim,volta
+2026-08-30 00:07,DEM3C03,"Paulo (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",625170,"215,087","6,24","1.342,14",Sim,volta
+2026-08-30 01:14,DEM2B02,"Marcos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",364626,"234,407","6,24","1.462,70",Sim,volta
+2026-08-31 02:02,DEM3C03,"Paulo (demo)","Posto Anel (demo)","Belo Horizonte - MG",625487,"91,111","6,10","555,78",Não,volta
+2026-08-31 23:17,DEM3C03,"Paulo (demo)","Posto Rota 381 (demo)","Itabira - MG",625764,"119,601","6,16","736,74",Sim,volta
+2026-09-01 08:29,DEM1A01,"Carlos (demo)","Posto Rota 381 (demo)","Itabira - MG",495775,"223,384","6,21","1.387,21",Sim,volta
+2026-09-01 16:29,DEM2B02,"Marcos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",365209,"232,690","6,24","1.451,99",Sim,volta
+2026-09-03 02:06,DEM3C03,"Paulo (demo)","Posto Rota 381 (demo)","Itabira - MG",626331,"206,017","6,18","1.273,19",Sim,volta
+2026-09-03 07:06,DEM2B02,"Marcos (demo)","Posto Anel (demo)","Belo Horizonte - MG",365514,"78,957","6,13","484,01",Não,volta
+2026-09-04 06:52,DEM1A01,"Carlos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",496352,"218,320","6,22","1.357,95",Sim,volta
+2026-09-04 09:46,DEM2B02,"Marcos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",365781,"141,669","6,21","879,76",Sim,volta
+2026-09-04 16:01,DEM3C03,"Paulo (demo)","Posto Anel (demo)","Belo Horizonte - MG",626646,"63,667","6,12","389,64",Não,volta
+2026-09-05 12:52,DEM3C03,"Paulo (demo)","Posto Rota 381 (demo)","Itabira - MG",626925,"149,300","6,17","921,18",Sim,volta
+2026-09-06 08:45,DEM2B02,"Marcos (demo)","Posto Anel (demo)","Belo Horizonte - MG",366083,"90,954","6,14","558,46",Não,volta
+2026-09-06 22:58,DEM1A01,"Carlos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",496933,"218,850","6,24","1.365,62",Sim,volta
+2026-09-07 04:53,DEM2B02,"Marcos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",366366,"143,234","6,24","893,78",Sim,volta
+2026-09-07 12:51,DEM3C03,"Paulo (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",627510,"214,553","6,26","1.343,10",Sim,volta
+2026-09-08 11:14,DEM3C03,"Paulo (demo)","Posto Anel (demo)","Belo Horizonte - MG",627809,"98,906","6,11","604,32",Não,volta
+2026-09-09 10:34,DEM3C03,"Paulo (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",628088,"111,359","6,24","694,88",Sim,volta
+2026-09-09 19:51,DEM2B02,"Marcos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",366957,"242,930","6,25","1.518,31",Sim,volta
+2026-09-09 20:26,DEM1A01,"Carlos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",497525,"225,123","6,23","1.402,52",Sim,volta
+2026-09-11 16:25,DEM3C03,"Paulo (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",628682,"213,743","6,29","1.344,44",Sim,volta
+2026-09-12 05:43,DEM1A01,"Carlos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",498110,"217,105","6,27","1.361,25",Sim,volta
+2026-09-12 08:25,DEM2B02,"Marcos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",367530,"230,231","6,24","1.436,64",Sim,volta
+2026-09-13 20:26,DEM1A01,"Carlos (demo)","Posto Anel (demo)","Belo Horizonte - MG",498410,"63,269","6,13","387,84",Não,volta
+2026-09-14 17:32,DEM3C03,"Paulo (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",629270,"211,709","6,28","1.329,53",Sim,volta
+2026-09-14 22:51,DEM1A01,"Carlos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",498682,"157,703","6,27","988,80",Sim,volta
+2026-09-15 00:00,DEM2B02,"Marcos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",368102,"229,297","6,25","1.433,11",Sim,volta
+2026-09-16 08:44,DEM1A01,"Carlos (demo)","Posto Anel (demo)","Belo Horizonte - MG",498987,"103,711","6,15","637,82",Não,volta
+2026-09-16 23:44,DEM3C03,"Paulo (demo)","Posto Rota 381 (demo)","Itabira - MG",629855,"212,745","6,20","1.319,02",Sim,volta
+2026-09-17 06:33,DEM1A01,"Carlos (demo)","Posto Rota 381 (demo)","Itabira - MG",499265,"113,660","7,35","835,40",Sim,volta
+2026-09-18 00:02,DEM2B02,"Marcos (demo)","Posto Rota 381 (demo)","Itabira - MG",368684,"229,963","6,21","1.428,07",Sim,volta
+2026-09-19 04:06,DEM1A01,"Carlos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",499847,"214,588","6,26","1.343,32",Sim,volta
+2026-09-19 13:47,DEM3C03,"Paulo (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",630449,"215,253","6,28","1.351,79",Sim,volta
+2026-09-20 12:11,DEM2B02,"Marcos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",369258,"232,065","6,31","1.464,33",Sim,volta
+2026-09-21 08:40,DEM1A01,"Carlos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",500436,"215,824","6,26","1.351,06",Sim,volta
+2026-09-21 12:07,DEM2B02,"Marcos (demo)","Posto Anel (demo)","Belo Horizonte - MG",369561,"74,263","6,18","458,95",Não,volta
+2026-09-21 22:49,DEM3C03,"Paulo (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",631025,"207,443","6,27","1.300,67",Sim,volta
+2026-09-22 07:54,DEM2B02,"Marcos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",369836,"157,271","6,26","984,52",Sim,volta
+2026-09-23 20:02,DEM1A01,"Carlos (demo)","Posto Rota 381 (demo)","Itabira - MG",501019,"224,877","6,27","1.409,98",Sim,volta
+2026-09-23 21:46,DEM2B02,"Marcos (demo)","Posto Anel (demo)","Belo Horizonte - MG",370142,"77,876","6,18","481,27",Não,volta
+2026-09-24 05:25,DEM3C03,"Paulo (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",631619,"214,628","6,27","1.345,72",Sim,volta
+2026-09-25 00:54,DEM2B02,"Marcos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",370429,"160,189","6,31","1.010,79",Sim,volta
+2026-09-25 07:07,DEM3C03,"Paulo (demo)","Posto Anel (demo)","Belo Horizonte - MG",631930,"84,565","6,18","522,61",Não,volta
+2026-09-26 01:49,DEM1A01,"Carlos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",501598,"219,680","6,32","1.388,38",Sim,volta
+2026-09-26 08:39,DEM3C03,"Paulo (demo)","Posto Rota 381 (demo)","Itabira - MG",632214,"124,262","6,23","774,15",Sim,volta
+2026-09-27 13:54,DEM2B02,"Marcos (demo)","Posto Rota 381 (demo)","Itabira - MG",371006,"226,872","6,24","1.415,68",Sim,volta
+2026-09-27 15:32,DEM1A01,"Carlos (demo)","Posto Anel (demo)","Belo Horizonte - MG",501908,"76,395","6,21","474,41",Não,volta
+2026-09-28 04:23,DEM3C03,"Paulo (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",632794,"209,484","6,28","1.315,56",Sim,volta
+2026-09-28 13:20,DEM1A01,"Carlos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",502187,"143,637","6,29","903,48",Sim,volta
+2026-09-29 05:23,DEM2B02,"Marcos (demo)","Posto Anel (demo)","Belo Horizonte - MG",371308,"91,745","6,22","570,65",Não,volta
+2026-09-29 21:46,DEM1A01,"Carlos (demo)","Posto Anel (demo)","Belo Horizonte - MG",502502,"87,074","6,18","538,12",Não,volta
+2026-09-30 07:34,DEM2B02,"Marcos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",371583,"143,518","6,31","905,60",Sim,volta
+2026-09-30 09:10,DEM3C03,"Paulo (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",633395,"214,942","6,32","1.358,43",Sim,volta
+2026-09-30 20:20,DEM1A01,"Carlos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",502785,"131,989","6,30","831,53",Sim,volta
+2026-10-02 23:22,DEM1A01,"Carlos (demo)","Posto Rota 381 (demo)","Itabira - MG",503364,"220,417","6,26","1.379,81",Sim,volta
+2026-10-03 02:21,DEM2B02,"Marcos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",372164,"231,158","6,29","1.453,98",Sim,volta
+2026-10-03 09:48,DEM3C03,"Paulo (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",633976,"206,206","6,33","1.305,28",Sim,volta
+2026-10-05 09:16,DEM1A01,"Carlos (demo)","Posto Rota 381 (demo)","Itabira - MG",503939,"217,906","6,29","1.370,63",Sim,volta
+2026-10-05 10:51,DEM2B02,"Marcos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",372733,"226,562","6,30","1.427,34",Sim,volta
+2026-10-06 01:57,DEM3C03,"Paulo (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",634565,"212,519","6,34","1.347,37",Sim,volta
+2026-10-07 20:25,DEM1A01,"Carlos (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",504521,"218,950","6,35","1.390,33",Sim,volta
+2026-10-08 06:35,DEM2B02,"Marcos (demo)","Posto Rota 381 (demo)","Itabira - MG",373317,"231,168","6,25","1.444,80",Sim,volta
+2026-10-08 21:10,DEM3C03,"Paulo (demo)","Posto Serra Verde (demo)","São João Evangelista - MG",635139,"207,748","6,34","1.317,12",Sim,volta
