@@ -1,17 +1,23 @@
-// Relatório de abastecimento (case de 2026-10-09): cards e gráficos a partir de uma planilha
-// do Google. A planilha é a fonte: entrou linha nova, a página mostra em até 1 minuto (ou na
-// hora, quando o gatilho da planilha avisa). Contas em lib/domain/relatorioAbastecimento.ts.
-import { AlertTriangle, FileSpreadsheet } from 'lucide-react';
+// Relatório de abastecimento (RF-50): cards e gráficos dos abastecimentos que os motoristas
+// lançam. Sempre o dado do banco na hora de abrir a página; contas em
+// lib/domain/relatorioAbastecimento.ts.
+import { AlertTriangle } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { AtualizacaoAutomatica } from '@/components/relatorio/AtualizacaoAutomatica';
 import { GraficosAbastecimento } from '@/components/relatorio/GraficosAbastecimento';
 import { formatarBRL } from '@/lib/domain/dinheiro';
 import { formatarPlaca } from '@/lib/domain/placa';
-import { resumirAbastecimentos } from '@/lib/domain/relatorioAbastecimento';
+import {
+  inicioDoPeriodoRelatorio,
+  lerPeriodoRelatorio,
+  PERIODOS_RELATORIO,
+  resumirAbastecimentos,
+} from '@/lib/domain/relatorioAbastecimento';
 import { formatarData, formatarDataHora, formatarKm, formatarLitros } from '@/lib/formatar';
-import { lerPlanilhaRelatorio } from '@/lib/relatorio/planilha';
+import { cn } from '@/lib/utils';
 import { obterConfiguracoes } from '@/lib/supabase/configuracoes';
+import { carregarAbastecimentosRelatorio } from '@/lib/supabase/relatorioAbastecimento';
+import { createClient } from '@/lib/supabase/server';
 
 export const metadata: Metadata = { title: 'Relatório de abastecimento · Gestão RPortugues' };
 
@@ -50,54 +56,57 @@ function Card({
   );
 }
 
-export default async function RelatorioAbastecimento() {
-  const [leitura, config] = await Promise.all([lerPlanilhaRelatorio(), obterConfiguracoes()]);
-  const linkPlanilha = process.env.RELATORIO_PLANILHA_URL_EDICAO;
+export default async function RelatorioAbastecimento({
+  searchParams,
+}: PageProps<'/g/abastecimentos/relatorio'>) {
+  const periodo = lerPeriodoRelatorio((await searchParams).periodo);
+  const supabase = await createClient();
+  const [linhas, config] = await Promise.all([
+    carregarAbastecimentosRelatorio(supabase, inicioDoPeriodoRelatorio(periodo, new Date())),
+    obterConfiguracoes(),
+  ]);
 
   const cabecalho = (
     <div className="flex flex-col gap-2">
       <Link href="/g/abastecimentos" className="text-sm text-muted-foreground hover:underline">
         ← Abastecimentos
       </Link>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-3xl">Relatório de abastecimento</h1>
-        {linkPlanilha && (
-          <a
-            href={linkPlanilha}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex h-11 items-center gap-2 rounded-lg border bg-card px-4 font-medium hover:bg-muted"
+      <h1 className="text-3xl">Relatório de abastecimento</h1>
+      <nav aria-label="Período" className="flex flex-wrap gap-2">
+        {Object.entries(PERIODOS_RELATORIO).map(([valor, rotulo]) => (
+          <Link
+            key={valor}
+            href={`/g/abastecimentos/relatorio?periodo=${valor}`}
+            aria-current={periodo === valor ? 'page' : undefined}
+            className={cn(
+              'inline-flex h-11 items-center rounded-lg px-4 font-medium',
+              periodo === valor ? 'bg-grafite text-white' : 'border bg-card hover:bg-muted',
+            )}
           >
-            <FileSpreadsheet className="size-5" aria-hidden /> Abrir planilha
-          </a>
-        )}
-      </div>
-      <p className="text-muted-foreground">
-        Rota São João Evangelista ↔ Belo Horizonte · dados da planilha do Google (demonstração)
-      </p>
+            {rotulo}
+          </Link>
+        ))}
+      </nav>
     </div>
   );
 
-  if (leitura.estado !== 'ok') {
+  if (linhas.length === 0) {
     return (
       <>
         {cabecalho}
-        <p role="alert" className="rounded-2xl border border-alerta bg-alerta/10 p-5 font-medium">
-          {leitura.estado === 'sem_configuracao'
-            ? 'Planilha não configurada: defina RELATORIO_PLANILHA_CSV_URL (link CSV da planilha) nas variáveis da Vercel.'
-            : leitura.mensagem}
+        <p className="rounded-xl border border-dashed p-6 text-center text-muted-foreground">
+          Nenhum abastecimento lançado nos últimos {PERIODOS_RELATORIO[periodo]}.
         </p>
       </>
     );
   }
 
-  const r = resumirAbastecimentos(leitura.linhas, config);
+  const r = resumirAbastecimentos(linhas, config);
   const c = r.cards;
 
   return (
     <>
       {cabecalho}
-      <AtualizacaoAutomatica lidaEm={leitura.lidaEm} />
 
       <section
         aria-label="Principais números"
@@ -199,12 +208,6 @@ export default async function RelatorioAbastecimento() {
             </li>
           ))}
         </ul>
-        {leitura.ignoradas > 0 && (
-          <p className="text-sm text-alerta">
-            {leitura.ignoradas} linha(s) da planilha ignorada(s): data, km, litros ou valor
-            faltando.
-          </p>
-        )}
       </section>
     </>
   );

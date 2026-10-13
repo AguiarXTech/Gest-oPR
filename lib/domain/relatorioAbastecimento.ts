@@ -1,11 +1,10 @@
-// Relatório de abastecimento a partir de uma planilha (case de 2026-10-09): a página da
-// gestão lê a planilha do Google (CSV) e mostra cards e gráficos. Funções puras: ler o CSV,
-// converter as linhas e resumir. O km/L usa a regra da plataforma (tanque cheio, §4).
+// Relatório de abastecimento (RF-50): cards, gráficos e "fora do padrão" a partir dos
+// abastecimentos lançados pelos motoristas. Funções puras: converter o registro do banco,
+// escolher o período e resumir. O km/L usa a regra da plataforma (tanque cheio, §4).
 import { calcularMedicoes, mediaPonderada, type Medicao } from './consumo';
-import { lerDecimal } from './numeros';
 
 export type LinhaAbastecimento = {
-  /** ISO com fuso de Brasília (-03:00). */
+  /** ISO 8601. */
   dataHora: string;
   placa: string;
   motorista: string;
@@ -15,131 +14,56 @@ export type LinhaAbastecimento = {
   litros: number;
   valorTotalCentavos: number;
   tanqueCheio: boolean;
-  trecho: 'ida' | 'volta' | null;
 };
 
-/** CSV simples: aspas, aspas duplicadas e separador vírgula ou ponto e vírgula (detectado). */
-export function lerCsv(texto: string): string[][] {
-  const primeira = texto.slice(0, texto.search(/\r?\n/) === -1 ? undefined : texto.search(/\r?\n/));
-  const sep = (primeira.match(/;/g) ?? []).length > (primeira.match(/,/g) ?? []).length ? ';' : ',';
-  const linhas: string[][] = [];
-  let campo = '';
-  let linha: string[] = [];
-  let aspas = false;
-  for (let i = 0; i < texto.length; i++) {
-    const c = texto[i];
-    if (aspas) {
-      if (c === '"' && texto[i + 1] === '"') {
-        campo += '"';
-        i++;
-      } else if (c === '"') aspas = false;
-      else campo += c;
-    } else if (c === '"') aspas = true;
-    else if (c === sep) {
-      linha.push(campo);
-      campo = '';
-    } else if (c === '\n' || c === '\r') {
-      if (c === '\r' && texto[i + 1] === '\n') i++;
-      linha.push(campo);
-      linhas.push(linha);
-      linha = [];
-      campo = '';
-    } else campo += c;
-  }
-  if (campo !== '' || linha.length > 0) {
-    linha.push(campo);
-    linhas.push(linha);
-  }
-  return linhas.filter((l) => l.some((c) => c.trim() !== ''));
-}
-
-const normalizar = (s: string) =>
-  s
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '_')
-    .replace(/^_|_$/g, '');
-
-const COLUNAS: Record<string, keyof LinhaAbastecimento | 'preco_litro'> = {
-  data_hora: 'dataHora',
-  data: 'dataHora',
-  placa: 'placa',
-  motorista: 'motorista',
-  posto: 'posto',
-  cidade: 'cidade',
-  km: 'km',
-  litros: 'litros',
-  preco_litro: 'preco_litro',
-  valor_total: 'valorTotalCentavos',
-  valor: 'valorTotalCentavos',
-  tanque_cheio: 'tanqueCheio',
-  trecho: 'trecho',
+/** Registro de `abastecimentos` com caminhão, motorista e posto (fornecedor) juntos. */
+export type AbastecimentoDoBanco = {
+  data_hora: string;
+  km: number;
+  /** numeric chega como número ou texto, conforme o cliente. */
+  litros: number | string;
+  valor_total_centavos: number;
+  tanque_cheio: boolean;
+  posto_nome: string | null;
+  caminhoes: { placa: string } | null;
+  funcionarios: { nome: string } | null;
+  fornecedores: { nome: string; cidade: string | null } | null;
 };
 
-/** "2026-07-02 18:40" ou "02/07/2026 18:40" (horário de Brasília) → ISO com -03:00. */
-function lerDataHora(texto: string): string | null {
-  const t = texto.trim();
-  let m = /^(\d{4})-(\d{2})-(\d{2})[ T](\d{1,2}):(\d{2})/.exec(t);
-  if (m) return `${m[1]}-${m[2]}-${m[3]}T${m[4].padStart(2, '0')}:${m[5]}:00-03:00`;
-  m = /^(\d{2})\/(\d{2})\/(\d{4})(?:\s+(\d{1,2}):(\d{2}))?/.exec(t);
-  if (m)
-    return `${m[3]}-${m[2]}-${m[1]}T${(m[4] ?? '12').padStart(2, '0')}:${m[5] ?? '00'}:00-03:00`;
-  return null;
+/** Posto: o cadastrado (fornecedor) ou o nome lido do cupom; cidade vem do cadastro do posto. */
+export function linhaDoBanco(a: AbastecimentoDoBanco): LinhaAbastecimento {
+  return {
+    dataHora: a.data_hora,
+    placa: a.caminhoes?.placa ?? '—',
+    motorista: a.funcionarios?.nome ?? '—',
+    posto: a.fornecedores?.nome ?? a.posto_nome ?? 'Posto não informado',
+    cidade: a.fornecedores?.cidade?.trim() || 'Sem cidade',
+    km: a.km,
+    litros: Number(a.litros),
+    valorTotalCentavos: a.valor_total_centavos,
+    tanqueCheio: a.tanque_cheio,
+  };
 }
 
-/** Linhas válidas da planilha; as incompletas são contadas em `ignoradas` (aparecem na tela). */
-export function lerPlanilhaAbastecimentos(texto: string): {
-  linhas: LinhaAbastecimento[];
-  ignoradas: number;
-} {
-  const [cabecalho, ...dados] = lerCsv(texto);
-  if (!cabecalho) return { linhas: [], ignoradas: 0 };
-  const indice = new Map<string, number>();
-  cabecalho.forEach((c, i) => {
-    const chave = COLUNAS[normalizar(c)];
-    if (chave && !indice.has(chave)) indice.set(chave, i);
-  });
-  const valor = (l: string[], chave: string) =>
-    indice.has(chave) ? (l[indice.get(chave)!] ?? '').trim() : '';
+export const PERIODOS_RELATORIO = {
+  '30d': '30 dias',
+  '90d': '3 meses',
+  '12m': '12 meses',
+} as const;
+export type PeriodoRelatorio = keyof typeof PERIODOS_RELATORIO;
 
-  const linhas: LinhaAbastecimento[] = [];
-  let ignoradas = 0;
-  for (const l of dados) {
-    const dataHora = lerDataHora(valor(l, 'dataHora'));
-    const km = lerDecimal(valor(l, 'km').replace(/\./g, '')) ?? null;
-    const litros = lerDecimal(valor(l, 'litros'));
-    const total = lerDecimal(valor(l, 'valorTotalCentavos').replace(/^R\$\s*/, ''));
-    const preco = lerDecimal(valor(l, 'preco_litro').replace(/^R\$\s*/, ''));
-    const valorTotal = total ?? (preco !== null && litros !== null ? preco * litros : null);
-    const placa = valor(l, 'placa').toUpperCase();
-    if (
-      !dataHora ||
-      km === null ||
-      !Number.isInteger(km) ||
-      !litros ||
-      litros <= 0 ||
-      !valorTotal ||
-      !placa
-    ) {
-      ignoradas++;
-      continue;
-    }
-    const trecho = valor(l, 'trecho').toLowerCase();
-    linhas.push({
-      dataHora,
-      placa,
-      motorista: valor(l, 'motorista'),
-      posto: valor(l, 'posto'),
-      cidade: valor(l, 'cidade') || 'Sem cidade',
-      km,
-      litros,
-      valorTotalCentavos: Math.round(valorTotal * 100),
-      tanqueCheio: /^(s|sim|x|1|true|cheio)$/i.test(valor(l, 'tanqueCheio')),
-      trecho: trecho === 'ida' || trecho === 'volta' ? trecho : null,
-    });
-  }
-  return { linhas, ignoradas };
+export function lerPeriodoRelatorio(valor: unknown): PeriodoRelatorio {
+  return typeof valor === 'string' && valor in PERIODOS_RELATORIO
+    ? (valor as PeriodoRelatorio)
+    : '90d';
+}
+
+/** Início do período (ISO), contado a partir de `agora`. */
+export function inicioDoPeriodoRelatorio(periodo: PeriodoRelatorio, agora: Date): string {
+  const d = new Date(agora);
+  if (periodo === '12m') d.setUTCFullYear(d.getUTCFullYear() - 1);
+  else d.setUTCDate(d.getUTCDate() - (periodo === '30d' ? 30 : 90));
+  return d.toISOString();
 }
 
 /** Segunda-feira (aaaa-mm-dd) da semana da data, no horário de Brasília (semana começa na segunda). */

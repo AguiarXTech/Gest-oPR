@@ -69,7 +69,7 @@ A operação hoje depende de papel, WhatsApp e memória. Isso gera cinco problem
 | RF-39 | Dono/admin que também dirige usa a área do motorista: o cadastro de funcionário com o CPF dele é ligado ao login existente ("Criar acesso" liga, mantendo o papel) | dono/admin |
 | RF-40 | Foto de cada caminhão (lista, ficha e escolha do caminhão pelo motorista) | gestor |
 | RF-51 | Manutenção (do motorista e da gestão) sempre ligada ao caminhão; sem "quem pagou" (decisão do dono em 2026-10-13: só a despesa e o caminhão) | gestor, motorista |
-| RF-50 | Relatório de abastecimento com cards e gráficos lido de uma planilha do Google; atualiza sozinho (a cada minuto e na hora pelo gatilho da planilha); dados de demonstração da rota SJE ↔ BH | gestor |
+| RF-50 | Relatório de abastecimento com cards e gráficos dos abastecimentos lançados pelos motoristas (30 dias, 3 meses ou 12 meses): gasto, litros, preço médio, km/L de tanque cheio, diesel por km, por caminhão, por cidade e fora do padrão. A versão por planilha do Google (demonstração de 2026-10) foi retirada | gestor |
 | RF-49 | Manutenção e pedágio lançados pelos motoristas aparecem nas áreas Manutenção e Pedágio, com o caminhão; despesa sempre ligada a um caminhão | gestor |
 | RF-48 | Valor digitado sem erro (campo só de números, estilo maquininha: 11550 = R$ 115,50) e "Meus lançamentos" para o motorista corrigir ou apagar valor de abastecimento e despesa ainda não conferidos | motorista |
 | RF-47 | Motorista vê a própria CNH e os documentos (com anexo) do cavalo e da carreta da viagem em andamento, para a fiscalização | motorista |

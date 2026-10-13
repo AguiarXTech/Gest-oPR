@@ -1,63 +1,57 @@
 import { describe, expect, it } from 'vitest';
-import { lerCsv, lerPlanilhaAbastecimentos, resumirAbastecimentos } from './relatorioAbastecimento';
+import {
+  inicioDoPeriodoRelatorio,
+  lerPeriodoRelatorio,
+  linhaDoBanco,
+  resumirAbastecimentos,
+} from './relatorioAbastecimento';
 
-describe('lerCsv', () => {
-  it('aspas, vírgula decimal entre aspas e quebra de linha do Windows', () => {
-    expect(lerCsv('a,b,c\r\n"6,05","x ""y""",3\r\n')).toEqual([
-      ['a', 'b', 'c'],
-      ['6,05', 'x "y"', '3'],
-    ]);
-  });
-  it('separador ponto e vírgula (Excel em português)', () => {
-    expect(lerCsv('a;b\n1,5;2')).toEqual([
-      ['a', 'b'],
-      ['1,5', '2'],
-    ]);
-  });
+describe('linhaDoBanco', () => {
+  const base = {
+    data_hora: '2026-10-13T14:05:00-03:00',
+    km: 505101,
+    litros: '218.868',
+    valor_total_centavos: 139200,
+    tanque_cheio: true,
+    posto_nome: 'AUTO POSTO X LTDA',
+    caminhoes: { placa: 'ABC1D23' },
+    funcionarios: { nome: 'Carlos' },
+    fornecedores: { nome: 'Posto Serra Verde', cidade: 'São João Evangelista - MG' },
+  };
+  it('converte litros (numeric) e usa o posto cadastrado', () =>
+    expect(linhaDoBanco(base)).toEqual({
+      dataHora: '2026-10-13T14:05:00-03:00',
+      placa: 'ABC1D23',
+      motorista: 'Carlos',
+      posto: 'Posto Serra Verde',
+      cidade: 'São João Evangelista - MG',
+      km: 505101,
+      litros: 218.868,
+      valorTotalCentavos: 139200,
+      tanqueCheio: true,
+    }));
+  it('sem posto cadastrado: nome do cupom e "Sem cidade"', () =>
+    expect(linhaDoBanco({ ...base, fornecedores: null })).toMatchObject({
+      posto: 'AUTO POSTO X LTDA',
+      cidade: 'Sem cidade',
+    }));
+  it('sem nada do posto', () =>
+    expect(linhaDoBanco({ ...base, fornecedores: null, posto_nome: null }).posto).toBe(
+      'Posto não informado',
+    ));
 });
 
-const CABECALHO =
-  'data_hora,placa,motorista,posto,cidade,km,litros,preco_litro,valor_total,tanque_cheio,trecho';
-
-describe('lerPlanilhaAbastecimentos', () => {
-  it('lê formato brasileiro e o da planilha em inglês', () => {
-    const { linhas, ignoradas } = lerPlanilhaAbastecimentos(
-      [
-        CABECALHO,
-        '2026-07-02 18:40,DEM1A01,Carlos,Posto Serra,São João Evangelista - MG,480580,"215,430","6,05","1.303,35",Sim,volta',
-        '03/07/2026 09:15,DEM1A01,Carlos,Posto Anel,Belo Horizonte - MG,480870,90.5,5.99,542.10,Não,ida',
-      ].join('\n'),
-    );
-    expect(ignoradas).toBe(0);
-    expect(linhas[0]).toMatchObject({
-      placa: 'DEM1A01',
-      km: 480580,
-      litros: 215.43,
-      valorTotalCentavos: 130335,
-      tanqueCheio: true,
-      trecho: 'volta',
-      dataHora: '2026-07-02T18:40:00-03:00',
-    });
-    expect(linhas[1]).toMatchObject({
-      litros: 90.5,
-      valorTotalCentavos: 54210,
-      tanqueCheio: false,
-      dataHora: '2026-07-03T09:15:00-03:00',
-    });
+describe('período do relatório', () => {
+  const agora = new Date('2026-10-13T15:00:00Z');
+  it('padrão é 3 meses; valor estranho também', () => {
+    expect(lerPeriodoRelatorio(undefined)).toBe('90d');
+    expect(lerPeriodoRelatorio('xyz')).toBe('90d');
+    expect(lerPeriodoRelatorio('30d')).toBe('30d');
   });
-  it('linha incompleta é ignorada e contada (aparece no relatório)', () => {
-    const r = lerPlanilhaAbastecimentos(
-      [CABECALHO, '2026-07-02 18:40,DEM1A01,Carlos,Posto,Cidade,abc,10,6,60,Sim,ida', ''].join(
-        '\n',
-      ),
-    );
-    expect(r).toEqual({ linhas: [], ignoradas: 1 });
-  });
-  it('cabeçalho com acento e maiúsculas', () => {
-    const r = lerPlanilhaAbastecimentos(
-      'Data/Hora,Placa,Motorista,Posto,Cidade,KM,Litros,Preço litro,Valor total,Tanque cheio,Trecho\n2026-07-02 18:40,DEM1A01,C,P,X,1000,100,6,600,sim,ida',
-    );
-    expect(r.linhas).toHaveLength(1);
+  it('início contado a partir de agora', () => {
+    expect(inicioDoPeriodoRelatorio('30d', agora)).toBe('2026-09-13T15:00:00.000Z');
+    expect(inicioDoPeriodoRelatorio('90d', agora)).toBe('2026-07-15T15:00:00.000Z');
+    expect(inicioDoPeriodoRelatorio('12m', agora)).toBe('2025-10-13T15:00:00.000Z');
   });
 });
 
@@ -80,7 +74,6 @@ describe('resumirAbastecimentos', () => {
     litros,
     valorTotalCentavos: valor,
     tanqueCheio: cheio,
-    trecho: null,
   });
   const linhas = [
     l('2026-07-06T10:00:00-03:00', 'A', 100000, 200, 120000), // abre

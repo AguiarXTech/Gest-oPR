@@ -103,7 +103,7 @@ Sprints de ~1 semana, com dedicação parcial. Cada tarefa tem ID (`S{sprint}-{n
 | A-11 | Locais de carga do cliente escolhidos pelo motorista (RF-45) | Feito |
 | A-12 | Remover viagem com motivo (RF-46) | Feito |
 | A-18 | Manutenção ligada ao caminhão nas duas pontas; "quem pagou", aviso e baixa feitos e retirados a pedido do dono (RF-51) | Feito |
-| A-17 | Relatório de abastecimento por planilha (RF-50): cards, gráficos, fora do padrão e atualização automática | Feito |
+| A-17 | Relatório de abastecimento (RF-50): cards, gráficos e fora do padrão; começou lendo planilha do Google (demonstração) e passou a ler do banco | Feito |
 | A-16 | Manutenção e pedágio dos motoristas nas áreas Manutenção e Pedágio; despesa sempre com caminhão (RF-49) | Feito |
 | A-15 | Valor sem erro de digitação e correção de lançamentos pelo motorista (RF-48) | Feito |
 | A-14 | Documentos do veículo da viagem e CNH na área do motorista (RF-47) | Feito |
