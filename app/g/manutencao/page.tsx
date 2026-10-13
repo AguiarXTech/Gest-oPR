@@ -2,7 +2,7 @@
 import type { Metadata } from 'next';
 import { AcoesManutencao } from '@/components/gestao/AcoesManutencao';
 import { ApagarRegistro } from '@/components/gestao/ApagarRegistro';
-import { PagoPeloMotorista } from '@/components/gestao/PagoPeloMotorista';
+import { DespesasDoMotorista } from '@/components/gestao/DespesasDoMotorista';
 import { formatarBRL } from '@/lib/domain/dinheiro';
 import { competencia } from '@/lib/domain/resultado';
 import type { SituacaoItem } from '@/lib/domain/manutencao';
@@ -42,86 +42,50 @@ function mesAtual() {
 export default async function Manutencao() {
   const supabase = await createClient();
   const { inicioData, fimData } = limitesDoMes(mesAtual());
-  const [
-    caminhoes,
-    { data: oficinas },
-    { data: historico },
-    doDono,
-    doMotorista,
-    { data: motoristas },
-  ] = await Promise.all([
-    carregarSituacaoManutencao(supabase),
-    supabase
-      .from('fornecedores')
-      .select('id, nome')
-      .eq('ativo', true)
-      .in('tipo', ['oficina', 'loja', 'recapadora', 'outro'])
-      .order('nome'),
-    supabase
-      .from('manutencoes')
-      .select(
-        'id, data, km, tipo, descricao, valor_centavos, reembolsado_em, caminhoes(placa), fornecedores(nome), funcionarios(nome)',
-      )
-      .order('data', { ascending: false })
-      .limit(30),
-    // pago pelo dono: manutenções que a gestão lançou como pagas pela empresa, no mês
-    supabase
-      .from('manutencoes')
-      .select('valor_centavos')
-      .is('pago_por_funcionario_id', null)
-      .gte('data', inicioData)
-      .lt('data', fimData),
-    // pago pelo motorista: despesa que ele lançou + manutenção da gestão paga por ele
-    carregarDespesasMotorista(supabase, 'manutencao', { inicio: inicioData, fim: fimData }),
-    // "Quem pagou?" no formulário de manutenção
-    supabase.from('funcionarios').select('id, nome').eq('ativo', true).order('nome'),
-  ]);
-  const pagoDonoCentavos =
-    (doDono.data ?? []).reduce((t, m) => t + m.valor_centavos, 0) +
-    doMotorista.pagoEmpresaPeriodoCentavos;
+  const [caminhoes, { data: oficinas }, { data: historico }, daGestao, dosMotoristas] =
+    await Promise.all([
+      carregarSituacaoManutencao(supabase),
+      supabase
+        .from('fornecedores')
+        .select('id, nome')
+        .eq('ativo', true)
+        .in('tipo', ['oficina', 'loja', 'recapadora', 'outro'])
+        .order('nome'),
+      supabase
+        .from('manutencoes')
+        .select(
+          'id, data, km, tipo, descricao, valor_centavos, caminhoes(placa), fornecedores(nome)',
+        )
+        .order('data', { ascending: false })
+        .limit(30),
+      // gasto do mês: manutenções lançadas pela gestão + as que os motoristas lançaram
+      supabase
+        .from('manutencoes')
+        .select('valor_centavos')
+        .gte('data', inicioData)
+        .lt('data', fimData),
+      carregarDespesasMotorista(supabase, 'manutencao', { inicio: inicioData, fim: fimData }),
+    ]);
+  const gastoMesCentavos =
+    (daGestao.data ?? []).reduce((t, m) => t + m.valor_centavos, 0) + dosMotoristas.totalCentavos;
 
   return (
     <>
       <h1 className="text-3xl">Manutenção</h1>
 
-      <section id="a-devolver" className="flex scroll-mt-20 flex-col gap-3">
-        <h2 className="text-lg font-semibold">Quem pagou (este mês)</h2>
-        <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-xl border bg-card p-4 shadow-xs">
-            <p className="text-sm text-muted-foreground">Pago pelo dono</p>
-            <p className="text-2xl font-bold tabular-nums">{formatarBRL(pagoDonoCentavos)}</p>
-          </div>
-          <div className="rounded-xl border bg-card p-4 shadow-xs">
-            <p className="text-sm text-muted-foreground">Pago pelo motorista</p>
-            <p className="text-2xl font-bold tabular-nums">
-              {formatarBRL(doMotorista.totalPeriodoCentavos)}
-            </p>
-          </div>
-          <div
-            className={cn(
-              'col-span-2 rounded-xl border p-4 shadow-xs',
-              doMotorista.aDevolverCentavos > 0 ? 'border-alerta bg-alerta/10' : 'bg-card',
-            )}
-          >
-            <p className="text-sm text-muted-foreground">
-              A devolver aos motoristas (pague e dê baixa, ou entra no próximo acerto)
-            </p>
-            <p className="text-2xl font-bold tabular-nums">
-              {formatarBRL(doMotorista.aDevolverCentavos)}
-            </p>
-          </div>
+      <section className="flex flex-col gap-3">
+        <div className="rounded-xl border bg-card p-4 shadow-xs">
+          <p className="text-sm text-muted-foreground">Gasto com manutenção este mês</p>
+          <p className="text-2xl font-bold tabular-nums">{formatarBRL(gastoMesCentavos)}</p>
+          <p className="text-sm text-muted-foreground">
+            Lançadas aqui pela gestão e pelos motoristas no app
+          </p>
         </div>
-        <h3 className="font-semibold">Manutenção paga pelo motorista</h3>
-        <PagoPeloMotorista
-          itens={doMotorista.itens}
-          vazio="Nenhuma manutenção paga por motorista."
-          permitirBaixa
+        <h2 className="text-lg font-semibold">Lançadas pelos motoristas (este mês)</h2>
+        <DespesasDoMotorista
+          itens={dosMotoristas.itens}
+          vazio="Nenhuma manutenção lançada por motorista neste mês."
         />
-        <p className="text-sm text-muted-foreground">
-          Pago pelo motorista = o que ele pagou do bolso (lançado por ele no app ou pela gestão).
-          Quando você pagar a ele, toque em Dar baixa; se não der baixa, o valor volta para ele no
-          próximo acerto. Nunca nos dois.
-        </p>
       </section>
       <AcoesManutencao
         caminhoes={caminhoes.map((c) => ({ id: c.id, placa: c.placa, km_atual: c.km_atual }))}
@@ -129,7 +93,6 @@ export default async function Manutencao() {
           c.itens.map((i) => ({ id: i.id, caminhao_id: c.id, item: i.item })),
         )}
         oficinas={oficinas ?? []}
-        motoristas={motoristas ?? []}
       />
 
       <div className="grid gap-4 lg:grid-cols-2">
@@ -198,9 +161,6 @@ export default async function Manutencao() {
                   {formatarData(m.data)} · {formatarKm(m.km)} ·{' '}
                   {m.tipo === 'corretiva' ? 'corretiva' : 'preventiva'}
                   {m.fornecedores && ` · ${m.fornecedores.nome}`}
-                  {m.funcionarios
-                    ? ` · pago por ${m.funcionarios.nome}${m.reembolsado_em ? ' (já devolvido)' : ' (a devolver)'}`
-                    : ' · pago pela empresa'}
                 </span>
               </span>
               <span className="flex items-center gap-1">

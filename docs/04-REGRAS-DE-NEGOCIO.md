@@ -189,15 +189,11 @@ Uma viagem concluída **sem nenhum frete lançado** **impede o fechamento do ace
 |---|---|
 | `total_frete` | Σ fretes das viagens (só informativo na tela da gestão; **não** é gravado no acerto, que o motorista lê — Q6) |
 | `total_comissao` | Σ comissão por viagem |
-| `total_reembolsos` | Σ despesas com `reembolsavel = true`, `pago_pelo_motorista = true` e **sem baixa** (`reembolsado_em` nulo) + Σ abastecimentos com `forma_pagamento = 'motorista'` (Q5: só despesas do caminhão são reembolsáveis por padrão; Q11: o diesel é faturado no posto, então normalmente não entra) |
+| `total_reembolsos` | Σ despesas com `reembolsavel = true` + Σ abastecimentos com `forma_pagamento = 'motorista'` (o domínio ainda ignora despesa com `pago_pelo_motorista = false` ou com baixa, colunas hoje sem uso nas telas) (Q5: só despesas do caminhão são reembolsáveis por padrão; Q11: o diesel é faturado no posto, então normalmente não entra) |
 | `total_adiantamentos` | Σ adiantamentos |
 | `saldo` | `total_comissao + total_reembolsos − total_adiantamentos` |
 
-**Quem pagou e baixa (pedido de 2026-10-13).** Despesa e manutenção dizem quem pagou: o motorista (do bolso, recebe de volta) ou a empresa/dono. O que o motorista pagou é devolvido **uma vez só**, pelo que vier primeiro:
-- **baixa do dono** (paga direto e confirma em Manutenção; fica registrado quando e quem; dá para desfazer), ou
-- **acerto** (despesa reembolsável sem baixa entra em `total_reembolsos`).
-
-Despesa em acerto fechado/pago não aceita baixa (já foi paga no acerto). Manutenção lançada pela gestão como paga por um motorista só é devolvida pela baixa (não entra no acerto). Cada valor a devolver vira um aviso no painel ("Enzo pagou R$ 115,50 em manutenção · DEF4G56").
+**Sem "quem pagou" (decisão do dono, 2026-10-13).** Despesa e manutenção registram só o valor e o caminhão. O que o motorista lança como reembolsável continua voltando para ele no acerto, como sempre. O aviso de devolução e a baixa foram feitos e retirados no mesmo dia.
 
 `saldo > 0`: a empresa paga o motorista. `saldo < 0`: o motorista deve (vai para o próximo acerto como observação; não há transporte automático no MVP).
 
@@ -224,7 +220,7 @@ receita  = Σ fretes (ida + volta) das viagens concluídas no mês
 diesel   = Σ valor dos abastecimentos do caminhão no mês
 pedagio  = Σ despesas tipo pedagio do caminhão no mês + Σ cobranças do app de pedágio
 despesas = Σ outras despesas do caminhão no mês
-manutencao = Σ manutenções lançadas pela gestão (pago pelo dono) + Σ despesas tipo manutencao (pago pelo motorista)
+manutencao = Σ manutenções lançadas pela gestão + Σ despesas tipo manutencao lançadas pelos motoristas
 comissao = Σ comissão calculada das viagens (mesmo sem acerto fechado; marcar "estimada" se não fechado)
 resultado = receita − diesel − pedagio − despesas − manutencao − comissao
 custo_por_km = (diesel + pedagio + despesas + manutencao + comissao) / km rodados no mês
@@ -235,7 +231,7 @@ O km/L **não** é km das viagens ÷ litros do mês: o diesel abastecido no fim 
 
 Despesas contam pela data e pelo caminhão (com ou sem viagem). Despesa sem caminhão (lançada antes de 2026-10-07, quando o app deixava) entra só no total da frota; a gestão escolhe o caminhão na conferência. Sem viagem, o motorista escolhe o caminhão ao lançar.
 
-**Quem pagou:** despesa lançada pelo motorista e reembolsável é dele, do bolso, e volta no acerto (a devolver → no acerto → devolvido). Manutenção e pedágio pagos pelo motorista aparecem nas áreas Manutenção e Pedágio, com o total a devolver.
+Manutenção e pedágio lançados pelos motoristas aparecem nas áreas Manutenção e Pedágio, com o caminhão (sem "quem pagou").
 
 Manutenção entra desde 2026-10-01. A fase 2 soma pneus (via CPK × km) e custos fixos (seguro, parcelas, IPVA rateado).
 

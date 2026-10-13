@@ -255,18 +255,11 @@ export default async function DetalheAcerto({ params }: PageProps<'/g/acertos/[i
               >
                 <span>
                   {formatarData(d.data)} · {TIPOS_DESPESA[d.tipo]} {d.conferido ? '✓' : ''}
-                  {!d.pago_pelo_motorista && (
-                    <span className="text-sm text-muted-foreground"> · pago pela empresa</span>
-                  )}
-                  {d.reembolsado_em && (
-                    <span className="text-sm text-sucesso"> · já pago direto pelo dono</span>
-                  )}
                 </span>
                 <span
                   className={cn(
                     'font-semibold tabular-nums',
-                    (!d.reembolsavel || !d.pago_pelo_motorista || d.reembolsado_em) &&
-                      'text-muted-foreground line-through',
+                    !d.reembolsavel && 'text-muted-foreground line-through',
                   )}
                 >
                   {formatarBRL(d.valor_centavos)}

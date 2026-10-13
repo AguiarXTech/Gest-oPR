@@ -58,11 +58,7 @@ export function FormDespesa({ funcionarioId, viagem, caminhoes, caminhaoSugerido
       },
     };
   });
-  const [salvo, setSalvo] = useState<{ tipo: string; valor: number; receber: boolean } | null>(
-    null,
-  );
-  // quem pagou (pedido de 2026-10-13): o motorista recebe de volta; a empresa, não
-  const [pagoPeloMotorista, setPagoPeloMotorista] = useState(true);
+  const [salvo, setSalvo] = useState<{ tipo: string; valor: number } | null>(null);
   const [caminhaoId, setCaminhaoId] = useState(
     caminhoes.some((c) => c.id === caminhaoSugerido)
       ? (caminhaoSugerido ?? '')
@@ -95,20 +91,14 @@ export function FormDespesa({ funcionarioId, viagem, caminhoes, caminhaoSugerido
         ...dados,
         id: inicial.id,
         valor_centavos: valor,
-        // Q5: a empresa só reembolsa despesas do caminhão; o gestor pode mudar na conferência.
-        // Se a empresa pagou, não há o que devolver ao motorista.
-        pago_pelo_motorista: pagoPeloMotorista,
-        reembolsavel: pagoPeloMotorista && despesaReembolsavel(dados.tipo),
+        // Q5: a empresa só reembolsa despesas do caminhão; o gestor pode mudar na conferência
+        reembolsavel: despesaReembolsavel(dados.tipo),
         motorista_id: funcionarioId, // o trigger força o funcionário logado
         viagem_id: viagem?.id ?? null,
         caminhao_id: viagem?.caminhao_id ?? caminhaoId,
       });
       if (error && !jaFoiSalvo(error)) throw error;
-      return {
-        tipo: TIPOS_DESPESA[dados.tipo],
-        valor,
-        receber: pagoPeloMotorista && despesaReembolsavel(dados.tipo),
-      };
+      return { tipo: TIPOS_DESPESA[dados.tipo], valor };
     },
     onSuccess: (r) => {
       apagarRascunho(RASCUNHO);
@@ -127,11 +117,6 @@ export function FormDespesa({ funcionarioId, viagem, caminhoes, caminhaoSugerido
           <p className="text-lg">
             {salvo.tipo}:{' '}
             <span className="font-semibold tabular-nums">{formatarBRL(salvo.valor)}</span>
-          </p>
-          <p className="text-muted-foreground">
-            {salvo.receber
-              ? 'Você vai receber esse valor de volta.'
-              : 'Pago pela empresa: nada a receber.'}
           </p>
         </section>
         <Button
@@ -226,32 +211,6 @@ export function FormDespesa({ funcionarioId, viagem, caminhoes, caminhaoSugerido
           <p className="font-medium text-destructive">{errors.foto_path.message}</p>
         )}
       </section>
-
-      <fieldset className="flex flex-col gap-2">
-        <legend className="mb-1 text-lg font-semibold">Quem pagou?</legend>
-        <div className="grid grid-cols-2 gap-2">
-          {(
-            [
-              [true, 'Eu paguei', 'Recebo de volta'],
-              [false, 'A empresa pagou', 'Faturado ou o dono pagou'],
-            ] as const
-          ).map(([valor, rotulo, ajuda]) => (
-            <button
-              key={String(valor)}
-              type="button"
-              aria-pressed={pagoPeloMotorista === valor}
-              onClick={() => setPagoPeloMotorista(valor)}
-              className={cn(
-                'flex min-h-16 flex-col items-center justify-center rounded-xl border bg-card p-2 text-center shadow-xs',
-                pagoPeloMotorista === valor && 'border-primary bg-primary text-primary-foreground',
-              )}
-            >
-              <span className="text-base font-semibold">{rotulo}</span>
-              <span className="text-sm opacity-80">{ajuda}</span>
-            </button>
-          ))}
-        </div>
-      </fieldset>
 
       {!viagem && (
         <fieldset className="flex flex-col gap-2">

@@ -78,9 +78,7 @@ export default async function Extrato() {
       .select('valor_centavos')
       .eq('motorista_id', fid)
       .is('acerto_id', null)
-      .eq('reembolsavel', true)
-      .eq('pago_pelo_motorista', true)
-      .is('reembolsado_em', null), // já pago direto pelo dono (baixa) não entra
+      .eq('reembolsavel', true),
     supabase
       .from('abastecimentos')
       .select('valor_total_centavos')

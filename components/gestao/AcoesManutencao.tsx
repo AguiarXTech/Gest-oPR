@@ -10,10 +10,9 @@ type Props = {
   caminhoes: { id: string; placa: string; km_atual: number }[];
   planos: { id: string; caminhao_id: string; item: string }[];
   oficinas: { id: string; nome: string }[];
-  motoristas: { id: string; nome: string }[];
 };
 
-export function AcoesManutencao({ caminhoes, planos, oficinas, motoristas }: Props) {
+export function AcoesManutencao({ caminhoes, planos, oficinas }: Props) {
   const [aberto, setAberto] = useState<'manutencao' | 'plano' | null>(null);
 
   if (!aberto) {
@@ -31,21 +30,13 @@ export function AcoesManutencao({ caminhoes, planos, oficinas, motoristas }: Pro
   return (
     <section className="flex flex-col gap-3 rounded-2xl border bg-card p-4 shadow-xs sm:p-6">
       <div className="flex items-center justify-between gap-2">
-        <h2 className="text-lg font-semibold">
-          {aberto === 'manutencao' ? 'Registrar manutenção' : 'Novo item do plano'}
-        </h2>
+        <h2 className="text-lg font-semibold">{aberto === 'manutencao' ? 'Registrar manutenção' : 'Novo item do plano'}</h2>
         <Button variant="ghost" onClick={() => setAberto(null)}>
           Fechar
         </Button>
       </div>
       {aberto === 'manutencao' ? (
-        <FormManutencao
-          caminhoes={caminhoes}
-          planos={planos}
-          oficinas={oficinas}
-          motoristas={motoristas}
-          aoSalvar={() => setAberto(null)}
-        />
+        <FormManutencao caminhoes={caminhoes} planos={planos} oficinas={oficinas} aoSalvar={() => setAberto(null)} />
       ) : (
         <FormItemPlano caminhoes={caminhoes} aoSalvar={() => setAberto(null)} />
       )}

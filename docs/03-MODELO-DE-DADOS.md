@@ -45,14 +45,14 @@ erDiagram
 | `viagens` | Um **ciclo** SJE → BH → SJE (Q3) | `carreta_id` opcional (truck, ou cavalo sem carreta). Índice único parcial: 1 viagem `em_andamento` por motorista, por caminhão e por carreta. Sem dados comerciais: o motorista registra só caminhão, km e datas |
 | `fretes` | Trecho carregado de uma viagem | `sentido` (`ida`/`volta`), único por viagem → 0 a 2 fretes. A volta é sempre carregada; a ida, às vezes. Só gestor lê e escreve (motorista sem policy). Bloqueado se a viagem estiver em acerto fechado |
 | `abastecimentos` | Diesel | `nfce_chave` única (antifraude); `tanque_cheio` define a medição de consumo; `forma_pagamento` define se entra no acerto |
-| `despesas_viagem` | Pedágio, alimentação etc. | `reembolsavel` define se entra no acerto; `pago_pelo_motorista` (empresa pagou = nada a devolver); `reembolsado_em`/`reembolsado_por` = baixa do dono (pagou direto; não entra mais no acerto). Motorista não altera a baixa (trigger) |
+| `despesas_viagem` | Pedágio, alimentação etc. | `reembolsavel` define se entra no acerto. Sempre com `caminhao_id` (o motorista escolhe se não estiver em viagem). As colunas `pago_pelo_motorista` e `reembolsado_em`/`reembolsado_por` existem (migration 20261013000000) mas ficaram **sem uso nas telas**: o dono não quer "quem pagou" |
 | `adiantamentos` | Dinheiro entregue ao motorista | Só gestor escreve |
 | `regras_comissao` | Parâmetros por motorista | Constraint de exclusão impede vigências sobrepostas |
 | `acertos` | Fechamento por período | `regra_snapshot` guarda a regra usada (histórico imutável mesmo que a regra mude depois) |
 | `documentos` | Vencimentos (empresa, caminhão, carreta ou funcionário) | Histórico: renovação = novo registro; a view `vw_documentos_status` pega o mais recente |
 | `configuracoes` | Limiares | Chave/valor JSON, lidos pelas funções de domínio |
 | `planos_manutencao` | Itens do plano preventivo por caminhão | Intervalo por km e/ou dias (check exige um dos dois); `ultimo_km`/`ultima_data` atualizados por trigger ao cumprir o item |
-| `manutencoes` | Manutenção feita (preventiva/corretiva) | Custo e oficina; o `km` atualiza `caminhoes.km_atual` (mesmo trigger de viagens/abastecimentos); entra no resultado. `pago_por_funcionario_id` = motorista que pagou (nulo = empresa); `reembolsado_em`/`reembolsado_por` = baixa. Baixa pela função `dar_baixa_reembolso` (só gestão) |
+| `manutencoes` | Manutenção feita (preventiva/corretiva) | Custo e oficina; o `km` atualiza `caminhoes.km_atual` (mesmo trigger de viagens/abastecimentos); entra no resultado. `pago_por_funcionario_id`, `reembolsado_em`/`reembolsado_por` e a função `dar_baixa_reembolso` existem mas estão **sem uso nas telas** (decisão do dono, 2026-10-13) |
 | `manutencao_itens` | Itens do plano cumpridos numa manutenção | PK (manutencao_id, plano_id) |
 | `despesas_pessoais` | Controle pessoal do motorista (opcional) | Só o próprio lê/escreve (RLS sem policy de gestor); `funcionario_id` forçado por trigger. Fora do acerto e do resultado |
 | `pracas_pedagio`, `tarifas_pedagio` | Praças da rota e tarifa por eixo com histórico | Reajuste = nova linha (`vigencia_inicio`); só gestão |
