@@ -2,6 +2,7 @@
 // com "Corrigir valor" enquanto o escritório não conferiu e não entrou em acerto.
 import type { Metadata } from 'next';
 import { CorrigirLancamento } from '@/components/motorista/CorrigirLancamento';
+import { situacaoReembolso, type SituacaoReembolso } from '@/lib/domain/despesas';
 import { formatarBRL } from '@/lib/domain/dinheiro';
 import { formatarPlaca } from '@/lib/domain/placa';
 import { formatarData, formatarDataHora, formatarLitros } from '@/lib/formatar';
@@ -14,6 +15,20 @@ export const metadata: Metadata = { title: 'Meus lançamentos · Gestão Frota' 
 function desde60Dias() {
   return new Date(Date.now() - 60 * 86_400_000).toISOString();
 }
+
+/** O que o motorista vê sobre o dinheiro dele (pedido de 2026-10-13). */
+const SITUACAO_MOTORISTA: Record<SituacaoReembolso, string> = {
+  a_devolver: 'A receber de volta',
+  no_acerto: 'Entra no seu acerto',
+  devolvido: 'Recebido',
+  nao_reembolsavel: 'Não é reembolsado',
+  pago_pela_empresa: 'Pago pela empresa',
+};
+const diaMes = new Intl.DateTimeFormat('pt-BR', {
+  timeZone: 'America/Sao_Paulo',
+  day: '2-digit',
+  month: '2-digit',
+});
 
 function motivoBloqueio(l: { conferido: boolean; acerto_id: string | null }) {
   if (l.acerto_id) return 'Já entrou no acerto. Para corrigir, fale com o escritório.';
@@ -36,7 +51,9 @@ export default async function MeusLancamentos() {
       .order('data_hora', { ascending: false }),
     supabase
       .from('despesas_viagem')
-      .select('id, data, tipo, valor_centavos, conferido, acerto_id')
+      .select(
+        'id, data, tipo, valor_centavos, conferido, acerto_id, reembolsavel, pago_pelo_motorista, reembolsado_em, acertos(status)',
+      )
       .eq('motorista_id', fid)
       .gte('data', desde.slice(0, 10))
       .order('data', { ascending: false }),
@@ -63,7 +80,19 @@ export default async function MeusLancamentos() {
       chave: `d-${d.id}`,
       quando: `${d.data}T12:00:00`,
       titulo: TIPOS_DESPESA[d.tipo],
-      detalhe: formatarData(d.data),
+      detalhe: (() => {
+        const situacao = situacaoReembolso({
+          reembolsavel: d.reembolsavel,
+          acertoStatus: d.acertos?.status ?? null,
+          pagoPeloMotorista: d.pago_pelo_motorista,
+          devolvidoEm: d.reembolsado_em,
+        });
+        const recebido =
+          situacao === 'devolvido' && d.reembolsado_em
+            ? ` em ${diaMes.format(new Date(d.reembolsado_em))}`
+            : '';
+        return `${formatarData(d.data)} · ${SITUACAO_MOTORISTA[situacao]}${recebido}`;
+      })(),
       valor: d.valor_centavos,
       acao: (
         <CorrigirLancamento

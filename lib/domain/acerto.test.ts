@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { calcularAcerto, despesaReembolsavel, estimarComissao, periodoSugerido, verificarFechamento, type EntradaAcerto } from './acerto';
+import {
+  calcularAcerto,
+  despesaReembolsavel,
+  estimarComissao,
+  periodoSugerido,
+  verificarFechamento,
+  type EntradaAcerto,
+} from './acerto';
 import type { RegraComissao } from './comissao';
 
 const regra150: RegraComissao = {
@@ -25,7 +32,12 @@ const viagem = (id: string, fretes: number[], dia = 10) => ({
 
 // Exemplo completo das regras §7: 4 viagens (3 só volta, 1 ida + volta), comissão fixa R$ 150.
 const exemplo: EntradaAcerto = {
-  viagens: [viagem('v1', [450000]), viagem('v2', [450000]), viagem('v3', [450000]), viagem('v4', [120000, 450000])],
+  viagens: [
+    viagem('v1', [450000]),
+    viagem('v2', [450000]),
+    viagem('v3', [450000]),
+    viagem('v4', [120000, 450000]),
+  ],
   regras: [regra150],
   despesas: [
     { valorCentavos: 12000, reembolsavel: true },
@@ -70,7 +82,10 @@ describe('verificarFechamento', () => {
   });
 
   it('viagem sem frete lançado bloqueia', () => {
-    const r = verificarFechamento({ ...exemplo, viagens: [...exemplo.viagens, viagem('v5', [], 20)] }, 0);
+    const r = verificarFechamento(
+      { ...exemplo, viagens: [...exemplo.viagens, viagem('v5', [], 20)] },
+      0,
+    );
     expect(r.erros).toEqual(['Viagem de 20/09/2026 sem frete lançado.']);
   });
 
@@ -89,23 +104,43 @@ describe('estimarComissao (extrato do motorista)', () => {
   const v = (dia: number) => ({ dataSaida: `2026-09-${dia}T10:00:00Z`, kmRodado: 580 });
 
   it('valor fixo: viagens × valor', () => {
-    expect(estimarComissao([v(10), v(12), v(14)], [regra150])).toEqual({ totalCentavos: 45000, dependeDoFrete: 0, semRegra: 0 });
+    expect(estimarComissao([v(10), v(12), v(14)], [regra150])).toEqual({
+      totalCentavos: 45000,
+      dependeDoFrete: 0,
+      semRegra: 0,
+    });
   });
 
   it('regra em % depende do frete: fica para o acerto', () => {
-    const pct: RegraComissao = { ...regra150, tipo: 'pct_frete_bruto', percentual: 12, valorCentavos: null };
-    expect(estimarComissao([v(10)], [pct])).toEqual({ totalCentavos: 0, dependeDoFrete: 1, semRegra: 0 });
+    const pct: RegraComissao = {
+      ...regra150,
+      tipo: 'pct_frete_bruto',
+      percentual: 12,
+      valorCentavos: null,
+    };
+    expect(estimarComissao([v(10)], [pct])).toEqual({
+      totalCentavos: 0,
+      dependeDoFrete: 1,
+      semRegra: 0,
+    });
   });
 
   it('sem regra vigente', () => {
-    expect(estimarComissao([v(10)], [])).toEqual({ totalCentavos: 0, dependeDoFrete: 0, semRegra: 1 });
+    expect(estimarComissao([v(10)], [])).toEqual({
+      totalCentavos: 0,
+      dependeDoFrete: 0,
+      semRegra: 1,
+    });
   });
 });
 
 describe('despesaReembolsavel (Q5)', () => {
-  it.each(['pedagio', 'borracharia', 'manutencao', 'estacionamento', 'lavagem', 'chapa'])('%s: despesa do caminhão, reembolsa', (t) => {
-    expect(despesaReembolsavel(t)).toBe(true);
-  });
+  it.each(['pedagio', 'borracharia', 'manutencao', 'estacionamento', 'lavagem', 'chapa'])(
+    '%s: despesa do caminhão, reembolsa',
+    (t) => {
+      expect(despesaReembolsavel(t)).toBe(true);
+    },
+  );
   it.each(['alimentacao', 'pernoite', 'outros'])('%s: não reembolsa', (t) => {
     expect(despesaReembolsavel(t)).toBe(false);
   });
@@ -114,19 +149,67 @@ describe('despesaReembolsavel (Q5)', () => {
 describe('periodoSugerido (Q2)', () => {
   // 01/10/2026 é uma quinta-feira
   it('mensal: o mês anterior inteiro', () => {
-    expect(periodoSugerido('mensal', '2026-10-01')).toEqual({ inicio: '2026-09-01', fim: '2026-09-30' });
-    expect(periodoSugerido('mensal', '2026-01-10')).toEqual({ inicio: '2025-12-01', fim: '2025-12-31' });
-    expect(periodoSugerido('mensal', '2028-03-05')).toEqual({ inicio: '2028-02-01', fim: '2028-02-29' }); // bissexto
+    expect(periodoSugerido('mensal', '2026-10-01')).toEqual({
+      inicio: '2026-09-01',
+      fim: '2026-09-30',
+    });
+    expect(periodoSugerido('mensal', '2026-01-10')).toEqual({
+      inicio: '2025-12-01',
+      fim: '2025-12-31',
+    });
+    expect(periodoSugerido('mensal', '2028-03-05')).toEqual({
+      inicio: '2028-02-01',
+      fim: '2028-02-29',
+    }); // bissexto
   });
 
   it('quinzenal: a última quinzena fechada', () => {
-    expect(periodoSugerido('quinzenal', '2026-10-01')).toEqual({ inicio: '2026-09-16', fim: '2026-09-30' });
-    expect(periodoSugerido('quinzenal', '2026-10-16')).toEqual({ inicio: '2026-10-01', fim: '2026-10-15' });
+    expect(periodoSugerido('quinzenal', '2026-10-01')).toEqual({
+      inicio: '2026-09-16',
+      fim: '2026-09-30',
+    });
+    expect(periodoSugerido('quinzenal', '2026-10-16')).toEqual({
+      inicio: '2026-10-01',
+      fim: '2026-10-15',
+    });
   });
 
   it('semanal: a semana anterior, de segunda a domingo', () => {
-    expect(periodoSugerido('semanal', '2026-10-01')).toEqual({ inicio: '2026-09-21', fim: '2026-09-27' });
+    expect(periodoSugerido('semanal', '2026-10-01')).toEqual({
+      inicio: '2026-09-21',
+      fim: '2026-09-27',
+    });
     // numa segunda, a semana anterior inteira
-    expect(periodoSugerido('semanal', '2026-10-05')).toEqual({ inicio: '2026-09-28', fim: '2026-10-04' });
+    expect(periodoSugerido('semanal', '2026-10-05')).toEqual({
+      inicio: '2026-09-28',
+      fim: '2026-10-04',
+    });
+  });
+});
+
+describe('reembolso no acerto x baixa direta (pedido de 2026-10-13)', () => {
+  const base: EntradaAcerto = {
+    viagens: [],
+    regras: [],
+    abastecimentos: [],
+    adiantamentosCentavos: [],
+    despesas: [],
+  };
+  it('despesa que o dono já devolveu (baixa) não é paga de novo no acerto', () => {
+    const r = calcularAcerto({
+      ...base,
+      despesas: [
+        { valorCentavos: 11550, reembolsavel: true, jaDevolvida: true },
+        { valorCentavos: 4860, reembolsavel: true },
+      ],
+    });
+    expect(r.totalReembolsosCentavos).toBe(4860);
+  });
+  it('despesa que a empresa pagou não é devolvida ao motorista', () => {
+    const r = calcularAcerto({
+      ...base,
+      despesas: [{ valorCentavos: 50000, reembolsavel: true, pagoPeloMotorista: false }],
+    });
+    expect(r.totalReembolsosCentavos).toBe(0);
   });
 });

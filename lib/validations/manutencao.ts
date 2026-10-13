@@ -18,42 +18,59 @@ export const itemPlanoSchema = z
   })
   .superRefine((v, ctx) => {
     if (v.intervalo_km === null && v.intervalo_dias === null) {
-      ctx.addIssue({ code: 'custom', path: ['intervalo_km'], message: 'Informe o intervalo em km, em dias ou os dois.' });
+      ctx.addIssue({
+        code: 'custom',
+        path: ['intervalo_km'],
+        message: 'Informe o intervalo em km, em dias ou os dois.',
+      });
     }
-    if (!v.todos && !v.caminhao_id) ctx.addIssue({ code: 'custom', path: ['caminhao_id'], message: 'Escolha o caminhão.' });
+    if (!v.todos && !v.caminhao_id)
+      ctx.addIssue({ code: 'custom', path: ['caminhao_id'], message: 'Escolha o caminhão.' });
   });
 
-export const manutencaoSchema = z.object({
-  caminhao_id: z.guid('Escolha o caminhão.'),
-  data,
-  km: z
-    .string()
-    .trim()
-    .transform((v, ctx) => {
-      const n = lerInteiro(v);
-      if (n === null || n <= 0) {
-        ctx.addIssue({ code: 'custom', message: 'Digite o km do painel.' });
-        return z.NEVER;
-      }
-      return n;
-    }),
-  tipo: z.enum(['preventiva', 'corretiva']),
-  descricao: z.string().trim().min(3, 'Descreva o que foi feito.'),
-  valor: z
-    .string()
-    .trim()
-    .transform((v, ctx) => {
-      if (!v) return 0;
-      try {
-        return reaisParaCentavos(v);
-      } catch {
-        ctx.addIssue({ code: 'custom', message: 'Valor inválido. Ex.: 1.200,00' });
-        return z.NEVER;
-      }
-    }),
-  fornecedor_id: z.string().transform((v) => v || null),
-  itens: z.array(z.string()),
-});
+export const manutencaoSchema = z
+  .object({
+    caminhao_id: z.guid('Escolha o caminhão.'),
+    data,
+    km: z
+      .string()
+      .trim()
+      .transform((v, ctx) => {
+        const n = lerInteiro(v);
+        if (n === null || n <= 0) {
+          ctx.addIssue({ code: 'custom', message: 'Digite o km do painel.' });
+          return z.NEVER;
+        }
+        return n;
+      }),
+    tipo: z.enum(['preventiva', 'corretiva']),
+    descricao: z.string().trim().min(3, 'Descreva o que foi feito.'),
+    valor: z
+      .string()
+      .trim()
+      .transform((v, ctx) => {
+        if (!v) return 0;
+        try {
+          return reaisParaCentavos(v);
+        } catch {
+          ctx.addIssue({ code: 'custom', message: 'Valor inválido. Ex.: 1.200,00' });
+          return z.NEVER;
+        }
+      }),
+    fornecedor_id: z.string().transform((v) => v || null),
+    /** Quem pagou (pedido de 2026-10-13): vazio = empresa/dono; id = motorista, que recebe de volta. */
+    pago_por_funcionario_id: z.string().transform((v) => v || null),
+    itens: z.array(z.string()),
+  })
+  .superRefine((m, ctx) => {
+    if (m.pago_por_funcionario_id && m.valor <= 0) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['valor'],
+        message: 'Informe quanto o motorista pagou.',
+      });
+    }
+  });
 
 export type ItemPlanoForm = z.input<typeof itemPlanoSchema>;
 export type ItemPlanoDados = z.output<typeof itemPlanoSchema>;

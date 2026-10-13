@@ -14,6 +14,7 @@ Legenda: **T** = total · **L** = leitura · **P** = só os próprios registros 
 | Preço do frete combinado | T | T | — |
 | Locais de carga | T | T | L |
 | Remover viagem (com motivo, na auditoria) | T | T | — |
+| Baixa de reembolso ao motorista (manutenção paga por ele) | T | T | L (vê se já recebeu) |
 | Pneus (estoque, montagens, recapagens) | T | T | — |
 | Fornecedores | T | T | L |
 | Viagens | T | T | P: cria; edita só `em_andamento` e sem acerto |

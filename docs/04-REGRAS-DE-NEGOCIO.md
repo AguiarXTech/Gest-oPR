@@ -189,9 +189,15 @@ Uma viagem concluída **sem nenhum frete lançado** **impede o fechamento do ace
 |---|---|
 | `total_frete` | Σ fretes das viagens (só informativo na tela da gestão; **não** é gravado no acerto, que o motorista lê — Q6) |
 | `total_comissao` | Σ comissão por viagem |
-| `total_reembolsos` | Σ despesas com `reembolsavel = true` + Σ abastecimentos com `forma_pagamento = 'motorista'` (Q5: só despesas do caminhão são reembolsáveis por padrão; Q11: o diesel é faturado no posto, então normalmente não entra) |
+| `total_reembolsos` | Σ despesas com `reembolsavel = true`, `pago_pelo_motorista = true` e **sem baixa** (`reembolsado_em` nulo) + Σ abastecimentos com `forma_pagamento = 'motorista'` (Q5: só despesas do caminhão são reembolsáveis por padrão; Q11: o diesel é faturado no posto, então normalmente não entra) |
 | `total_adiantamentos` | Σ adiantamentos |
 | `saldo` | `total_comissao + total_reembolsos − total_adiantamentos` |
+
+**Quem pagou e baixa (pedido de 2026-10-13).** Despesa e manutenção dizem quem pagou: o motorista (do bolso, recebe de volta) ou a empresa/dono. O que o motorista pagou é devolvido **uma vez só**, pelo que vier primeiro:
+- **baixa do dono** (paga direto e confirma em Manutenção; fica registrado quando e quem; dá para desfazer), ou
+- **acerto** (despesa reembolsável sem baixa entra em `total_reembolsos`).
+
+Despesa em acerto fechado/pago não aceita baixa (já foi paga no acerto). Manutenção lançada pela gestão como paga por um motorista só é devolvida pela baixa (não entra no acerto). Cada valor a devolver vira um aviso no painel ("Enzo pagou R$ 115,50 em manutenção · DEF4G56").
 
 `saldo > 0`: a empresa paga o motorista. `saldo < 0`: o motorista deve (vai para o próximo acerto como observação; não há transporte automático no MVP).
 

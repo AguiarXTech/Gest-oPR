@@ -68,6 +68,7 @@ A operação hoje depende de papel, WhatsApp e memória. Isso gera cinco problem
 | RF-38 | Despesas pessoais do motorista (opcional): alimentação, pernoite etc., só para o controle dele. **Só ele vê** (nem a gestão); não entram no acerto | motorista |
 | RF-39 | Dono/admin que também dirige usa a área do motorista: o cadastro de funcionário com o CPF dele é ligado ao login existente ("Criar acesso" liga, mantendo o papel) | dono/admin |
 | RF-40 | Foto de cada caminhão (lista, ficha e escolha do caminhão pelo motorista) | gestor |
+| RF-51 | Manutenção (do motorista e da gestão) ligada ao caminhão e com quem pagou; o que o motorista pagou vira aviso para o dono, que dá baixa ao pagar; o acerto não devolve de novo | gestor, motorista |
 | RF-50 | Relatório de abastecimento com cards e gráficos lido de uma planilha do Google; atualiza sozinho (a cada minuto e na hora pelo gatilho da planilha); dados de demonstração da rota SJE ↔ BH | gestor |
 | RF-49 | Quem pagou: manutenção e pedágio pagos pelo motorista nas áreas Manutenção e Pedágio, com o total a devolver no acerto; despesa sempre ligada a um caminhão | gestor |
 | RF-48 | Valor digitado sem erro (campo só de números, estilo maquininha: 11550 = R$ 115,50) e "Meus lançamentos" para o motorista corrigir ou apagar valor de abastecimento e despesa ainda não conferidos | motorista |

@@ -42,38 +42,49 @@ function mesAtual() {
 export default async function Manutencao() {
   const supabase = await createClient();
   const { inicioData, fimData } = limitesDoMes(mesAtual());
-  const [caminhoes, { data: oficinas }, { data: historico }, doDono, doMotorista] =
-    await Promise.all([
-      carregarSituacaoManutencao(supabase),
-      supabase
-        .from('fornecedores')
-        .select('id, nome')
-        .eq('ativo', true)
-        .in('tipo', ['oficina', 'loja', 'recapadora', 'outro'])
-        .order('nome'),
-      supabase
-        .from('manutencoes')
-        .select(
-          'id, data, km, tipo, descricao, valor_centavos, caminhoes(placa), fornecedores(nome)',
-        )
-        .order('data', { ascending: false })
-        .limit(30),
-      // pago pelo dono: manutenções lançadas pela gestão no mês
-      supabase
-        .from('manutencoes')
-        .select('valor_centavos')
-        .gte('data', inicioData)
-        .lt('data', fimData),
-      // pago pelo motorista: despesa de manutenção que ele lançou (devolvida no acerto)
-      carregarDespesasMotorista(supabase, 'manutencao', { inicio: inicioData, fim: fimData }),
-    ]);
-  const pagoDonoCentavos = (doDono.data ?? []).reduce((t, m) => t + m.valor_centavos, 0);
+  const [
+    caminhoes,
+    { data: oficinas },
+    { data: historico },
+    doDono,
+    doMotorista,
+    { data: motoristas },
+  ] = await Promise.all([
+    carregarSituacaoManutencao(supabase),
+    supabase
+      .from('fornecedores')
+      .select('id, nome')
+      .eq('ativo', true)
+      .in('tipo', ['oficina', 'loja', 'recapadora', 'outro'])
+      .order('nome'),
+    supabase
+      .from('manutencoes')
+      .select(
+        'id, data, km, tipo, descricao, valor_centavos, reembolsado_em, caminhoes(placa), fornecedores(nome), funcionarios(nome)',
+      )
+      .order('data', { ascending: false })
+      .limit(30),
+    // pago pelo dono: manutenções que a gestão lançou como pagas pela empresa, no mês
+    supabase
+      .from('manutencoes')
+      .select('valor_centavos')
+      .is('pago_por_funcionario_id', null)
+      .gte('data', inicioData)
+      .lt('data', fimData),
+    // pago pelo motorista: despesa que ele lançou + manutenção da gestão paga por ele
+    carregarDespesasMotorista(supabase, 'manutencao', { inicio: inicioData, fim: fimData }),
+    // "Quem pagou?" no formulário de manutenção
+    supabase.from('funcionarios').select('id, nome').eq('ativo', true).order('nome'),
+  ]);
+  const pagoDonoCentavos =
+    (doDono.data ?? []).reduce((t, m) => t + m.valor_centavos, 0) +
+    doMotorista.pagoEmpresaPeriodoCentavos;
 
   return (
     <>
       <h1 className="text-3xl">Manutenção</h1>
 
-      <section className="flex flex-col gap-3">
+      <section id="a-devolver" className="flex scroll-mt-20 flex-col gap-3">
         <h2 className="text-lg font-semibold">Quem pagou (este mês)</h2>
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-xl border bg-card p-4 shadow-xs">
@@ -93,7 +104,7 @@ export default async function Manutencao() {
             )}
           >
             <p className="text-sm text-muted-foreground">
-              A devolver aos motoristas (entra no próximo acerto)
+              A devolver aos motoristas (pague e dê baixa, ou entra no próximo acerto)
             </p>
             <p className="text-2xl font-bold tabular-nums">
               {formatarBRL(doMotorista.aDevolverCentavos)}
@@ -104,10 +115,12 @@ export default async function Manutencao() {
         <PagoPeloMotorista
           itens={doMotorista.itens}
           vazio="Nenhuma manutenção paga por motorista."
+          permitirBaixa
         />
         <p className="text-sm text-muted-foreground">
-          Pago pelo dono = manutenções lançadas aqui pela gestão. Pago pelo motorista = despesa de
-          manutenção que ele lançou no app; o valor volta para ele no acerto.
+          Pago pelo motorista = o que ele pagou do bolso (lançado por ele no app ou pela gestão).
+          Quando você pagar a ele, toque em Dar baixa; se não der baixa, o valor volta para ele no
+          próximo acerto. Nunca nos dois.
         </p>
       </section>
       <AcoesManutencao
@@ -116,6 +129,7 @@ export default async function Manutencao() {
           c.itens.map((i) => ({ id: i.id, caminhao_id: c.id, item: i.item })),
         )}
         oficinas={oficinas ?? []}
+        motoristas={motoristas ?? []}
       />
 
       <div className="grid gap-4 lg:grid-cols-2">
@@ -169,7 +183,7 @@ export default async function Manutencao() {
       </div>
 
       <section className="flex flex-col gap-2">
-        <h2 className="text-lg font-semibold">Últimas manutenções (pagas pelo dono)</h2>
+        <h2 className="text-lg font-semibold">Últimas manutenções lançadas pela gestão</h2>
         <ul className="flex flex-col divide-y rounded-xl border bg-card shadow-xs">
           {(historico ?? []).map((m) => (
             <li key={m.id} className="flex items-center justify-between gap-3 p-3">
@@ -184,6 +198,9 @@ export default async function Manutencao() {
                   {formatarData(m.data)} · {formatarKm(m.km)} ·{' '}
                   {m.tipo === 'corretiva' ? 'corretiva' : 'preventiva'}
                   {m.fornecedores && ` · ${m.fornecedores.nome}`}
+                  {m.funcionarios
+                    ? ` · pago por ${m.funcionarios.nome}${m.reembolsado_em ? ' (já devolvido)' : ' (a devolver)'}`
+                    : ' · pago pela empresa'}
                 </span>
               </span>
               <span className="flex items-center gap-1">

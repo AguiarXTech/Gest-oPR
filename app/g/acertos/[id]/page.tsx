@@ -119,7 +119,7 @@ export default async function DetalheAcerto({ params }: PageProps<'/g/acertos/[i
       <section className="rounded-2xl border bg-card p-4 shadow-xs sm:p-6">
         <h2 className="mb-2 text-lg font-semibold">Demonstrativo</h2>
         <Linha
-          rotulo={`Comissão (${viagens.length} viagem${viagens.length === 1 ? '' : 'ns'})`}
+          rotulo={`Comissão (${viagens.length} viage${viagens.length === 1 ? 'm' : 'ns'})`}
           valor={t.totalComissaoCentavos}
         />
         <Linha
@@ -255,11 +255,18 @@ export default async function DetalheAcerto({ params }: PageProps<'/g/acertos/[i
               >
                 <span>
                   {formatarData(d.data)} · {TIPOS_DESPESA[d.tipo]} {d.conferido ? '✓' : ''}
+                  {!d.pago_pelo_motorista && (
+                    <span className="text-sm text-muted-foreground"> · pago pela empresa</span>
+                  )}
+                  {d.reembolsado_em && (
+                    <span className="text-sm text-sucesso"> · já pago direto pelo dono</span>
+                  )}
                 </span>
                 <span
                   className={cn(
                     'font-semibold tabular-nums',
-                    !d.reembolsavel && 'text-muted-foreground line-through',
+                    (!d.reembolsavel || !d.pago_pelo_motorista || d.reembolsado_em) &&
+                      'text-muted-foreground line-through',
                   )}
                 >
                   {formatarBRL(d.valor_centavos)}

@@ -26,13 +26,25 @@ export function paraRegraDominio(r: Tables<'regras_comissao'>): RegraComissao {
 }
 
 export async function carregarAcerto(supabase: Cliente, id: string) {
-  const { data: acerto } = await supabase.from('acertos').select('*, funcionarios(nome, telefone)').eq('id', id).maybeSingle();
+  const { data: acerto } = await supabase
+    .from('acertos')
+    .select('*, funcionarios(nome, telefone)')
+    .eq('id', id)
+    .maybeSingle();
   if (!acerto) return null;
 
-  const [{ data: viagens }, { data: abastecimentos }, { data: despesas }, { data: adiantamentos }, { data: regras }] = await Promise.all([
+  const [
+    { data: viagens },
+    { data: abastecimentos },
+    { data: despesas },
+    { data: adiantamentos },
+    { data: regras },
+  ] = await Promise.all([
     supabase
       .from('viagens')
-      .select('id, caminhao_id, data_saida, data_chegada, km_saida, km_chegada, caminhoes(placa), fretes(sentido, valor_frete_centavos), despesas_viagem(tipo, valor_centavos)')
+      .select(
+        'id, caminhao_id, data_saida, data_chegada, km_saida, km_chegada, caminhoes(placa), fretes(sentido, valor_frete_centavos), despesas_viagem(tipo, valor_centavos)',
+      )
       .eq('acerto_id', id)
       .order('data_saida'),
     supabase
@@ -40,16 +52,30 @@ export async function carregarAcerto(supabase: Cliente, id: string) {
       .select('id, data_hora, km, litros, valor_total_centavos, forma_pagamento, conferido')
       .eq('acerto_id', id)
       .order('data_hora'),
-    supabase.from('despesas_viagem').select('id, data, tipo, valor_centavos, reembolsavel, conferido').eq('acerto_id', id).order('data'),
-    supabase.from('adiantamentos').select('id, data, valor_centavos, forma').eq('acerto_id', id).order('data'),
+    supabase
+      .from('despesas_viagem')
+      .select(
+        'id, data, tipo, valor_centavos, reembolsavel, pago_pelo_motorista, reembolsado_em, conferido',
+      )
+      .eq('acerto_id', id)
+      .order('data'),
+    supabase
+      .from('adiantamentos')
+      .select('id, data, valor_centavos, forma')
+      .eq('acerto_id', id)
+      .order('data'),
     supabase.from('regras_comissao').select('*').eq('funcionario_id', acerto.motorista_id),
   ]);
 
   const regrasDominio = (regras ?? []).map(paraRegraDominio);
 
   // Diesel rateado só é preciso na comissão sobre frete líquido que desconta combustível.
-  const precisaRateio = regrasDominio.some((r) => r.tipo === 'pct_frete_liquido' && r.deduzCombustivel);
-  const rateio = precisaRateio ? await calcularRateios(supabase, viagens ?? []) : new Map<string, number>();
+  const precisaRateio = regrasDominio.some(
+    (r) => r.tipo === 'pct_frete_liquido' && r.deduzCombustivel,
+  );
+  const rateio = precisaRateio
+    ? await calcularRateios(supabase, viagens ?? [])
+    : new Map<string, number>();
 
   const entrada: EntradaAcerto = {
     viagens: (viagens ?? []).map((v) => ({
@@ -57,12 +83,23 @@ export async function carregarAcerto(supabase: Cliente, id: string) {
       dataSaida: v.data_saida,
       kmRodado: (v.km_chegada ?? v.km_saida) - v.km_saida,
       fretesCentavos: v.fretes.map((f) => f.valor_frete_centavos),
-      pedagiosCentavos: v.despesas_viagem.filter((d) => d.tipo === 'pedagio').reduce((t, d) => t + d.valor_centavos, 0),
+      pedagiosCentavos: v.despesas_viagem
+        .filter((d) => d.tipo === 'pedagio')
+        .reduce((t, d) => t + d.valor_centavos, 0),
       dieselRateadoCentavos: rateio.get(v.id) ?? 0,
     })),
     regras: regrasDominio,
-    despesas: (despesas ?? []).map((d) => ({ valorCentavos: d.valor_centavos, reembolsavel: d.reembolsavel })),
-    abastecimentos: (abastecimentos ?? []).map((a) => ({ valorTotalCentavos: a.valor_total_centavos, formaPagamento: a.forma_pagamento })),
+    // o que o dono já pagou direto ao motorista (baixa) não é devolvido de novo aqui
+    despesas: (despesas ?? []).map((d) => ({
+      valorCentavos: d.valor_centavos,
+      reembolsavel: d.reembolsavel,
+      pagoPeloMotorista: d.pago_pelo_motorista,
+      jaDevolvida: d.reembolsado_em !== null,
+    })),
+    abastecimentos: (abastecimentos ?? []).map((a) => ({
+      valorTotalCentavos: a.valor_total_centavos,
+      formaPagamento: a.forma_pagamento,
+    })),
     adiantamentosCentavos: (adiantamentos ?? []).map((a) => a.valor_centavos),
   };
 
@@ -70,9 +107,13 @@ export async function carregarAcerto(supabase: Cliente, id: string) {
   let alertasGraves = 0;
   const pendentes = (abastecimentos ?? []).filter((a) => !a.conferido);
   if (pendentes.length > 0 && acerto.status === 'rascunho') {
-    const desde = new Date(new Date(`${acerto.periodo_inicio}T00:00:00-03:00`).getTime() - 86_400_000);
+    const desde = new Date(
+      new Date(`${acerto.periodo_inicio}T00:00:00-03:00`).getTime() - 86_400_000,
+    );
     const analises = await analisarDesde(supabase, desde, await obterConfiguracoes());
-    alertasGraves = pendentes.filter((a) => analises.get(a.id)?.anomalias.some((x) => x.severidade === 'alta')).length;
+    alertasGraves = pendentes.filter((a) =>
+      analises.get(a.id)?.anomalias.some((x) => x.severidade === 'alta'),
+    ).length;
   }
 
   return {
@@ -91,7 +132,13 @@ export async function carregarAcerto(supabase: Cliente, id: string) {
 /** Diesel rateado por viagem: diesel do caminhão no mês × km da viagem ÷ km do caminhão no mês. */
 async function calcularRateios(
   supabase: Cliente,
-  viagens: { id: string; caminhao_id: string; data_saida: string; km_saida: number; km_chegada: number | null }[],
+  viagens: {
+    id: string;
+    caminhao_id: string;
+    data_saida: string;
+    km_saida: number;
+    km_chegada: number | null;
+  }[],
 ) {
   const rateio = new Map<string, number>();
   const grupos = new Map<string, typeof viagens>();
@@ -105,12 +152,27 @@ async function calcularRateios(
     const [ano, m] = mes.split('-').map(Number);
     const fim = `${m === 12 ? ano + 1 : ano}-${String(m === 12 ? 1 : m + 1).padStart(2, '0')}-01T00:00:00-03:00`;
     const [{ data: diesel }, { data: doMes }] = await Promise.all([
-      supabase.from('abastecimentos').select('valor_total_centavos').eq('caminhao_id', caminhaoId).gte('data_hora', inicio).lt('data_hora', fim),
-      supabase.from('viagens').select('km_saida, km_chegada').eq('caminhao_id', caminhaoId).eq('status', 'concluida').gte('data_saida', inicio).lt('data_saida', fim),
+      supabase
+        .from('abastecimentos')
+        .select('valor_total_centavos')
+        .eq('caminhao_id', caminhaoId)
+        .gte('data_hora', inicio)
+        .lt('data_hora', fim),
+      supabase
+        .from('viagens')
+        .select('km_saida, km_chegada')
+        .eq('caminhao_id', caminhaoId)
+        .eq('status', 'concluida')
+        .gte('data_saida', inicio)
+        .lt('data_saida', fim),
     ]);
     const dieselMes = (diesel ?? []).reduce((t, a) => t + a.valor_total_centavos, 0);
-    const kmMes = (doMes ?? []).reduce((t, v) => t + ((v.km_chegada ?? v.km_saida) - v.km_saida), 0);
-    for (const v of lista) rateio.set(v.id, ratearDiesel(dieselMes, (v.km_chegada ?? v.km_saida) - v.km_saida, kmMes));
+    const kmMes = (doMes ?? []).reduce(
+      (t, v) => t + ((v.km_chegada ?? v.km_saida) - v.km_saida),
+      0,
+    );
+    for (const v of lista)
+      rateio.set(v.id, ratearDiesel(dieselMes, (v.km_chegada ?? v.km_saida) - v.km_saida, kmMes));
   }
   return rateio;
 }

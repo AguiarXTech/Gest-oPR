@@ -3,6 +3,7 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { TIPOS_DOCUMENTO } from '@/lib/domain/documentos';
+import { avisoReembolso } from '@/lib/domain/despesas';
 import { formatarBRL } from '@/lib/domain/dinheiro';
 import { formatarPlaca } from '@/lib/domain/placa';
 import { competencia } from '@/lib/domain/resultado';
@@ -10,10 +11,11 @@ import { formatarKm } from '@/lib/formatar';
 import { analisarDesde } from '@/lib/supabase/conferencia';
 import { obterConfiguracoes } from '@/lib/supabase/configuracoes';
 import { carregarSituacaoDocumentos } from '@/lib/supabase/documentos';
+import { carregarDespesasMotorista } from '@/lib/supabase/despesasMotorista';
 import { carregarSituacaoManutencao } from '@/lib/supabase/manutencao';
 import { situacaoMulta } from '@/lib/domain/multas';
 import { hojeIso } from '@/lib/formatar';
-import { carregarMes } from '@/lib/supabase/painel';
+import { carregarMes, limitesDoMes } from '@/lib/supabase/painel';
 import { AreaMotoristaPainel } from '@/components/gestao/AreaMotoristaPainel';
 import { DemonstrativoResultado } from '@/components/gestao/DemonstrativoResultado';
 import { obterPerfilAtual } from '@/lib/supabase/perfil';
@@ -60,6 +62,7 @@ export default async function PainelGestao({ searchParams }: PageProps<'/g'>) {
     manutencao,
     { data: multas },
     { data: pedagioContestar },
+    manutencaoMotorista,
   ] = await Promise.all([
     obterPerfilAtual(),
     carregarMes(supabase, mes),
@@ -82,7 +85,13 @@ export default async function PainelGestao({ searchParams }: PageProps<'/g'>) {
       .is('indicado_em', null)
       .not('prazo_indicacao', 'is', null),
     supabase.from('cobrancas_pedagio').select('id').eq('situacao', 'contestar'),
+    // manutenção que o motorista pagou e ainda não recebeu de volta
+    carregarDespesasMotorista(supabase, 'manutencao', {
+      inicio: limitesDoMes(mes).inicioData,
+      fim: limitesDoMes(mes).fimData,
+    }),
   ]);
+  const reembolsosPendentes = manutencaoMotorista.itens.filter((i) => i.situacao === 'a_devolver');
 
   const graves = (pendentes ?? []).filter((a) =>
     analises.get(a.id)?.anomalias.some((x) => x.severidade === 'alta'),
@@ -138,6 +147,21 @@ export default async function PainelGestao({ searchParams }: PageProps<'/g'>) {
             texto: `${(pedagioContestar ?? []).length} cobrança(s) de pedágio para contestar`,
             href: '/g/pedagio',
             grave: true,
+          },
+        ]
+      : []),
+    // um aviso por manutenção paga pelo motorista; o dono dá baixa em Manutenção
+    ...reembolsosPendentes.slice(0, 4).map((i) => ({
+      texto: `${avisoReembolso({ motorista: i.motorista, valorCentavos: i.valorCentavos, oQue: i.descricao ? `manutenção (${i.descricao})` : 'manutenção', placa: i.placa })}: devolver`,
+      href: '/g/manutencao#a-devolver',
+      grave: false,
+    })),
+    ...(reembolsosPendentes.length > 4
+      ? [
+          {
+            texto: `e mais ${reembolsosPendentes.length - 4} manutenção(ões) paga(s) por motorista para devolver`,
+            href: '/g/manutencao#a-devolver',
+            grave: false,
           },
         ]
       : []),

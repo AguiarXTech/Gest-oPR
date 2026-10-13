@@ -606,6 +606,9 @@ export type Database = {
           foto_path: string | null
           id: string
           motorista_id: string
+          pago_pelo_motorista: boolean
+          reembolsado_em: string | null
+          reembolsado_por: string | null
           reembolsavel: boolean
           tipo: Database["public"]["Enums"]["tipo_despesa"]
           updated_at: string
@@ -624,6 +627,9 @@ export type Database = {
           foto_path?: string | null
           id?: string
           motorista_id: string
+          pago_pelo_motorista?: boolean
+          reembolsado_em?: string | null
+          reembolsado_por?: string | null
           reembolsavel?: boolean
           tipo: Database["public"]["Enums"]["tipo_despesa"]
           updated_at?: string
@@ -642,6 +648,9 @@ export type Database = {
           foto_path?: string | null
           id?: string
           motorista_id?: string
+          pago_pelo_motorista?: boolean
+          reembolsado_em?: string | null
+          reembolsado_por?: string | null
           reembolsavel?: boolean
           tipo?: Database["public"]["Enums"]["tipo_despesa"]
           updated_at?: string
@@ -988,6 +997,9 @@ export type Database = {
           fornecedor_id: string | null
           id: string
           km: number
+          pago_por_funcionario_id: string | null
+          reembolsado_em: string | null
+          reembolsado_por: string | null
           tipo: Database["public"]["Enums"]["tipo_manutencao"]
           updated_at: string
           valor_centavos: number
@@ -1001,6 +1013,9 @@ export type Database = {
           fornecedor_id?: string | null
           id?: string
           km: number
+          pago_por_funcionario_id?: string | null
+          reembolsado_em?: string | null
+          reembolsado_por?: string | null
           tipo?: Database["public"]["Enums"]["tipo_manutencao"]
           updated_at?: string
           valor_centavos?: number
@@ -1014,6 +1029,9 @@ export type Database = {
           fornecedor_id?: string | null
           id?: string
           km?: number
+          pago_por_funcionario_id?: string | null
+          reembolsado_em?: string | null
+          reembolsado_por?: string | null
           tipo?: Database["public"]["Enums"]["tipo_manutencao"]
           updated_at?: string
           valor_centavos?: number
@@ -1031,6 +1049,13 @@ export type Database = {
             columns: ["fornecedor_id"]
             isOneToOne: false
             referencedRelation: "fornecedores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "manutencoes_pago_por_funcionario_id_fkey"
+            columns: ["pago_por_funcionario_id"]
+            isOneToOne: false
+            referencedRelation: "funcionarios"
             referencedColumns: ["id"]
           },
         ]
@@ -1765,6 +1790,10 @@ export type Database = {
       dados_analise_abastecimento: {
         Args: { p_caminhao_id: string }
         Returns: Json
+      }
+      dar_baixa_reembolso: {
+        Args: { p_desfazer?: boolean; p_id: string; p_origem: string }
+        Returns: undefined
       }
       descartar_pneu: {
         Args: { p_motivo: string; p_pneu: string }
