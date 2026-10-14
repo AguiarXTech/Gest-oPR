@@ -110,6 +110,33 @@ describe('passagensPrevistas', () => {
   });
 });
 
+describe('conjunto cavalo + carreta com a resposta do motorista', () => {
+  const conjunto = eixosDoConjunto({ eixos: 3, eixosSuspensos: 1 }, { eixos: 3, eixosSuspensos: 1 });
+  const viagem = (idaCarregada: boolean) =>
+    passagensPrevistas(
+      {
+        dataIda: '2026-10-14',
+        dataVolta: '2026-10-15',
+        temFreteIda: false,
+        idaCarregada,
+        eixosIda: null,
+        eixosVolta: null,
+      },
+      conjunto,
+      tarifas,
+    ).map((p) => [p.eixos, p.previstoCentavos]);
+  it('ida vazia: 6 eixos menos os 2 erguidos (cavalo e carreta); volta com todos', () =>
+    expect(viagem(false)).toEqual([
+      [4, 6480],
+      [6, 9720],
+    ]));
+  it('ida carregada: todos os 6 eixos nas duas passagens', () =>
+    expect(viagem(true)).toEqual([
+      [6, 9720],
+      [6, 9720],
+    ]));
+});
+
 describe('conferirCobranca', () => {
   it.each([
     [3240, 3240, 'certo', 0],

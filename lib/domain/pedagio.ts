@@ -1,6 +1,7 @@
 // Controle de pedágio (pedido de 2026-10-03). Cobrança por eixo; caminhão VAZIO com eixo
 // suspenso não paga esse eixo (Lei 13.103 art. 17, Lei 13.711/2018). A volta (BH → SJE) é
-// sempre carregada (Q3); a ida é carregada só quando tem frete de ida.
+// sempre carregada (Q3); a ida é o que o motorista responde ao iniciar (carregado ou vazio);
+// em viagem antiga, sem resposta, a ida é carregada só quando tem frete de ida.
 
 export type CaminhaoEixos = { eixos: number | null; eixosSuspensos: number };
 export type Tarifa = { vigenciaInicio: string; tarifaEixoCentavos: number };
