@@ -37,6 +37,8 @@ export type ViagemPedagioMes = {
   placaCarreta: string | null;
   motorista: string;
   dataSaida: string;
+  /** Resposta do motorista ao iniciar; null = viagem antiga. */
+  idaCarregada: boolean | null;
   eixosIda: number | null;
   eixosVolta: number | null;
   passagens: LinhaPassagem[];
@@ -48,7 +50,7 @@ export async function carregarPedagioMes(supabase: Cliente, mes: string) {
     supabase
       .from('viagens')
       .select(
-        'id, data_saida, data_chegada, eixos_ida, eixos_volta, caminhoes(placa, eixos, eixos_suspensos), carretas(placa, eixos, eixos_suspensos), funcionarios(nome), fretes(sentido), cobrancas_pedagio(id, praca_id, sentido, valor_cobrado_centavos, situacao, observacao)',
+        'id, data_saida, data_chegada, ida_carregada, eixos_ida, eixos_volta, caminhoes(placa, eixos, eixos_suspensos), carretas(placa, eixos, eixos_suspensos), funcionarios(nome), fretes(sentido), cobrancas_pedagio(id, praca_id, sentido, valor_cobrado_centavos, situacao, observacao)',
       )
       .neq('status', 'cancelada')
       .gte('data_saida', inicio)
@@ -68,6 +70,7 @@ export async function carregarPedagioMes(supabase: Cliente, mes: string) {
           dataIda: dataBrasilia(v.data_saida),
           dataVolta: dataBrasilia(v.data_chegada ?? v.data_saida),
           temFreteIda: v.fretes.some((f) => f.sentido === 'ida'),
+          idaCarregada: v.ida_carregada,
           eixosIda: v.eixos_ida,
           eixosVolta: v.eixos_volta,
         },
@@ -112,6 +115,7 @@ export async function carregarPedagioMes(supabase: Cliente, mes: string) {
       placaCarreta: v.carretas?.placa ?? null,
       motorista: v.funcionarios?.nome ?? '',
       dataSaida: v.data_saida,
+      idaCarregada: v.ida_carregada,
       eixosIda: v.eixos_ida,
       eixosVolta: v.eixos_volta,
       passagens,

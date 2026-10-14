@@ -95,12 +95,14 @@ export function FormIniciarViagem({
       origem: rotaPadrao.origem,
       destino: rotaPadrao.destino,
       km_saida: '',
+      // sem resposta pronta: o motorista precisa escolher (muda o pedágio)
+      ida_carregada: undefined,
     },
   });
 
-  const [caminhaoId, carretaId, kmDigitado, origem, destino] = useWatch({
+  const [caminhaoId, carretaId, kmDigitado, origem, destino, idaCarregada] = useWatch({
     control,
-    name: ['caminhao_id', 'carreta_id', 'km_saida', 'origem', 'destino'],
+    name: ['caminhao_id', 'carreta_id', 'km_saida', 'origem', 'destino', 'ida_carregada'],
   });
   const caminhao = caminhoes.find((c) => c.id === caminhaoId);
   const ehCavalo = caminhao?.tipo === 'cavalo';
@@ -215,6 +217,47 @@ export function FormIniciarViagem({
           )}
         </fieldset>
       )}
+
+      <fieldset className="flex flex-col gap-2">
+        <legend className="mb-2 text-lg font-semibold">
+          Na ida {ehCavalo && carretaId && carretaId !== 'sem' ? 'a carreta vai' : 'vai'}:
+        </legend>
+        <div className="grid grid-cols-2 gap-2">
+          {(
+            [
+              ['sim', 'Carregado', 'eixos no chão'],
+              ['nao', 'Vazio', 'eixos erguidos'],
+            ] as const
+          ).map(([valor, rotulo, detalhe]) => (
+            <label
+              key={valor}
+              className={cn(
+                'flex min-h-16 cursor-pointer flex-col items-center justify-center rounded-2xl border bg-card p-3 text-center shadow-xs',
+                idaCarregada === valor && 'border-primary bg-primary text-primary-foreground',
+              )}
+            >
+              <input
+                type="radio"
+                value={valor}
+                {...register('ida_carregada')}
+                className="sr-only"
+              />
+              <span className="text-xl font-bold">{rotulo}</span>
+              <span
+                className={cn(
+                  'text-sm',
+                  idaCarregada === valor ? 'text-primary-foreground/80' : 'text-muted-foreground',
+                )}
+              >
+                {detalhe}
+              </span>
+            </label>
+          ))}
+        </div>
+        {errors.ida_carregada && (
+          <p className="font-medium text-destructive">{errors.ida_carregada.message}</p>
+        )}
+      </fieldset>
 
       <Campo
         id="km_saida"

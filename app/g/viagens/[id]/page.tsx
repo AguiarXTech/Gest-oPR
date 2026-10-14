@@ -81,6 +81,11 @@ export default async function DetalheViagem({ params }: PageProps<'/g/viagens/[i
             v.data_chegada &&
             ` · voltou ${formatarDataHora(v.data_chegada)} · ${formatarKm(v.km_chegada - v.km_saida)} rodados`}
         </p>
+        {v.ida_carregada !== null && (
+          <p className="text-muted-foreground">
+            Ida {v.ida_carregada ? 'carregada (eixos no chão)' : 'vazia (eixos erguidos)'}
+          </p>
+        )}
         {v.locais_carga && (
           <p className="font-medium">
             Carregou: {v.locais_carga.nome}

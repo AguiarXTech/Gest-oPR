@@ -116,6 +116,12 @@ export default async function Pedagio({ searchParams }: PageProps<'/g/pedagio'>)
                 </span>{' '}
                 · {v.motorista}
               </Link>
+              {v.idaCarregada !== null && (
+                <p className="text-sm text-muted-foreground">
+                  Ida {v.idaCarregada ? 'carregada (eixos no chão)' : 'vazia (eixos erguidos)'},
+                  informado pelo motorista
+                </p>
+              )}
               <EixosViagem viagemId={v.id} ida={v.eixosIda} volta={v.eixosVolta} />
               <div className="flex flex-col divide-y">
                 {v.passagens.map((p) => (
@@ -132,9 +138,10 @@ export default async function Pedagio({ searchParams }: PageProps<'/g/pedagio'>)
         </ul>
       )}
       <p className="text-sm text-muted-foreground">
-        Previsto = tarifa por eixo × eixos (cavalo + carreta da viagem). Ida vazia conta só os eixos
-        no chão (eixo suspenso vazio não paga, Lei 13.103); ida com carga e volta contam todos.
-        Atenção: com MDF-e aberto, o app cobra o eixo suspenso como carregado.
+        Previsto = tarifa por eixo × eixos (cavalo + carreta da viagem). Ida vazia (o motorista
+        responde ao iniciar a viagem; nas antigas, vale o frete da ida) conta só os eixos no chão
+        (eixo suspenso vazio não paga, Lei 13.103); ida com carga e volta contam todos. Atenção: com
+        MDF-e aberto, o app cobra o eixo suspenso como carregado.
       </p>
     </>
   );

@@ -1559,6 +1559,7 @@ export type Database = {
           eixos_ida: number | null
           eixos_volta: number | null
           id: string
+          ida_carregada: boolean | null
           km_chegada: number | null
           km_saida: number
           local_carga_id: string | null
@@ -1579,6 +1580,7 @@ export type Database = {
           eixos_ida?: number | null
           eixos_volta?: number | null
           id?: string
+          ida_carregada?: boolean | null
           km_chegada?: number | null
           km_saida: number
           local_carga_id?: string | null
@@ -1599,6 +1601,7 @@ export type Database = {
           eixos_ida?: number | null
           eixos_volta?: number | null
           id?: string
+          ida_carregada?: boolean | null
           km_chegada?: number | null
           km_saida?: number
           local_carga_id?: string | null

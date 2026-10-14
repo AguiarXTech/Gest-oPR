@@ -76,6 +76,38 @@ describe('passagensPrevistas', () => {
     );
     expect(ida.previstoCentavos).toBe(4860);
   });
+
+  it('motorista disse que a ida vai carregada: eixos no chão, mesmo sem frete', () => {
+    const [ida] = passagensPrevistas(
+      {
+        dataIda: '2026-10-14',
+        dataVolta: '2026-10-15',
+        temFreteIda: false,
+        idaCarregada: true,
+        eixosIda: null,
+        eixosVolta: null,
+      },
+      truck3,
+      tarifas,
+    );
+    expect(ida.eixos).toBe(3);
+  });
+
+  it('motorista disse que a ida vai vazia: eixos erguidos, mesmo com frete lançado', () => {
+    const [ida] = passagensPrevistas(
+      {
+        dataIda: '2026-10-14',
+        dataVolta: '2026-10-15',
+        temFreteIda: true,
+        idaCarregada: false,
+        eixosIda: null,
+        eixosVolta: null,
+      },
+      truck3,
+      tarifas,
+    );
+    expect(ida.eixos).toBe(2);
+  });
 });
 
 describe('conferirCobranca', () => {
@@ -121,7 +153,10 @@ describe('pedagioDaViagem (resultado: cobrado quando lançado, senão o previsto
     { pracaId: 'p2', sentido: 'volta' as const, previstoCentavos: null },
   ];
   it('nada lançado: entra o previsto, marcado como previsto', () =>
-    expect(pedagioDaViagem(passagens, [])).toEqual({ totalCentavos: 5000, previstoCentavos: 5000 }));
+    expect(pedagioDaViagem(passagens, [])).toEqual({
+      totalCentavos: 5000,
+      previstoCentavos: 5000,
+    }));
   it('cobrado substitui o previsto da passagem', () =>
     expect(
       pedagioDaViagem(passagens, [{ pracaId: 'p1', sentido: 'volta', valorCentavos: 3300 }]),

@@ -27,6 +27,10 @@ export const iniciarViagemSchema = z.object({
   origem: z.string().trim().min(2, 'Digite a origem.'),
   destino: z.string().trim().min(2, 'Digite o destino.'),
   km_saida: kmObrigatorio('Digite o km do painel na saída.'),
+  /** Carregado ou vazio na ida (2026-10-14): vazio ergue os eixos e paga menos pedágio. */
+  ida_carregada: z
+    .enum(['sim', 'nao'], 'Diga se vai carregado ou vazio na ida.')
+    .transform((v) => v === 'sim'),
 });
 
 export const finalizarViagemSchema = z.object({

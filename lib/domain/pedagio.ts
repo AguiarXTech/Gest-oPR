@@ -46,6 +46,8 @@ export type ViagemPedagio = {
   dataIda: string;
   dataVolta: string;
   temFreteIda: boolean;
+  /** Resposta do motorista ao iniciar (vazio ergue os eixos); null = viagem antiga, usa o frete da ida. */
+  idaCarregada?: boolean | null;
   eixosIda: number | null;
   eixosVolta: number | null;
 };
@@ -66,7 +68,7 @@ export function passagensPrevistas(
 ): Passagem[] {
   return (
     [
-      ['ida', v.dataIda, v.temFreteIda, v.eixosIda],
+      ['ida', v.dataIda, v.idaCarregada ?? v.temFreteIda, v.eixosIda],
       ['volta', v.dataVolta, true, v.eixosVolta],
     ] as const
   ).map(([sentido, data, carregado, excecao]) => {
