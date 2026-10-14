@@ -218,7 +218,7 @@ Uma viagem concluída **sem nenhum frete lançado** **impede o fechamento do ace
 ```
 receita  = Σ fretes (ida + volta) das viagens concluídas no mês
 diesel   = Σ valor dos abastecimentos do caminhão no mês
-pedagio  = Σ despesas tipo pedagio do caminhão no mês + Σ cobranças do app de pedágio
+pedagio  = Σ despesas tipo pedagio do caminhão no mês + Σ pedágio das viagens (em cada passagem: o cobrado, se lançado; senão o previsto, §12)
 despesas = Σ outras despesas do caminhão no mês
 manutencao = Σ manutenções lançadas pela gestão + Σ despesas tipo manutencao lançadas pelos motoristas
 comissao = Σ comissão calculada das viagens (mesmo sem acerto fechado; marcar "estimada" se não fechado)
@@ -310,7 +310,7 @@ diferença  = cobrado − previsto  (> 0: cobrou a mais → "contestar")
 
 - **Eixo suspenso vazio não paga** (Lei 13.103 art. 17; Lei 13.711/2018). A praça identifica "vazio" pela placa sem **MDF-e aberto**: se ficar MDF-e aberto, o app cobra o eixo suspenso.
 - Reajuste = nova tarifa com data de início; a passagem usa a tarifa da data dela.
-- O pedágio cobrado entra no resultado (§8) junto com o pedágio lançado como despesa.
+- O pedágio entra no resultado (§8) junto com o pedágio lançado como despesa: em cada passagem vale o **cobrado** quando lançado, senão o **previsto** (praça × tarifa × eixos). Cobrança de praça sem previsão também entra. O resumo mostra quanto ainda é previsto (`pedagioDaViagem`, pedido do dono em 2026-10-14: o resumo é o valor líquido com todos os descontos).
 
 ## 13. Frete pelo preço combinado do produto (`precoFrete.ts`) — RF-44/RF-45
 

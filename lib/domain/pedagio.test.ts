@@ -4,6 +4,7 @@ import {
   eixosCobrados,
   eixosDoConjunto,
   passagensPrevistas,
+  pedagioDaViagem,
   tarifaVigente,
 } from './pedagio';
 
@@ -111,4 +112,25 @@ describe('eixosDoConjunto (cavalo + carreta)', () => {
     expect(
       eixosCobrados(eixosDoConjunto(cavalo, { eixos: 3, eixosSuspensos: 1 }), false, null),
     ).toBe(4));
+});
+
+describe('pedagioDaViagem (resultado: cobrado quando lançado, senão o previsto)', () => {
+  const passagens = [
+    { pracaId: 'p1', sentido: 'ida' as const, previstoCentavos: 2000 },
+    { pracaId: 'p1', sentido: 'volta' as const, previstoCentavos: 3000 },
+    { pracaId: 'p2', sentido: 'volta' as const, previstoCentavos: null },
+  ];
+  it('nada lançado: entra o previsto, marcado como previsto', () =>
+    expect(pedagioDaViagem(passagens, [])).toEqual({ totalCentavos: 5000, previstoCentavos: 5000 }));
+  it('cobrado substitui o previsto da passagem', () =>
+    expect(
+      pedagioDaViagem(passagens, [{ pracaId: 'p1', sentido: 'volta', valorCentavos: 3300 }]),
+    ).toEqual({ totalCentavos: 5300, previstoCentavos: 2000 }));
+  it('cobrança sem previsão (praça sem tarifa ou desativada) também entra', () =>
+    expect(
+      pedagioDaViagem(passagens, [
+        { pracaId: 'p2', sentido: 'volta', valorCentavos: 1500 },
+        { pracaId: 'p9', sentido: 'ida', valorCentavos: 700 },
+      ]),
+    ).toEqual({ totalCentavos: 7200, previstoCentavos: 5000 }));
 });

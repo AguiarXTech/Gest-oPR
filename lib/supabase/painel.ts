@@ -3,8 +3,10 @@
 import { calcularComissaoViagem, regraVigente } from '@/lib/domain/comissao';
 import { medicoesNoPeriodo } from '@/lib/domain/consumo';
 import { separarDespesas } from '@/lib/domain/despesas';
+import { pedagioDaViagem } from '@/lib/domain/pedagio';
 import { calcularResultado, ratearDiesel, type Resultado } from '@/lib/domain/resultado';
 import { paraRegraDominio } from '@/lib/supabase/acerto';
+import { carregarPedagioMes } from '@/lib/supabase/pedagio';
 import type { createClient } from '@/lib/supabase/server';
 
 type Cliente = Awaited<ReturnType<typeof createClient>>;
@@ -55,12 +57,13 @@ export async function carregarMes(
     { data: despesas },
     { data: regras },
     { data: manutencoes },
+    pedagioMes,
   ] = await Promise.all([
     supabase.from('caminhoes').select('id, placa, apelido, ativo').order('placa'),
     supabase
       .from('viagens')
       .select(
-        'id, caminhao_id, motorista_id, data_saida, km_saida, km_chegada, funcionarios(nome), fretes(valor_frete_centavos), cobrancas_pedagio(valor_cobrado_centavos)',
+        'id, caminhao_id, motorista_id, data_saida, km_saida, km_chegada, funcionarios(nome), fretes(valor_frete_centavos), cobrancas_pedagio(praca_id, sentido, valor_cobrado_centavos)',
       )
       .eq('status', 'concluida')
       .gte('data_saida', inicio)
@@ -82,7 +85,26 @@ export async function carregarMes(
       .select('caminhao_id, valor_centavos')
       .gte('data', inicioData)
       .lt('data', fimData),
+    // passagens previstas (praça × tarifa × eixos) que a tela Pedágio já calcula
+    carregarPedagioMes(supabase, mes),
   ]);
+
+  // pedágio de cada viagem: em cada passagem, o cobrado quando lançado, senão o previsto
+  const pedagioPorViagem = new Map(
+    (viagens ?? []).map((v) => [
+      v.id,
+      pedagioDaViagem(
+        pedagioMes.viagens.find((x) => x.id === v.id)?.passagens ?? [],
+        v.cobrancas_pedagio.map((c) => ({
+          pracaId: c.praca_id,
+          sentido: c.sentido,
+          valorCentavos: c.valor_cobrado_centavos,
+        })),
+      ),
+    ]),
+  );
+  const pedagioDaViagemNoMes = (id: string) =>
+    pedagioPorViagem.get(id) ?? { totalCentavos: 0, previstoCentavos: 0 };
 
   // custo do diesel = o que foi abastecido no mês; km/L = tanque cheio a tanque cheio
   const abastecimentos = (abastecimentosPeriodo ?? []).filter(
@@ -122,12 +144,11 @@ export async function carregarMes(
       const km = (v.km_chegada ?? v.km_saida) - v.km_saida;
       const freteCentavos = v.fretes.reduce((t, f) => t + f.valor_frete_centavos, 0);
       const despesasDaViagem = ds.filter((d) => d.viagem_id === v.id);
-      // pedágio = lançado como despesa + cobrado pelo app de pedágio (controle de pedágio)
+      // pedágio = lançado como despesa + controle de pedágio (cobrado, senão o previsto)
       const pedagioCentavos =
         despesasDaViagem
           .filter((d) => d.tipo === 'pedagio')
-          .reduce((t, d) => t + d.valor_centavos, 0) +
-        v.cobrancas_pedagio.reduce((t, c) => t + c.valor_cobrado_centavos, 0);
+          .reduce((t, d) => t + d.valor_centavos, 0) + pedagioDaViagemNoMes(v.id).totalCentavos;
       const despesasCentavos = despesasDaViagem
         .filter((d) => d.tipo !== 'pedagio')
         .reduce((t, d) => t + d.valor_centavos, 0);
@@ -174,10 +195,8 @@ export async function carregarMes(
       medicoesConsumo: medicoes.filter((m) => m.caminhaoId === c.id),
       pedagioCentavos:
         separadas.pedagioCentavos +
-        vs.reduce(
-          (t, v) => t + v.cobrancas_pedagio.reduce((s, c) => s + c.valor_cobrado_centavos, 0),
-          0,
-        ),
+        vs.reduce((t, v) => t + pedagioDaViagemNoMes(v.id).totalCentavos, 0),
+      pedagioPrevistoCentavos: vs.reduce((t, v) => t + pedagioDaViagemNoMes(v.id).previstoCentavos, 0),
       despesasCentavos: separadas.outrasCentavos,
       // manutenção lançada pela gestão (pago pelo dono) + a que o motorista pagou e lançou
       manutencaoCentavos:
@@ -200,7 +219,12 @@ export async function carregarMes(
     (c) => c.ativo || c.resultado.km > 0 || c.resultado.dieselCentavos > 0,
   );
   const soma = (
-    campo: 'dieselCentavos' | 'pedagioCentavos' | 'despesasCentavos' | 'manutencaoCentavos',
+    campo:
+      | 'dieselCentavos'
+      | 'pedagioCentavos'
+      | 'pedagioPrevistoCentavos'
+      | 'despesasCentavos'
+      | 'manutencaoCentavos',
   ) => comMovimento.reduce((t, c) => t + c.resultado[campo], 0);
   // despesa lançada sem viagem e sem caminhão (antes de 2026-10-07 o app deixava): não
   // tem caminhão para entrar, mas entra no total da frota para não sumir
@@ -220,6 +244,7 @@ export async function carregarMes(
     dieselCentavos: soma('dieselCentavos'),
     medicoesConsumo: medicoes.filter((m) => comMovimento.some((c) => c.id === m.caminhaoId)),
     pedagioCentavos: soma('pedagioCentavos') + semCaminhao.pedagioCentavos,
+    pedagioPrevistoCentavos: soma('pedagioPrevistoCentavos'),
     despesasCentavos: soma('despesasCentavos') + semCaminhao.outrasCentavos,
     manutencaoCentavos: soma('manutencaoCentavos') + semCaminhao.manutencaoCentavos,
   });

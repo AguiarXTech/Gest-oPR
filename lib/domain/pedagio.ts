@@ -96,3 +96,20 @@ export function conferirCobranca(
     diferencaCentavos,
   };
 }
+
+/**
+ * Pedágio da viagem para o resultado (§8.1): em cada passagem vale o cobrado quando lançado,
+ * senão o previsto. `previstoCentavos` = parte que ainda é estimativa (sem cobrança lançada).
+ */
+export function pedagioDaViagem(
+  passagens: readonly { pracaId: string; sentido: Sentido; previstoCentavos: number | null }[],
+  cobrancas: readonly { pracaId: string; sentido: Sentido; valorCentavos: number }[],
+): { totalCentavos: number; previstoCentavos: number } {
+  const temCobranca = (p: { pracaId: string; sentido: Sentido }) =>
+    cobrancas.some((c) => c.pracaId === p.pracaId && c.sentido === p.sentido);
+  const previstoCentavos = passagens
+    .filter((p) => !temCobranca(p))
+    .reduce((t, p) => t + (p.previstoCentavos ?? 0), 0);
+  const cobradoCentavos = cobrancas.reduce((t, c) => t + c.valorCentavos, 0);
+  return { totalCentavos: cobradoCentavos + previstoCentavos, previstoCentavos };
+}

@@ -39,6 +39,11 @@ export function DemonstrativoResultado({ titulo, subtitulo, r, href, destaque, r
         <Linha rotulo="Fretes" valor={r.receitaCentavos} />
         <Linha rotulo="Diesel" valor={r.dieselCentavos} menos />
         <Linha rotulo="Pedágio" valor={r.pedagioCentavos} menos />
+        {r.pedagioPrevistoCentavos > 0 && (
+          <p className="pb-0.5 text-right text-xs text-muted-foreground tabular-nums">
+            {formatarBRL(r.pedagioPrevistoCentavos)} pelo previsto (cobrança ainda não lançada)
+          </p>
+        )}
         <Linha rotulo="Outras despesas" valor={r.despesasCentavos} menos />
         <Linha rotulo="Manutenção" valor={r.manutencaoCentavos} menos />
         <Linha rotulo="Comissão" valor={r.comissaoCentavos} menos />

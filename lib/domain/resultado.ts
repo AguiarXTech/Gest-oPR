@@ -30,6 +30,8 @@ export type EntradaResultado = {
   /** Medições de tanque cheio fechadas no mês (§4): dão o km/L exato. */
   medicoesConsumo: readonly Medicao[];
   pedagioCentavos: number;
+  /** Parte do pedágio que ainda é o previsto (sem cobrança lançada); só informa, já está em pedagioCentavos. */
+  pedagioPrevistoCentavos?: number;
   despesasCentavos: number;
   /** Oficina e peças do mês (manutenções registradas pela gestão). */
   manutencaoCentavos?: number;
@@ -39,6 +41,7 @@ export type Resultado = {
   receitaCentavos: number;
   dieselCentavos: number;
   pedagioCentavos: number;
+  pedagioPrevistoCentavos: number;
   despesasCentavos: number;
   manutencaoCentavos: number;
   comissaoCentavos: number;
@@ -66,6 +69,7 @@ export function calcularResultado(e: EntradaResultado): Resultado {
     receitaCentavos,
     dieselCentavos: e.dieselCentavos,
     pedagioCentavos: e.pedagioCentavos,
+    pedagioPrevistoCentavos: e.pedagioPrevistoCentavos ?? 0,
     despesasCentavos: e.despesasCentavos,
     manutencaoCentavos,
     comissaoCentavos,

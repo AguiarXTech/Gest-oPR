@@ -62,6 +62,22 @@ describe('calcularResultado (regras §8.1)', () => {
     expect(r.kmPorLitro).toBeCloseTo(1180 / 390, 4); // ponderada: Σ km ÷ Σ L
   });
 
+  it('pedágio previsto só informa: o custo usa o pedágio total', () => {
+    const r = calcularResultado({
+      viagens: [{ freteCentavos: 508000, kmRodado: 580, comissaoCentavos: 50000 }],
+      dieselCentavos: 0,
+      medicoesConsumo: [],
+      pedagioCentavos: 12000,
+      pedagioPrevistoCentavos: 9000,
+      despesasCentavos: 0,
+    });
+    expect(r).toMatchObject({
+      pedagioCentavos: 12000,
+      pedagioPrevistoCentavos: 9000,
+      resultadoCentavos: 508000 - 12000 - 50000,
+    });
+  });
+
   it('manutenção entra no custo', () => {
     const r = calcularResultado({
       viagens: [{ freteCentavos: 450000, kmRodado: 580, comissaoCentavos: 15000 }],
