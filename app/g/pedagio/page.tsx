@@ -104,8 +104,8 @@ export default async function Pedagio({ searchParams }: PageProps<'/g/pedagio'>)
           <p className="text-sm text-muted-foreground">
             {totais.paraContestar > 0 && `${totais.paraContestar} cobrança(s) para contestar · `}
             {totais.semLancamento > 0
-              ? `${totais.semLancamento} passagem(ns) sem o valor cobrado lançado`
-              : 'Todas as passagens lançadas'}
+              ? `${totais.semLancamento} passagem(ns) ainda não conferida(s) com o app`
+              : 'Todas as passagens conferidas'}
           </p>
         </div>
       </section>

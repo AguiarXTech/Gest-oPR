@@ -151,7 +151,7 @@ Não implemente regra definitiva para os itens abaixo antes da resposta. Use con
 | Q7 | Cada motorista tem caminhão fixo? | UX RF-05 | Não; escolhe na saída, sugerindo o último usado |
 | Q8 | Os motoristas têm e-mail? | RF-01 | Se não tiverem, usar e-mail interno `cpf@frota.local` gerado pelo gestor (ver ADR 0001) |
 | Q9 | Configuração de eixos de cada caminhão (toco, truck, carreta)? | Fase 2 pneus e pedágio | Cadastrar por caminhão |
-| Q10 | A empresa usa TAG de pedágio? | Registro de pedágio | Pedágio lançado como despesa da viagem |
+| Q10 | ~~A empresa usa TAG de pedágio?~~ **Respondida em 2026-10-14:** a cobrança é **automática pela leitura da placa** (app de pagamento); ninguém digita o pedágio. O resultado usa o previsto (tarifa × eixos) e a conferência com o app é opcional | Registro de pedágio | Pedágio lançado como despesa da viagem |
 | Q11 | ~~Como o diesel é pago?~~ **Respondida em 2026-10-01:** **faturado direto no posto** | RF-08, RF-15 | Implementado: abastecimento do motorista grava `forma_pagamento = faturado` e não entra no acerto; o campo continua no banco para exceções |
 
 ## 8. Critérios de aceite do MVP (piloto)

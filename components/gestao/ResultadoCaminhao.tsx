@@ -35,7 +35,7 @@ export function ResultadoCaminhao({ dados, nomeMes }: { dados: CaminhaoDoMes | u
         <Linha rotulo="Pedágio" valor={r.pedagioCentavos} menos />
         {r.pedagioPrevistoCentavos > 0 && (
           <p className="pb-0.5 text-right text-xs text-muted-foreground tabular-nums">
-            {formatarBRL(r.pedagioPrevistoCentavos)} pelo previsto (cobrança ainda não lançada)
+            {formatarBRL(r.pedagioPrevistoCentavos)} pela tarifa × eixos (ainda não conferido com o app)
           </p>
         )}
         <Linha rotulo="Outras despesas" valor={r.despesasCentavos} menos />
