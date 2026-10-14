@@ -25,6 +25,12 @@ import {
   type DespesaForm,
 } from '@/lib/validations/despesa';
 
+// fora da tela do motorista: alimentação e pernoite a empresa não paga (Q5); pedágio é
+// cobrado automático pela placa e nunca é lançado pelo motorista (Q10)
+const TIPOS_MOTORISTA = Object.entries(TIPOS_DESPESA).filter(
+  ([valor]) => valor !== 'alimentacao' && valor !== 'pernoite' && valor !== 'pedagio',
+) as [DespesaForm['tipo'], string][];
+
 type Props = {
   funcionarioId: string;
   viagem: { id: string; caminhao_id: string } | null;
@@ -46,15 +52,20 @@ export function FormDespesa({ funcionarioId, viagem, caminhoes, caminhaoSugerido
   const [supabase] = useState(createClient);
   const [inicial] = useState<Rascunho>(() => {
     const r = lerRascunho<Rascunho>(RASCUNHO);
+    const tipoRascunho = r?.valores?.tipo;
     return {
       id: r?.id ?? gerarUuid(),
       valores: {
-        tipo: 'pedagio',
         valor: '',
         data: hoje(),
         descricao: '',
         foto_path: '',
         ...r?.valores,
+        // rascunho antigo com pedágio volta para o primeiro tipo da tela
+        tipo:
+          tipoRascunho && TIPOS_MOTORISTA.some(([t]) => t === tipoRascunho)
+            ? tipoRascunho
+            : TIPOS_MOTORISTA[0][0],
       },
     };
   });
@@ -147,20 +158,18 @@ export function FormDespesa({ funcionarioId, viagem, caminhoes, caminhaoSugerido
       <fieldset className="flex flex-col gap-2">
         <legend className="mb-2 text-lg font-semibold">O que foi?</legend>
         <div className="grid grid-cols-2 gap-2">
-          {Object.entries(TIPOS_DESPESA)
-            .filter(([valor]) => valor !== 'alimentacao' && valor !== 'pernoite') // a empresa não paga (Q5)
-            .map(([valor, rotulo]) => (
-              <label
-                key={valor}
-                className={cn(
-                  'flex min-h-14 cursor-pointer items-center justify-center rounded-xl border bg-card p-2 text-center text-base font-semibold shadow-xs',
-                  valores.tipo === valor && 'border-primary bg-primary text-primary-foreground',
-                )}
-              >
-                <input type="radio" value={valor} {...register('tipo')} className="sr-only" />
-                {rotulo}
-              </label>
-            ))}
+          {TIPOS_MOTORISTA.map(([valor, rotulo]) => (
+            <label
+              key={valor}
+              className={cn(
+                'flex min-h-14 cursor-pointer items-center justify-center rounded-xl border bg-card p-2 text-center text-base font-semibold shadow-xs',
+                valores.tipo === valor && 'border-primary bg-primary text-primary-foreground',
+              )}
+            >
+              <input type="radio" value={valor} {...register('tipo')} className="sr-only" />
+              {rotulo}
+            </label>
+          ))}
         </div>
         <p className="text-sm text-muted-foreground">
           Só despesas do caminhão. Alimentação e pernoite não são reembolsados.

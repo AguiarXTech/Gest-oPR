@@ -231,7 +231,7 @@ O km/L **não** é km das viagens ÷ litros do mês: o diesel abastecido no fim 
 
 Despesas contam pela data e pelo caminhão (com ou sem viagem). Despesa sem caminhão (lançada antes de 2026-10-07, quando o app deixava) entra só no total da frota; a gestão escolhe o caminhão na conferência. Sem viagem, o motorista escolhe o caminhão ao lançar.
 
-Manutenção e pedágio lançados pelos motoristas aparecem nas áreas Manutenção e Pedágio, com o caminhão (sem "quem pagou").
+Manutenção lançada pelos motoristas aparece na área Manutenção, com o caminhão (sem "quem pagou"). O motorista **não lança pedágio**: a cobrança é automática pela placa, e o resultado usa o pedágio da viagem (§12). Pedágio antigo lançado como despesa continua contando.
 
 Manutenção entra desde 2026-10-01. A fase 2 soma pneus (via CPK × km) e custos fixos (seguro, parcelas, IPVA rateado).
 

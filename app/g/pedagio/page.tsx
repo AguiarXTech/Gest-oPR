@@ -8,9 +8,6 @@ import { PracasPedagio } from '@/components/gestao/PracasPedagio';
 import { formatarBRL } from '@/lib/domain/dinheiro';
 import { formatarPlaca } from '@/lib/domain/placa';
 import { competencia } from '@/lib/domain/resultado';
-import { DespesasDoMotorista } from '@/components/gestao/DespesasDoMotorista';
-import { carregarDespesasMotorista } from '@/lib/supabase/despesasMotorista';
-import { limitesDoMes } from '@/lib/supabase/painel';
 import { carregarPedagioMes } from '@/lib/supabase/pedagio';
 import { createClient } from '@/lib/supabase/server';
 import { cn } from '@/lib/utils';
@@ -40,12 +37,8 @@ export default async function Pedagio({ searchParams }: PageProps<'/g/pedagio'>)
   const mes =
     typeof bruto === 'string' && /^\d{4}-\d{2}$/.test(bruto) && bruto <= atual ? bruto : atual;
   const supabase = await createClient();
-  const { inicioData, fimData } = limitesDoMes(mes);
-  const [{ viagens, pracas, totais }, dosMotoristas] = await Promise.all([
-    carregarPedagioMes(supabase, mes),
-    // pedágio lançado pelos motoristas como despesa (com o caminhão)
-    carregarDespesasMotorista(supabase, 'pedagio', { inicio: inicioData, fim: fimData }),
-  ]);
+  // cobrança automática pela placa: o motorista nunca lança pedágio (2026-10-14)
+  const { viagens, pracas, totais } = await carregarPedagioMes(supabase, mes);
 
   return (
     <>
@@ -108,23 +101,6 @@ export default async function Pedagio({ searchParams }: PageProps<'/g/pedagio'>)
               : 'Todas as passagens conferidas'}
           </p>
         </div>
-      </section>
-
-      <section className="flex flex-col gap-3">
-        <div className="flex items-baseline justify-between gap-2">
-          <h2 className="text-lg font-semibold">Lançado pelos motoristas</h2>
-          <span className="text-lg font-bold tabular-nums">
-            {formatarBRL(dosMotoristas.totalCentavos)}
-          </span>
-        </div>
-        <DespesasDoMotorista
-          itens={dosMotoristas.itens}
-          vazio="Nenhum pedágio lançado por motorista neste mês."
-        />
-        <p className="text-sm text-muted-foreground">
-          Acima: pedágio que o motorista lançou como despesa. Abaixo: o que o app de pedágio cobrou
-          pela placa.
-        </p>
       </section>
 
       <PracasPedagio pracas={pracas} />
